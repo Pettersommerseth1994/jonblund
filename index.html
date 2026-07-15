@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jon Blund — Gi natten tilbake til hele familien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#ffffff;
+  --paper:#fafbfc;
+  --cloud-1:#eef2f8;
+  --cloud-2:#e4eaf3;
+  --cloud-3:#dde7f0;
+  --ink:#1a1d24;
+  --slate:#6b7280;
+  --slate-light:#9aa1ac;
+  --accent:#8ba9c9;
+  --accent-deep:#6d8bab;
+  --line:#e8ecf1;
+  --display:'Fraunces',Georgia,serif;
+  --body:'Manrope',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:var(--white);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+
+/* ---------- NAV ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 40px;
+  background:rgba(255,255,255,0.72);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid transparent;
+  transition:border-color .4s,padding .4s;
+}
+nav.scrolled{border-bottom:1px solid var(--line);padding:16px 40px}
+.logo{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;display:inline-block}
+.logo span{color:var(--accent-deep)}
+.nav-links{display:flex;gap:38px;align-items:center;margin-left:auto}
+.nav-right{display:flex;align-items:center;gap:14px;margin-left:24px}
+.nav-links a{color:var(--slate);text-decoration:none;font-size:14.5px;font-weight:500;transition:color .25s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{
+  background:var(--ink);color:var(--white)!important;
+  padding:10px 22px;border-radius:100px;font-size:14px;
+  transition:transform .25s,background .25s;
+}
+.nav-cta:hover{transform:translateY(-1px);background:var(--accent-deep)}
+.lang-toggle{
+  background:none;border:1px solid var(--line);
+  color:var(--slate);font-family:var(--body);font-size:13.5px;font-weight:700;cursor:pointer;
+  padding:8px 16px;border-radius:100px;letter-spacing:.06em;transition:border-color .25s,color .25s;
+}
+.lang-toggle:hover{border-color:var(--accent);color:var(--ink)}
+.menu-btn{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink)}
+
+/* ---------- HERO ---------- */
+.hero{
+  position:relative;min-height:100vh;
+  background:
+    radial-gradient(140% 120% at 85% 15%, var(--cloud-3) 0%, var(--cloud-2) 30%, var(--cloud-1) 55%, var(--paper) 78%, var(--white) 100%);
+  overflow:hidden;
+  display:flex;align-items:center;
+  padding:120px 0 60px;
+}
+.hero-inner{
+  max-width:1180px;width:100%;margin:0 auto;padding:0 32px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-deep);margin-bottom:26px;
+  opacity:0;animation:rise .8s .1s forwards;
+}
+.hero h1{
+  font-family:var(--display);
+  font-weight:300;
+  font-size:clamp(42px,5.6vw,72px);
+  line-height:1.02;letter-spacing:-.025em;
+  margin-bottom:26px;
+}
+.hero h1 em{font-style:italic;color:var(--accent-deep);font-weight:400}
+.hero h1 .word{display:inline-block;opacity:0;animation:rise .9s forwards}
+.hero-copy{max-width:720px;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+.hero p.lead{
+  font-size:18px;color:var(--slate);max-width:520px;margin:0 auto 38px;
+  opacity:0;animation:rise .8s .5s forwards;
+}
+.hero-actions{display:flex;gap:16px;align-items:center;justify-content:center;opacity:0;animation:rise .8s .65s forwards}
+.btn-primary{
+  background:var(--ink);color:var(--white);border:none;
+  padding:15px 30px;border-radius:100px;font-family:var(--body);
+  font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;
+  display:inline-block;transition:transform .25s,box-shadow .25s;
+  box-shadow:0 8px 24px rgba(26,29,36,.12);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(26,29,36,.2)}
+.btn-ghost{
+  color:var(--ink);text-decoration:none;font-size:15px;font-weight:600;
+  display:inline-flex;align-items:center;gap:8px;transition:gap .25s;
+}
+.btn-ghost:hover{gap:13px}
+.hero-stats{display:flex;gap:34px;margin-top:56px;opacity:0;animation:rise .8s .8s forwards}
+.stat .n{font-family:var(--display);font-size:30px;font-weight:400;letter-spacing:-.02em}
+.stat .l{font-size:12.5px;color:var(--slate);letter-spacing:.02em}
+
+/* ---------- PRODUCT RENDER (hero) ---------- */
+.hero-render{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;margin-top:44px;width:100%}
+.render-stage{width:100%;max-width:380px;opacity:0;animation:fade 1.2s .4s forwards}
+.mount-strap{animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(-9px)}50%{transform:translateY(9px)}}
+.spring{transform-origin:200px 48px;animation:stretch 3.4s ease-in-out infinite}
+@keyframes stretch{0%,100%{transform:scaleY(.82)}50%{transform:scaleY(1.18)}}
+.floor-shadow{transform-origin:200px 486px;animation:shadowPulse 3.4s ease-in-out infinite}
+@keyframes shadowPulse{0%,100%{transform:scaleX(.9);opacity:.08}50%{transform:scaleX(1.05);opacity:.13}}
+.zz{font-family:var(--display);font-style:italic;fill:#8ba9c9;opacity:0;animation:zrise 4.2s ease-in-out infinite}
+.z1{font-size:21px}
+.z2{font-size:15px;animation-delay:1.4s}
+.z3{font-size:12px;animation-delay:2.8s}
+@keyframes zrise{0%{opacity:0;transform:translateY(0)}14%{opacity:.85}60%,100%{opacity:0;transform:translateY(-54px)}}
+
+/* ---------- SECTIONS ---------- */
+section{position:relative}
+.section-pad{padding:120px 0}
+.sec-eyebrow{
+  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-deep);margin-bottom:18px;
+}
+.sec-title{
+  font-family:var(--display);font-weight:300;
+  font-size:clamp(30px,4vw,48px);line-height:1.08;letter-spacing:-.02em;
+  max-width:640px;margin-bottom:20px;
+}
+.sec-title em{font-style:italic;color:var(--accent-deep);font-weight:400}
+.sec-intro{font-size:17px;color:var(--slate);max-width:520px}
+
+/* HOW IT WORKS */
+.how{background:linear-gradient(180deg,var(--white) 0%,var(--paper) 100%)}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:64px}
+.how-card{
+  background:var(--white);border:1px solid var(--line);border-radius:22px;
+  padding:34px 30px;transition:transform .35s,box-shadow .35s;
+}
+.how-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(109,139,171,.12)}
+.how-num{font-family:var(--display);font-size:15px;color:var(--accent);margin-bottom:20px;font-weight:500}
+.how-icon{width:52px;height:52px;margin-bottom:22px;color:var(--accent-deep)}
+.how-card h3{font-size:19px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.how-card p{font-size:14.5px;color:var(--slate)}
+
+/* MODES */
+.modes{background:radial-gradient(120% 100% at 50% 0%,var(--cloud-1) 0%,var(--white) 60%)}
+.mode-panel{
+  display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center;margin-top:60px;
+}
+.mode-list{display:flex;flex-direction:column;gap:14px}
+.mode-item{
+  border:1px solid var(--line);border-radius:18px;padding:24px 26px;cursor:pointer;
+  background:var(--white);transition:border-color .3s,background .3s,transform .3s;
+  display:flex;align-items:center;gap:22px;
+}
+.mode-item:hover{transform:translateX(4px)}
+.mode-item.active{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
+.mode-time{
+  font-family:var(--display);font-size:26px;font-weight:400;letter-spacing:-.02em;
+  min-width:78px;color:var(--accent-deep);
+}
+.mode-item h4{font-size:17px;font-weight:600;margin-bottom:3px}
+.mode-item p{font-size:14px;color:var(--slate)}
+.mode-visual{
+  position:relative;background:var(--white);border:1px solid var(--line);
+  border-radius:28px;padding:44px;min-height:360px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 30px 60px rgba(109,139,171,.10);
+}
+.device{
+  width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,var(--white),var(--cloud-2) 75%,var(--cloud-3));
+  border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:inset 0 2px 8px rgba(255,255,255,.9),0 12px 30px rgba(109,139,171,.16);
+}
+.device-ring{
+  position:absolute;inset:-14px;border-radius:50%;border:1.5px solid var(--accent);
+  opacity:.35;animation:pulse 3s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.08);opacity:.08}}
+.device-readout{font-family:var(--display);font-size:34px;color:var(--ink);font-weight:400;letter-spacing:-.02em}
+.device-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);margin-top:26px}
+.mode-leds{display:flex;gap:10px;margin-top:16px}
+.led{width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .3s}
+.led.on{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+
+/* SPECS */
+.specs{background:var(--ink);color:var(--white)}
+.specs .sec-eyebrow{color:var(--accent)}
+.specs .sec-title{color:var(--white)}
+.specs .sec-title em{color:var(--accent)}
+.spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden;margin-top:60px}
+.spec-cell{background:var(--ink);padding:32px 26px}
+.spec-cell .k{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.spec-cell .v{font-family:var(--display);font-size:27px;font-weight:300;letter-spacing:-.02em;margin-bottom:6px}
+.spec-cell .d{font-size:13.5px;color:var(--slate-light)}
+
+/* GALLERY / RENDERS */
+.gallery-grid{display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:auto auto;gap:24px;margin-top:60px}
+.render-tile{
+  border-radius:26px;border:1px solid var(--line);overflow:hidden;position:relative;
+  background:radial-gradient(130% 120% at 70% 20%,var(--cloud-2),var(--paper) 70%,var(--white));
+  display:flex;align-items:center;justify-content:center;padding:40px;min-height:280px;
+}
+.render-tile.tall{grid-row:span 2;min-height:auto}
+.render-tile .caption{
+  position:absolute;left:26px;bottom:24px;font-size:13.5px;color:var(--slate);
+  background:rgba(255,255,255,.7);padding:6px 14px;border-radius:100px;backdrop-filter:blur(6px);
+}
+
+/* SHOP / CONFIGURATOR */
+.shop{background:linear-gradient(180deg,var(--paper) 0%,var(--white) 100%)}
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:60px}
+.pcard{
+  border:1px solid var(--line);border-radius:26px;padding:36px;background:var(--white);
+  display:flex;flex-direction:column;transition:box-shadow .35s,transform .35s;position:relative;
+}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 24px 56px rgba(109,139,171,.12)}
+.pcard-visual{
+  border-radius:18px;background:radial-gradient(130% 120% at 68% 22%,var(--cloud-2),var(--paper) 72%,var(--white));
+  display:flex;align-items:center;justify-content:center;padding:26px;margin-bottom:26px;min-height:200px;
+}
+.pcard h3{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
+.pcard .ptag{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
+.pcard .pdesc{font-size:14.5px;color:var(--slate);margin-bottom:24px;flex:1}
+.opt-label{font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin-bottom:12px}
+.swatches{display:flex;gap:12px;margin-bottom:26px}
+.swatch{
+  width:42px;height:42px;border-radius:50%;cursor:pointer;border:2px solid var(--line);
+  position:relative;transition:transform .2s,border-color .2s;
+}
+.swatch:hover{transform:scale(1.06)}
+.swatch.sel{border-color:var(--accent-deep)}
+.swatch.sel::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--accent);opacity:.6}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:100px;padding:4px;margin-bottom:26px;width:fit-content}
+.seg button{
+  border:none;background:none;cursor:pointer;font-family:var(--body);font-size:14px;font-weight:600;
+  color:var(--slate);padding:9px 20px;border-radius:100px;transition:background .25s,color .25s;
+}
+.seg button.sel{background:var(--ink);color:var(--white)}
+.addon{
+  display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:16px;
+  padding:16px 18px;margin-bottom:26px;cursor:pointer;transition:border-color .25s,background .25s;
+}
+.addon.sel{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
+.addon .box{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .25s,background .25s}
+.addon.sel .box{border-color:var(--accent-deep);background:var(--accent-deep)}
+.addon.sel .box::after{content:"✓";color:#fff;font-size:13px;font-weight:700}
+.addon .info h5{font-size:15px;font-weight:600;margin-bottom:2px}
+.addon .info p{font-size:13px;color:var(--slate)}
+.addon .ap{margin-left:auto;font-family:var(--display);font-size:19px;color:var(--ink)}
+.price-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;padding-top:22px;border-top:1px solid var(--line)}
+.price-row .pl{font-size:14px;color:var(--slate)}
+.price-row .pv{font-family:var(--display);font-size:34px;font-weight:400;letter-spacing:-.02em}
+.pcard .btn-primary{width:100%;text-align:center;box-shadow:none}
+.pcard .btn-primary:hover{box-shadow:0 12px 30px rgba(26,29,36,.18)}
+
+/* DOS & DON'TS */
+.dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:60px}
+.dd-card{border:1px solid var(--line);border-radius:26px;padding:34px 32px;background:var(--white)}
+.dd-card h3{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+.dd-ic{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.dd-do .dd-ic{background:#e7f0e9;color:#4d7d5c}
+.dd-dont .dd-ic{background:#f6e7e7;color:#b06a6a}
+.dd-item{display:flex;gap:14px;align-items:flex-start;padding:15px 0;border-top:1px solid var(--line);font-size:14.5px;color:var(--slate)}
+.dd-item:first-of-type{border-top:none;margin-top:8px}
+.dd-item .dd-ic{margin-top:1px}
+
+/* CTA */
+.cta{
+  background:radial-gradient(120% 130% at 50% 0%,var(--cloud-3),var(--cloud-1) 45%,var(--white));
+  text-align:center;padding:130px 40px;
+}
+.cta h2{font-family:var(--display);font-weight:300;font-size:clamp(34px,5vw,60px);letter-spacing:-.025em;margin-bottom:22px;line-height:1.05}
+.cta h2 em{font-style:italic;color:var(--accent-deep);font-weight:400}
+.cta p{font-size:18px;color:var(--slate);max-width:460px;margin:0 auto 40px}
+.cta-note{font-size:13px;color:var(--slate-light);margin-top:20px}
+
+/* FOOTER */
+footer{background:var(--white);border-top:1px solid var(--line);padding:70px 40px 44px}
+.foot-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
+.foot-brand .logo{font-size:26px;margin-bottom:14px;display:inline-block}
+.foot-brand p{font-size:14px;color:var(--slate);max-width:260px}
+.foot-col h5{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:18px;font-weight:600}
+.foot-col a{display:block;color:var(--slate);text-decoration:none;font-size:14.5px;margin-bottom:11px;transition:color .2s}
+.foot-col a:hover{color:var(--accent-deep)}
+.foot-bottom{max-width:1180px;margin:50px auto 0;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px;color:var(--slate-light)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+.eyebrow,.hero p.lead,.hero-actions,.hero-stats{transform:translateY(20px)}
+.hero h1 .word{transform:translateY(30px)}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:940px){
+  .hero{padding-top:110px}
+  .hero-render{margin-top:36px}
+  .how-grid{grid-template-columns:1fr 1fr}
+  .shop-grid{grid-template-columns:1fr}
+  .dd-grid{grid-template-columns:1fr}
+  .mode-panel{grid-template-columns:1fr;gap:40px}
+  .spec-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid{grid-template-columns:1fr}
+  .render-tile.tall{grid-row:auto}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .nav-links{
+    display:none;position:absolute;top:100%;left:0;right:0;
+    background:var(--white);flex-direction:column;align-items:flex-start;
+    gap:18px;padding:20px 40px 26px;border-bottom:1px solid var(--line);
+    box-shadow:0 18px 40px rgba(26,29,36,.08);
+  }
+  .nav-links.open{display:flex}
+  .nav-right{margin-left:auto}
+  .menu-btn{display:block}
+}
+@media(max-width:560px){
+  .wrap,nav,.hero-inner,.cta,footer{padding-left:22px;padding-right:22px}
+  .how-grid{grid-template-columns:1fr}
+  .shop-grid{grid-template-columns:1fr}
+  .hero-stats{gap:22px;flex-wrap:wrap}
+  .spec-grid{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .foot-bottom{flex-direction:column;gap:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  .eyebrow,.hero p.lead,.hero-actions,.hero-stats,.hero h1 .word,.render-stage{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="logo">jon<span>blund</span></div>
+  <div class="nav-links">
+    <a href="#how">Slik virker det</a>
+    <a href="#modes">Moduser</a>
+    <a href="#specs">Spesifikasjoner</a>
+    <a href="#safety">Sikkerhet</a>
+    <a href="#gallery">Design</a>
+    <a href="#shop" class="nav-cta">Kjøp</a>
+  </div>
+  <div class="nav-right">
+    <button class="lang-toggle" id="langToggle" aria-label="Switch language" title="Bytt språk / Switch language">EN</button>
+    <button class="menu-btn" aria-label="Meny">☰</button>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-inner">
+  <div class="hero-copy">
+    <span class="eyebrow">Nylansering · Forhåndsbestill nå</span>
+    <h1>
+      <span class="word" style="animation-delay:.15s">Gi</span>
+      <span class="word" style="animation-delay:.22s">natten</span>
+      <span class="word" style="animation-delay:.29s">tilbake</span><br>
+      <span class="word" style="animation-delay:.36s">til</span>
+      <span class="word" style="animation-delay:.43s"><em>hele familien.</em></span>
+    </h1>
+    <p class="lead">Jon Blund festes med vaier og karabinkrok der du vil, og reimen justeres i flere trinn til riktig høyde. Den milde gyngingen gjør resten.</p>
+    <div class="hero-actions">
+      <a href="#order" class="btn-primary">Forhåndsbestill</a>
+      <a href="#how" class="btn-ghost">Se hvordan &rarr;</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="n">3</div><div class="l">gynge­moduser</div></div>
+      <div class="stat"><div class="n">40t</div><div class="l">på én lading</div></div>
+      <div class="stat"><div class="n">25kg</div><div class="l">totalvekt</div></div>
+    </div>
+  </div>
+
+  <div class="hero-render">
+    <svg class="render-stage" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Render av Jon Blund-motoren som henger i tak med reim og vugge">
+      <defs>
+        <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef2f8"/><stop offset="1" stop-color="#dde7f0"/>
+        </linearGradient>
+        <linearGradient id="bodyEdge" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfdbe8"/>
+        </linearGradient>
+        <radialGradient id="btn" cx="40%" cy="35%" r="70%">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c3d3e4"/>
+        </radialGradient>
+        <linearGradient id="strap" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#c6d3e2"/><stop offset="1" stop-color="#9fb4cb"/>
+        </linearGradient>
+        <linearGradient id="nest" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/>
+        </linearGradient>
+        <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#6d8bab" flood-opacity="0.16"/>
+        </filter>
+      </defs>
+
+      <!-- ceiling mount / nagle with carabiner (fixed) -->
+      <rect x="176" y="10" width="48" height="10" rx="5" fill="#cfdbe8"/>
+      <path d="M200 20 v6" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
+      <!-- carabiner -->
+      <rect x="192" y="24" width="16" height="24" rx="8" fill="none" stroke="#9fb4cb" stroke-width="3"/>
+      <path d="M200 26 v8" stroke="#c6d3e2" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- spring: stretches and compresses from the fixed mount -->
+      <g class="spring">
+        <path d="M200 48 L200 60" fill="none" stroke="#9fb4cb" stroke-width="2.4"/>
+        <path d="M200 60 q10 8 -0 16 q-10 8 0 16 q10 8 0 12" fill="none" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <!-- bobbing group: device, straps and nest move up and down together -->
+      <g class="mount-strap">
+        <!-- device body -->
+        <g filter="url(#soft)" transform="translate(200 150) scale(.78) translate(-200 -150)">
+          <ellipse cx="200" cy="150" rx="82" ry="70" fill="url(#body)" stroke="url(#bodyEdge)" stroke-width="1.5"/>
+          <ellipse cx="200" cy="150" rx="82" ry="70" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="1"/>
+          <!-- top highlight -->
+          <ellipse cx="182" cy="128" rx="34" ry="22" fill="#ffffff" opacity=".55"/>
+          <!-- power button -->
+          <circle cx="200" cy="150" r="26" fill="url(#btn)" stroke="#ffffff" stroke-width="1.5"/>
+          <circle cx="200" cy="150" r="26" fill="none" stroke="#b9c8da" stroke-width=".8"/>
+          <path d="M200 138 v13" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
+          <path d="M188 146 a15 15 0 1 0 24 0" fill="none" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
+          <!-- mode leds -->
+          <circle cx="182" cy="188" r="3.4" fill="#8ba9c9"/>
+          <circle cx="200" cy="191" r="3.4" fill="#c6d3e2"/>
+          <circle cx="218" cy="188" r="3.4" fill="#c6d3e2"/>
+        </g>
+
+        <!-- single continuous strap from motor down to the carabiner -->
+        <path d="M200 205 L200 344" fill="none" stroke="#9fb4cb" stroke-width="7" stroke-linecap="round"/>
+        <!-- step rungs (adjustable levels) crossing the strap -->
+        <g stroke="#7d97b3" stroke-width="2.4" stroke-linecap="round">
+          <path d="M193 243 h14"/>
+          <path d="M193 277 h14"/>
+          <path d="M193 311 h14"/>
+        </g>
+        <!-- carabiner joining strap to carrycot straps -->
+        <rect x="193" y="342" width="14" height="19" rx="7" fill="none" stroke="#8ba9c9" stroke-width="3"/>
+
+        <!-- carrycot (bæreseng) with carrying straps pointing UP to the carabiner -->
+        <g filter="url(#soft)">
+          <!-- carrying straps arcing upward from the cot sides to the carabiner -->
+          <path d="M151 397 C166 383 183 369 198 361" fill="none" stroke="#9fb4cb" stroke-width="5" stroke-linecap="round"/>
+          <path d="M249 397 C234 383 217 369 202 361" fill="none" stroke="#9fb4cb" stroke-width="5" stroke-linecap="round"/>
+          <!-- cot body: soft capsule with puffy gathered ends -->
+          <rect x="118" y="390" width="164" height="62" rx="26" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.5"/>
+          <ellipse cx="132" cy="421" rx="16" ry="28" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
+          <ellipse cx="268" cy="421" rx="16" ry="28" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
+          <!-- gathered drawstring detail on the ends -->
+          <path d="M124 402 q6 16 0 32 M276 402 q-6 16 0 32" fill="none" stroke="#c6d3e2" stroke-width="1.6" stroke-linecap="round"/>
+          <!-- opening / mattress rim -->
+          <rect x="140" y="396" width="120" height="15" rx="7.5" fill="#eef2f8" stroke="#e3eaf3" stroke-width="1"/>
+          <!-- small strap keepers on the cot where straps meet the body -->
+          <rect x="145" y="393" width="10" height="14" rx="3" fill="#d7e0eb"/>
+          <rect x="245" y="393" width="10" height="14" rx="3" fill="#d7e0eb"/>
+        </g>
+
+        <!-- z's drifting up from the bed -->
+        <g aria-hidden="true">
+          <text class="zz z1" x="238" y="384">z</text>
+          <text class="zz z2" x="254" y="390">z</text>
+          <text class="zz z3" x="228" y="392">z</text>
+        </g>
+      </g>
+
+      <!-- ambient shadow on floor: subtle scale in sync with bob -->
+      <ellipse class="floor-shadow" cx="200" cy="486" rx="96" ry="14" fill="#6d8bab" opacity=".10"/>
+    </svg>
+  </div>
+  </div>
+</header>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="how section-pad" id="how">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Slik virker det</div>
+      <h2 class="sec-title">Fire deler. <em>Ingen kompliserte greier.</em></h2>
+      <p class="sec-intro">Jon Blund er bevisst enkel. Motor, fjær, vaier og en flertrinns reim samarbeider om å holde en jevn, beroligende gynge i gang, akkurat nok dytt til at bevegelsen aldri dør ut.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card reveal">
+        <div class="how-num">01</div>
+        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="14" width="32" height="20" rx="6"/><circle cx="24" cy="24" r="6"/><path d="M24 20v4l3 2"/></svg>
+        <h3>Motoren</h3>
+        <p>En stillegående girmotor gir korte, rytmiske drag i reimen. Du hører den knapt, men du merker den milde bevegelsen.</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">02</div>
+        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 6v6"/><path d="M20 12c0 4 8 4 8 8s-8 4-8 8 8 4 8 8"/><path d="M24 42v-2"/></svg>
+        <h3>Fjæren</h3>
+        <p>En mykt fjærende oppheng absorberer hvert drag og gjør bevegelsen jevn og trygg. Fjæren gjør jobben lett for motoren.</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">03</div>
+        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 6v22"/><path d="M18 28h12l-2 12h-8z"/><circle cx="24" cy="10" r="3"/></svg>
+        <h3>Vaieren</h3>
+        <p>En sterk stålvaier med karabinkroker fester Jon Blund trygt til en nagle i taket, en dørkarm eller et stativ. Kobles av og på på sekunder.</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">04</div>
+        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8h12M18 18h12M18 28h12M18 38h12"/><path d="M24 8v30"/></svg>
+        <h3>Flertrinns reim</h3>
+        <p>Reimen har flere trinn med karabinkroker, så du kan henge sovepose eller nest fra akkurat den høyden som passer barnet og rommet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODES ================= -->
+<section class="modes section-pad" id="modes">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Tre moduser</div>
+      <h2 class="sec-title">Ett trykk. <em>Så roer det seg.</em></h2>
+      <p class="sec-intro">Bla gjennom modusene med én knapp. Lysringen viser hvilken som er aktiv. Når tiden er ute stopper Jon Blund rolig av seg selv.</p>
+    </div>
+
+    <div class="mode-panel">
+      <div class="mode-list">
+        <div class="mode-item active" data-mode="0" data-readout="10:00" data-leds="1">
+          <div class="mode-time">10 min</div>
+          <div><h4>Kort blund</h4><p>For den raske døsingen før måltid eller trilletur.</p></div>
+        </div>
+        <div class="mode-item" data-mode="1" data-readout="20:00" data-leds="2">
+          <div class="mode-time">20 min</div>
+          <div><h4>Legge seg</h4><p>Nok tid til å sovne dypt før den skrur seg av selv.</p></div>
+        </div>
+        <div class="mode-item" data-mode="2" data-readout="&infin;" data-leds="3">
+          <div class="mode-time">&infin;</div>
+          <div><h4>Uendelig</h4><p>Fortsetter til du slår av. For de lange, urolige nettene.</p></div>
+        </div>
+      </div>
+
+      <div class="mode-visual reveal">
+        <div class="device">
+          <div class="device-ring"></div>
+          <div class="device-readout" id="readout">10:00</div>
+        </div>
+        <div class="device-label" id="modeLabel">Kort blund</div>
+        <div class="mode-leds" id="leds">
+          <span class="led on"></span><span class="led"></span><span class="led"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SPECS ================= -->
+<section class="specs section-pad" id="specs">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Spesifikasjoner</div>
+      <h2 class="sec-title">Bygget for å <em>forsvinne</em> i bakgrunnen.</h2>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-cell reveal"><div class="k">Strøm</div><div class="v">Oppladbart</div><div class="d">USB-C, innebygd litiumbatteri</div></div>
+      <div class="spec-cell reveal"><div class="k">Driftstid</div><div class="v">Inntil 40t</div><div class="d">Ca. 60 blunder per lading</div></div>
+      <div class="spec-cell reveal"><div class="k">Maks last</div><div class="v">25 kg</div><div class="d">Sovepose, nest eller vugge</div></div>
+      <div class="spec-cell reveal"><div class="k">Lydnivå</div><div class="v">&lt; 25 dB</div><div class="d">Stillere enn en hvisking</div></div>
+      <div class="spec-cell reveal"><div class="k">Vekt</div><div class="v">180 g</div><div class="d">Motor, fjær, vaier og reim</div></div>
+      <div class="spec-cell reveal"><div class="k">Sikkerhet</div><div class="v">Fail-safe</div><div class="d">Låser reimen ved strømbrudd</div></div>
+      <div class="spec-cell reveal"><div class="k">Oppheng</div><div class="v">Vaier</div><div class="d">Karabinkroker til nagle, karm eller stativ</div></div>
+      <div class="spec-cell reveal"><div class="k">Styring</div><div class="v">Én knapp</div><div class="d">Tre moduser, lysring­indikator</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOS & DON'TS ================= -->
+<section class="section-pad" id="safety">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Sikkerhet</div>
+      <h2 class="sec-title">Gjør og <em>ikke gjør.</em></h2>
+      <p class="sec-intro">Noen enkle regler gjør Jon Blund trygg for både barn og hjem.</p>
+    </div>
+    <div class="dd-grid">
+      <div class="dd-card dd-do reveal">
+        <h3><span class="dd-ic">&#10003;</span><span>Gjør</span></h3>
+        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Hold alltid lav høyde, heng sengen lavt over gulvet.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Fest i bjelker eller andre punkter du vet er stødige og solide.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Plasser med god avstand til vegger og møbler, og unna trekk.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Sjekk feste, fjær og reim jevnlig for slitasje.</span></div>
+      </div>
+      <div class="dd-card dd-dont reveal">
+        <h3><span class="dd-ic">&#10005;</span><span>Ikke gjør</span></h3>
+        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke heng opp høyt over gulvet.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke overskrid maks totalvekt på 25 kg.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke bruk uten tilsyn når barnet kan rulle eller sette seg opp.</span></div>
+        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke plasser nær varmekilder eller åpen ild.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GALLERY / RENDERS ================= -->
+<section class="section-pad" id="gallery">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Design</div>
+      <h2 class="sec-title">Ren, hvit, <em>nesten usynlig.</em></h2>
+      <p class="sec-intro">Ingen skjermer, ingen blinkende lys. Bare et mykt, rundt objekt i matt hvitt som passer inn hvor som helst i hjemmet.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <!-- big front render -->
+      <div class="render-tile tall reveal">
+        <svg viewBox="0 0 320 460" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Frontrender av Jon Blund-motoren">
+          <defs>
+            <radialGradient id="g-body" cx="38%" cy="30%" r="80%">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef2f8"/><stop offset="1" stop-color="#d3dfec"/>
+            </radialGradient>
+            <filter id="g-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#6d8bab" flood-opacity="0.18"/></filter>
+          </defs>
+          <g filter="url(#g-soft)">
+            <circle cx="160" cy="180" r="118" fill="url(#g-body)" stroke="#ffffff" stroke-width="2"/>
+            <ellipse cx="128" cy="132" rx="48" ry="34" fill="#ffffff" opacity=".55"/>
+            <circle cx="160" cy="180" r="42" fill="#ffffff" stroke="#c3d3e4" stroke-width="1.2"/>
+            <path d="M160 160v20" stroke="#6d8bab" stroke-width="4" stroke-linecap="round"/>
+            <path d="M142 172a22 22 0 1 0 36 0" fill="none" stroke="#6d8bab" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="136" cy="240" r="4" fill="#8ba9c9"/><circle cx="160" cy="245" r="4" fill="#d3dfec"/><circle cx="184" cy="240" r="4" fill="#d3dfec"/>
+          </g>
+          <rect x="150" y="42" width="20" height="8" rx="4" fill="#c3d3e4"/>
+          <path d="M160 50 q6 6 0 12 q-6 6 0 12" fill="none" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="160" cy="430" rx="90" ry="12" fill="#6d8bab" opacity=".1"/>
+        </svg>
+        <span class="caption">Frontprofil i matt hvit</span>
+      </div>
+
+      <!-- USB-C detail -->
+      <div class="render-tile reveal">
+        <svg viewBox="0 0 300 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Detalj av USB-C ladeport">
+          <defs><linearGradient id="d-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde7f0"/></linearGradient></defs>
+          <rect x="60" y="70" width="180" height="90" rx="45" fill="url(#d-body)" stroke="#e3eaf3" stroke-width="1.5"/>
+          <ellipse cx="110" cy="95" rx="30" ry="14" fill="#ffffff" opacity=".6"/>
+          <rect x="200" y="106" width="26" height="18" rx="9" fill="#8ba9c9"/>
+          <rect x="204" y="111" width="18" height="8" rx="4" fill="#ffffff"/>
+          <ellipse cx="150" cy="182" rx="70" ry="9" fill="#6d8bab" opacity=".08"/>
+        </svg>
+        <span class="caption">USB-C, én kabel</span>
+      </div>
+
+      <!-- in-room render -->
+      <div class="render-tile reveal">
+        <svg viewBox="0 0 300 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jon Blund montert i et rom over en vugge">
+          <defs>
+            <linearGradient id="r-strap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6d3e2"/><stop offset="1" stop-color="#9fb4cb"/></linearGradient>
+            <linearGradient id="r-nest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/></linearGradient>
+          </defs>
+          <rect x="132" y="18" width="36" height="8" rx="4" fill="#cfdbe8"/>
+          <circle cx="150" cy="52" r="20" fill="#ffffff" stroke="#d3dfec" stroke-width="1.4"/>
+          <circle cx="150" cy="52" r="7" fill="#eef2f8" stroke="#c3d3e4" stroke-width="1"/>
+          <path d="M124 66 C124 120 124 150 150 162" fill="none" stroke="url(#r-strap)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M176 66 C176 120 176 150 150 162" fill="none" stroke="url(#r-strap)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M104 166 q46 26 92 0 q-8 34 -46 34 q-38 0 -46 -34Z" fill="url(#r-nest)" stroke="#d5e0ec" stroke-width="1.4"/>
+          <ellipse cx="150" cy="166" rx="46" ry="11" fill="#ffffff" stroke="#e3eaf3" stroke-width="1.2"/>
+          <ellipse cx="150" cy="210" rx="60" ry="8" fill="#6d8bab" opacity=".08"/>
+        </svg>
+        <span class="caption">Montert over vugge</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SHOP / CONFIGURATOR ================= -->
+<section class="shop section-pad" id="shop">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Sett sammen din Jon Blund</div>
+      <h2 class="sec-title">Velg farge, oppheng <em>og tilbehør.</em></h2>
+      <p class="sec-intro">Bygg pakken som passer hjemmet ditt. Alt legges rett i handlekurven og går til sikker betaling.</p>
+    </div>
+
+    <div class="shop-grid">
+      <!-- Configurator card -->
+      <div class="pcard reveal">
+        <div class="pcard-visual">
+          <svg viewBox="0 0 240 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jon Blund motor">
+            <defs>
+              <radialGradient id="cfg-body" cx="38%" cy="32%" r="80%">
+                <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef2f8"/><stop offset="1" stop-color="#d3dfec"/>
+              </radialGradient>
+              <filter id="cfg-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#6d8bab" flood-opacity="0.16"/></filter>
+            </defs>
+            <g filter="url(#cfg-soft)">
+              <circle id="cfg-shell" cx="120" cy="100" r="72" fill="url(#cfg-body)" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="98" cy="72" rx="30" ry="20" fill="#ffffff" opacity=".5"/>
+              <circle cx="120" cy="100" r="26" fill="#ffffff" stroke="#c3d3e4" stroke-width="1.2"/>
+              <path d="M120 88v13" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
+              <path d="M108 96a14 14 0 1 0 24 0" fill="none" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="ptag">Komplett sett</div>
+        <h3>Jon Blund</h3>
+        <p class="pdesc">Motor, fjær, vaier med karabinkroker og flertrinns reim. Alt du trenger for å henge opp og gynge.</p>
+
+        <div class="opt-label">Farge</div>
+        <div class="swatches" id="swatches">
+          <div class="swatch sel" data-color="Skyhvit" style="background:radial-gradient(circle at 38% 32%,#ffffff,#e4eaf3)" title="Skyhvit"></div>
+          <div class="swatch" data-color="Beige" style="background:radial-gradient(circle at 38% 32%,#fdfbf6,#e2d3b8)" title="Beige"></div>
+          <div class="swatch" data-color="Tåkegrå" style="background:radial-gradient(circle at 38% 32%,#f0f2f5,#b9c2cf)" title="Tåkegrå"></div>
+          <div class="swatch" data-color="Nattblå" style="background:radial-gradient(circle at 38% 32%,#8ba9c9,#4f6580)" title="Nattblå"></div>
+        </div>
+
+        <div class="opt-label">Reimlengde</div>
+        <div class="seg" id="lenSeg">
+          <button class="sel" data-len="Standard (opptil 2 m)" data-add="0">Standard</button>
+          <button data-len="Lang (opptil 3 m)" data-add="200">Lang (+200 kr)</button>
+        </div>
+
+        <div class="addon" id="addonMount">
+          <div class="box"></div>
+          <div class="info">
+            <h5>Legg til bordfeste</h5>
+            <p>C-klemme i stål for feste rett på bordkant</p>
+          </div>
+          <div class="ap">+399 kr</div>
+        </div>
+
+        <div class="price-row">
+          <span class="pl">Din pris</span>
+          <span class="pv" id="totalPrice">1 299 kr</span>
+        </div>
+        <div id="buy-nooma"></div>
+        <a href="#" class="btn-primary" id="buy-nooma-fallback" onclick="return false">Legg i handlekurv</a>
+      </div>
+
+      <!-- Tabletop mount standalone card -->
+      <div class="pcard reveal">
+        <div class="pcard-visual">
+          <svg viewBox="0 0 240 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bordfeste i stål, C-klemme">
+            <defs>
+              <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f4f6f9"/><stop offset=".5" stop-color="#c9d3df"/><stop offset="1" stop-color="#aab7c6"/>
+              </linearGradient>
+              <filter id="mnt-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#6d8bab" flood-opacity="0.18"/></filter>
+            </defs>
+            <!-- table edge -->
+            <rect x="40" y="96" width="150" height="16" rx="3" fill="#eef2f8" stroke="#dde7f0" stroke-width="1"/>
+            <rect x="40" y="112" width="150" height="6" rx="2" fill="#dde7f0"/>
+            <!-- C-clamp in steel -->
+            <g filter="url(#mnt-soft)">
+              <path d="M150 60
+                       h26 a10 10 0 0 1 10 10
+                       v70 a10 10 0 0 1 -10 10
+                       h-26 a8 8 0 0 1 0 -16 h18 v-58 h-18 a8 8 0 0 1 0 -16 Z"
+                    fill="url(#steel)" stroke="#9fb4cb" stroke-width="1.4"/>
+              <!-- clamp screw -->
+              <rect x="158" y="140" width="10" height="26" rx="4" fill="#c9d3df" stroke="#9fb4cb" stroke-width="1"/>
+              <circle cx="163" cy="170" r="8" fill="#aab7c6" stroke="#8ba9c9" stroke-width="1"/>
+              <!-- hanging eye at top -->
+              <circle cx="186" cy="52" r="9" fill="none" stroke="#9fb4cb" stroke-width="3"/>
+            </g>
+          </svg>
+        </div>
+        <div class="ptag">Tilbehør</div>
+        <h3>Jon Blund Bordfeste</h3>
+        <p class="pdesc">Et C-formet stålfeste som klemmes fast på en bordkant, så Jon Blund kan henge fra kun ett bord. Ingen boring, ingen takkrok. Perfekt på reise eller i leiligheten.</p>
+
+        <div class="price-row">
+          <span class="pl">Pris</span>
+          <span class="pv">399 kr</span>
+        </div>
+        <div id="buy-mount"></div>
+        <a href="#" class="btn-primary" id="buy-mount-fallback" onclick="return false">Legg i handlekurv</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta" id="order">
+  <div class="reveal">
+    <h2>Gi natten <em>tilbake</em> til hele familien.</h2>
+    <p>Jon Blund lanseres til høsten. Forhåndsbestill nå og få 20 % rabatt på første serie.</p>
+
+    <!-- Shopify Buy Button monteres her. Fyll inn butikk-detaljer i skriptet nederst. -->
+    <div id="shopify-buy-button"></div>
+
+    <!-- Reserveknapp: vises hvis Shopify ikke er konfigurert ennå -->
+    <a href="#" class="btn-primary" id="fallback-buy" onclick="return false">Forhåndsbestill</a>
+
+    <div class="cta-note">Fri frakt i Norge · 60 dagers åpent kjøp · 2 års garanti</div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <div class="logo">jon<span>blund</span></div>
+      <p>Gi natten tilbake til hele familien. Motor, vaier og reim, resten bestemmer du.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Produkt</h5>
+      <a href="#how">Slik virker det</a><a href="#modes">Moduser</a><a href="#specs">Spesifikasjoner</a><a href="#gallery">Design</a>
+    </div>
+    <div class="foot-col">
+      <h5>Selskap</h5>
+      <a href="#" onclick="return false">Om oss</a><a href="#" onclick="return false">Bærekraft</a><a href="#" onclick="return false">Kontakt</a>
+    </div>
+    <div class="foot-col">
+      <h5>Hjelp</h5>
+      <a href="#" onclick="return false">Sikkerhet</a><a href="#" onclick="return false">Garanti</a><a href="#" onclick="return false">Vanlige spørsmål</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Jon Blund AS</span>
+    <span>Personvern · Vilkår</span>
+  </div>
+</footer>
+
+<script>
+// nav scroll state
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20));
+
+// hamburger menu (mobile)
+const menuBtn=document.querySelector('.menu-btn');
+const navLinks=document.querySelector('.nav-links');
+menuBtn.addEventListener('click',()=>navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navLinks.classList.remove('open')));
+
+/* ---- Norsk / English ---- */
+const I18N=[
+["Slik virker det","How it works"],
+["Moduser","Modes"],
+["Spesifikasjoner","Specifications"],
+["Kjøp","Buy"],
+["Nylansering · Forhåndsbestill nå","New launch · Pre-order now"],
+["Jon Blund festes med vaier og karabinkrok der du vil, og reimen justeres i flere trinn til riktig høyde. Den milde gyngingen gjør resten.","Jon Blund attaches with a wire and carabiner wherever you like, and the strap adjusts in steps to just the right height. The gentle rocking does the rest."],
+["Forhåndsbestill","Pre-order"],
+["Se hvordan \u2192","See how \u2192"],
+["gynge\u00admoduser","rocking modes"],
+["på én lading","per charge"],
+["totalvekt","max weight"],
+["Fire deler.","Four parts."],
+["Ingen kompliserte greier.","Nothing complicated."],
+["Jon Blund er bevisst enkel. Motor, fjær, vaier og en flertrinns reim samarbeider om å holde en jevn, beroligende gynge i gang, akkurat nok dytt til at bevegelsen aldri dør ut.","Jon Blund is deliberately simple. Motor, spring, wire and a multi-step strap work together to keep a steady, soothing rocking going, just enough push so the motion never dies out."],
+["Motoren","The motor"],
+["En stillegående girmotor gir korte, rytmiske drag i reimen. Du hører den knapt, men du merker den milde bevegelsen.","A quiet gear motor gives short, rhythmic pulls on the strap. You barely hear it, but you feel the gentle motion."],
+["Fjæren","The spring"],
+["En mykt fjærende oppheng absorberer hvert drag og gjør bevegelsen jevn og trygg. Fjæren gjør jobben lett for motoren.","A softly sprung mount absorbs every pull and keeps the motion smooth and safe. The spring makes the motor's job easy."],
+["Vaieren","The wire"],
+["En sterk stålvaier med karabinkroker fester Jon Blund trygt til en nagle i taket, en dørkarm eller et stativ. Kobles av og på på sekunder.","A strong steel wire with carabiners fastens Jon Blund securely to a ceiling hook, a door frame or a stand. Clips on and off in seconds."],
+["Flertrinns reim","Multi-step strap"],
+["Reimen har flere trinn med karabinkroker, så du kan henge sovepose eller nest fra akkurat den høyden som passer barnet og rommet.","The strap has several steps with carabiners, so you can hang a sleeping bag or nest at exactly the height that suits your child and room."],
+["Tre moduser","Three modes"],
+["Ett trykk.","One press."],
+["Så roer det seg.","Then calm settles in."],
+["Bla gjennom modusene med én knapp. Lysringen viser hvilken som er aktiv. Når tiden er ute stopper Jon Blund rolig av seg selv.","Cycle through the modes with one button. The light ring shows which is active. When time is up, Jon Blund calmly stops on its own."],
+["Kort blund","Quick nap"],
+["For den raske døsingen før måltid eller trilletur.","For a quick doze before a meal or a stroll."],
+["Legge seg","Bedtime"],
+["Nok tid til å sovne dypt før den skrur seg av selv.","Enough time to fall deeply asleep before it switches itself off."],
+["Uendelig","Endless"],
+["Fortsetter til du slår av. For de lange, urolige nettene.","Keeps going until you switch it off. For the long, restless nights."],
+["Bygget for å","Built to"],
+["forsvinne","disappear"],
+["i bakgrunnen.","into the background."],
+["Strøm","Power"],
+["Oppladbart","Rechargeable"],
+["USB-C, innebygd litiumbatteri","USB-C, built-in lithium battery"],
+["Driftstid","Runtime"],
+["Inntil 40t","Up to 40h"],
+["Ca. 60 blunder per lading","About 60 naps per charge"],
+["Maks last","Max load"],
+["Sovepose, nest eller vugge","Sleeping bag, nest or cradle"],
+["Lydnivå","Noise level"],
+["Stillere enn en hvisking","Quieter than a whisper"],
+["Vekt","Weight"],
+["Motor, fjær, vaier og reim","Motor, spring, wire and strap"],
+["Sikkerhet","Safety"],
+["Låser reimen ved strømbrudd","Locks the strap on power loss"],
+["Oppheng","Mounting"],
+["Vaier","Wire"],
+["Karabinkroker til nagle, karm eller stativ","Carabiners for hooks, frames or stands"],
+["Styring","Control"],
+["Én knapp","One button"],
+["Tre moduser, lysring\u00adindikator","Three modes, light-ring indicator"],
+["Ren, hvit,","Clean, white,"],
+["nesten usynlig.","almost invisible."],
+["Ingen skjermer, ingen blinkende lys. Bare et mykt, rundt objekt i matt hvitt som passer inn hvor som helst i hjemmet.","No screens, no blinking lights. Just a soft, round object in matte white that fits in anywhere at home."],
+["Frontprofil i matt hvit","Front profile in matte white"],
+["USB-C, én kabel","USB-C, one cable"],
+["Montert over vugge","Mounted above a cradle"],
+["Sett sammen din Jon Blund","Build your Jon Blund"],
+["Velg farge, oppheng","Choose colour, mounting"],
+["og tilbehør.","and accessories."],
+["Bygg pakken som passer hjemmet ditt. Alt legges rett i handlekurven og går til sikker betaling.","Build the bundle that suits your home. Everything goes straight into the cart and on to secure checkout."],
+["Komplett sett","Complete kit"],
+["Motor, fjær, vaier med karabinkroker og flertrinns reim. Alt du trenger for å henge opp og gynge.","Motor, spring, wire with carabiners and multi-step strap. Everything you need to hang up and rock."],
+["Farge","Colour"],
+["Reimlengde","Strap length"],
+["Lang (+200 kr)","Long (+200 kr)"],
+["Legg til bordfeste","Add table mount"],
+["C-klemme i stål for feste rett på bordkant","Steel C-clamp for mounting straight onto a table edge"],
+["Din pris","Your price"],
+["Legg i handlekurv","Add to cart"],
+["Tilbehør","Accessory"],
+["Jon Blund Bordfeste","Jon Blund Table Mount"],
+["Et C-formet stålfeste som klemmes fast på en bordkant, så Jon Blund kan henge fra kun ett bord. Ingen boring, ingen takkrok. Perfekt på reise eller i leiligheten.","A C-shaped steel mount that clamps onto a table edge, so Jon Blund can hang from just a table. No drilling, no ceiling hook. Perfect for travel or apartments."],
+["Pris","Price"],
+["Jon Blund lanseres til høsten. Forhåndsbestill nå og få 20 % rabatt på første serie.","Jon Blund launches this autumn. Pre-order now and get 20% off the first series."],
+["Fri frakt i Norge · 60 dagers åpent kjøp · 2 års garanti","Free shipping in Norway · 60-day returns · 2-year warranty"],
+["Gi natten tilbake til hele familien. Motor, vaier og reim, resten bestemmer du.","Give the night back to the whole family. Motor, wire and strap, the rest is up to you."],
+["Produkt","Product"],
+["Selskap","Company"],
+["Om oss","About us"],
+["Bærekraft","Sustainability"],
+["Kontakt","Contact"],
+["Hjelp","Help"],
+["Garanti","Warranty"],
+["Vanlige spørsmål","FAQ"],
+["Personvern · Vilkår","Privacy · Terms"],
+["Gjør og","Do and"],
+["ikke gjør.","don't."],
+["Noen enkle regler gjør Jon Blund trygg for både barn og hjem.","A few simple rules keep Jon Blund safe for both child and home."],
+["Gjør","Do"],
+["Ikke gjør","Don't"],
+["Hold alltid lav høyde, heng sengen lavt over gulvet.","Always keep it low, hang the bed close to the floor."],
+["Fest i bjelker eller andre punkter du vet er stødige og solide.","Anchor into beams or other points you know are steady and solid."],
+["Plasser med god avstand til vegger og møbler, og unna trekk.","Place it well clear of walls and furniture, and away from draughts."],
+["Sjekk feste, fjær og reim jevnlig for slitasje.","Check the mount, spring and strap regularly for wear."],
+["Ikke heng opp høyt over gulvet.","Never hang it high above the floor."],
+["Ikke overskrid maks totalvekt på 25 kg.","Never exceed the max total weight of 25 kg."],
+["Ikke bruk uten tilsyn når barnet kan rulle eller sette seg opp.","Never use it unsupervised once your child can roll or sit up."],
+["Ikke plasser nær varmekilder eller åpen ild.","Never place it near heat sources or open flames."],
+["Gi natten","Give the night"],
+["tilbake","back"],
+["til hele familien.","to the whole family."]
+];
+const NO2EN=new Map(I18N), EN2NO=new Map(I18N.map(p=>[p[1],p[0]]));
+const heroH1=document.querySelector('.hero h1');
+const H1_NO=heroH1.innerHTML;
+const H1_EN='<span class="word" style="animation-delay:.1s">Give</span> <span class="word" style="animation-delay:.17s">the</span> <span class="word" style="animation-delay:.24s">night</span> <span class="word" style="animation-delay:.31s">back</span><br><span class="word" style="animation-delay:.38s">to</span> <span class="word" style="animation-delay:.45s"><em>the whole family.</em></span>';
+const TITLE_NO=document.title, TITLE_EN='Jon Blund \u2014 Give the night back to the whole family';
+function swapText(map){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  let n;
+  while(n=w.nextNode()){
+    const t=n.nodeValue.trim();
+    if(t && map.has(t)) n.nodeValue=n.nodeValue.replace(t,map.get(t));
+  }
+}
+let siteLang='no';
+const langBtn=document.getElementById('langToggle');
+langBtn.addEventListener('click',()=>{
+  if(siteLang==='no'){
+    swapText(NO2EN); heroH1.innerHTML=H1_EN; document.title=TITLE_EN;
+    document.documentElement.lang='en'; langBtn.textContent='NO'; siteLang='en';
+  }else{
+    swapText(EN2NO); heroH1.innerHTML=H1_NO; document.title=TITLE_NO;
+    document.documentElement.lang='no'; langBtn.textContent='EN'; siteLang='no';
+  }
+});
+
+// reveal on scroll
+const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.14});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// mode selector
+const items=document.querySelectorAll('.mode-item');
+const readout=document.getElementById('readout');
+const label=document.getElementById('modeLabel');
+const leds=document.querySelectorAll('#leds .led');
+items.forEach(item=>{
+  item.addEventListener('click',()=>{
+    items.forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    readout.innerHTML=item.dataset.readout;
+    label.textContent=item.querySelector('h4').textContent;
+    const n=parseInt(item.dataset.leds,10);
+    leds.forEach((l,i)=>l.classList.toggle('on',i<n));
+  });
+});
+
+/* ---- CONFIGURATOR (farge, reimlengde, tilbehør, live pris) ---- */
+const CFG = {
+  base: 1299,
+  color: 'Skyhvit',
+  len: 'Standard (opptil 2 m)',
+  lenAdd: 0,
+  mount: false,
+  mountPrice: 399
+};
+const shell = document.getElementById('cfg-shell');
+const totalEl = document.getElementById('totalPrice');
+
+function nok(n){ return n.toLocaleString('nb-NO') + ' kr'; }
+function updateTotal(){
+  const t = CFG.base + CFG.lenAdd + (CFG.mount ? CFG.mountPrice : 0);
+  totalEl.textContent = nok(t);
+}
+
+// color swatches
+const cfgVisual = shell ? shell.closest('.pcard-visual') : null;
+const VISUAL_BG = {
+  'Skyhvit':'radial-gradient(130% 120% at 68% 22%,#e4eaf3,#fafbfc 72%,#ffffff)',
+  'Beige':  'radial-gradient(130% 120% at 68% 22%,#eadfca,#f7f2e9 72%,#fdfbf6)',
+  'Tåkegrå':'radial-gradient(130% 120% at 68% 22%,#d8dde4,#f2f4f7 72%,#ffffff)',
+  'Nattblå':'radial-gradient(130% 120% at 68% 22%,#b7c9dd,#e4eaf3 72%,#f4f7fa)'
+};
+document.querySelectorAll('#swatches .swatch').forEach(sw=>{
+  sw.addEventListener('click',()=>{
+    document.querySelectorAll('#swatches .swatch').forEach(s=>s.classList.remove('sel'));
+    sw.classList.add('sel');
+    CFG.color = sw.dataset.color;
+    // tint render shell and visual background to match selected color
+    const c = sw.dataset.color;
+    if(shell){
+      if(c==='Nattblå') shell.setAttribute('fill','#8ba9c9');
+      else if(c==='Tåkegrå') shell.setAttribute('fill','#c4ccd6');
+      else if(c==='Beige') shell.setAttribute('fill','#e6d8bf');
+      else shell.setAttribute('fill','url(#cfg-body)');
+    }
+    if(cfgVisual && VISUAL_BG[c]) cfgVisual.style.background = VISUAL_BG[c];
+  });
+});
+
+// strap length segmented control
+document.querySelectorAll('#lenSeg button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#lenSeg button').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    CFG.len = btn.dataset.len;
+    CFG.lenAdd = parseInt(btn.dataset.add,10);
+    updateTotal();
+  });
+});
+
+// tabletop mount add-on toggle
+const addonEl = document.getElementById('addonMount');
+addonEl.addEventListener('click',()=>{
+  CFG.mount = !CFG.mount;
+  addonEl.classList.toggle('sel',CFG.mount);
+  updateTotal();
+});
+
+updateTotal();
+
+/* =========================================================
+   SHOPIFY BUY BUTTON — KOBLE OPP BUTIKKEN DIN
+   ---------------------------------------------------------
+   Slik gjør du siden klar til salg via Shopify:
+
+   1. Logg inn på Shopify, gå til Innstillinger, deretter
+      Apper og salgskanaler, og legg til salgskanalen "Buy Button".
+   2. Opprett produktene i Shopify og noter PRODUKT-ID for hver
+      (tallet bak /products/ i admin-URL-en):
+        - "Jon Blund" (komplett sett) med varianter for Farge og
+          Reimlengde, slik at valgene på siden matcher.
+        - "Jon Blund Bordfeste" til 399 kr.
+   3. Under Apper, deretter Utvikle apper, lag en app og hent en
+      "Storefront API access token".
+   4. Fyll inn verdiene nedenfor. Da bytter knappene automatisk
+      til ekte Shopify-kjøpsknapper med felles handlekurv.
+   ========================================================= */
+const SHOPIFY_CONFIG = {
+  domain:          'DIN-BUTIKK.myshopify.com',   // f.eks. jonblund.myshopify.com
+  storefrontToken: 'DIN_STOREFRONT_API_TOKEN',
+  noomaProductId:  'NOOMA_PRODUKT_ID',           // komplett sett
+  mountProductId:  'BORDFESTE_PRODUKT_ID'        // Jon Blund Bordfeste, 399 kr
+};
+
+function isConfigured(c){
+  const bad = v => !v || /^(DIN|DITT|NOOMA_|BORDFESTE_)/.test(String(v)) || v==='DIN_STOREFRONT_API_TOKEN';
+  return !bad(c.domain) && !bad(c.storefrontToken) && !bad(c.noomaProductId) && !bad(c.mountProductId);
+}
+
+const btnStyle = {
+  'background-color':'#1a1d24','border-radius':'100px',
+  'font-family':'Manrope, sans-serif','font-weight':'600',
+  'padding':'15px 30px',':hover':{'background-color':'#6d8bab'}
+};
+const cartCfg = {
+  text:{ title:'Handlekurv', total:'Sum', button:'Til betaling', empty:'Handlekurven er tom' },
+  styles:{ button:btnStyle }
+};
+
+function loadShopify(){
+  if(!isConfigured(SHOPIFY_CONFIG)) return; // behold reserveknappene til alt er fylt inn
+  ['fallback-buy','buy-nooma-fallback','buy-mount-fallback']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+
+  const SDK='https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+  const boot=()=>{
+    const client=ShopifyBuy.buildClient({
+      domain:SHOPIFY_CONFIG.domain,
+      storefrontAccessToken:SHOPIFY_CONFIG.storefrontToken
+    });
+    ShopifyBuy.UI.onReady(client).then(ui=>{
+      const money='kr%20%7B%7Bamount_no_decimals%7D%7D';
+      const productOpts = label => ({
+        product:{ iframe:false, contents:{img:false,title:false,price:false},
+          text:{ button:label }, styles:{ button:btnStyle } },
+        cart:cartCfg,
+        toggle:{ styles:{ toggle:{'background-color':'#1a1d24',':hover':{'background-color':'#6d8bab'}} } }
+      });
+
+      // Komplett sett (varianter Farge + Reimlengde styres i Shopify)
+      ui.createComponent('product',{ id:SHOPIFY_CONFIG.noomaProductId,
+        node:document.getElementById('buy-nooma'), moneyFormat:money, options:productOpts('Legg i handlekurv') });
+
+      // Bordfeste (eget produkt, 399 kr)
+      ui.createComponent('product',{ id:SHOPIFY_CONFIG.mountProductId,
+        node:document.getElementById('buy-mount'), moneyFormat:money, options:productOpts('Legg i handlekurv') });
+
+      // Forhåndsbestill-knappen nederst peker til samme sett
+      ui.createComponent('product',{ id:SHOPIFY_CONFIG.noomaProductId,
+        node:document.getElementById('shopify-buy-button'), moneyFormat:money, options:productOpts('Forhåndsbestill nå') });
+    });
+  };
+  if(window.ShopifyBuy && window.ShopifyBuy.UI){ boot(); }
+  else{ const s=document.createElement('script'); s.async=true; s.src=SDK; s.onload=boot; document.head.appendChild(s); }
+}
+loadShopify();
+</script>
+</body>
+</html>
