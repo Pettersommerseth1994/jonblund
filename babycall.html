@@ -186,7 +186,7 @@ body.managing .contact .mark{display:none}
 }
 .empty p{font-size:14px;color:var(--slate);max-width:250px;margin:0 auto}
 
-.contact-actions{display:flex;gap:9px;margin-top:14px}
+.contact-actions{display:flex;margin-top:14px}
 .btn-soft{
   flex:1;border:1px solid var(--line);background:var(--white);border-radius:100px;
   padding:12px 10px;font-family:var(--body);font-size:13.5px;font-weight:600;color:var(--ink);
@@ -451,23 +451,14 @@ body.dim .nightmark{opacity:1}
     <div class="contact-list" id="contactList"></div>
 
     <div class="empty hidden" id="emptyState">
-      <p>No one to call yet. Pull in a contact or type a number — Jon Blund remembers it for next time.</p>
+      <p>No one to call yet. Add a number and Jon Blund remembers it for next time.</p>
     </div>
 
     <div class="contact-actions">
-      <button class="btn-soft" id="pickBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M16 19v-1.5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3V19"/><circle cx="10" cy="7.5" r="3"/><path d="M18.5 8v5M21 10.5h-5"/></svg>
-        Contacts
-      </button>
       <button class="btn-soft" id="addBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 14v2.6a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 6.2 2 2 0 0 1 6.5 4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Add number
       </button>
-    </div>
-
-    <div class="note note-info" id="pickerNote">
-      <span class="ic">i</span>
-      <span id="pickerNoteText"></span>
     </div>
   </section>
 
@@ -778,8 +769,6 @@ let dimTimer = null;
 const CIRC = 653.45;
 
 /* ---------------- contacts ---------------- */
-const pickerSupported = ('contacts' in navigator) && ('ContactsManager' in window) && window.isSecureContext;
-
 function normalise(raw){
   let s = String(raw||'').replace(/[^\d+]/g,'');
   if (s.indexOf('+') > 0) s = s.replace(/\+/g,'');
@@ -852,33 +841,10 @@ function renderContacts(){
   paint();
 }
 
-/* ---------------- contact picker ---------------- */
-async function openPicker(){
-  if (!pickerSupported) { openSheet(true); return; }
-  try {
-    const picked = await navigator.contacts.select(['name','tel'], { multiple: true });
-    let n = 0;
-    picked.forEach(p => {
-      const name = (p.name && p.name[0]) || '';
-      (p.tel || []).slice(0,2).forEach((t, i) => {
-        addContact(i === 0 ? name : name + ' (' + (i+1) + ')', t);
-        n++;
-      });
-    });
-    renderContacts();
-    if (n) notice(n + (n === 1 ? ' contact added.' : ' contacts added.'));
-  } catch(e){
-    if (e && e.name !== 'AbortError') openSheet(true);
-  }
-}
-
 /* ---------------- sheet ---------------- */
 let sheetOpen = false;
-function openSheet(explain){
+function openSheet(){
   sheetOpen = true;
-  $('sheetSub').textContent = explain && !pickerSupported
-    ? 'This browser will not hand out your address book, so type the number once — it is saved on this phone.'
-    : 'Jon Blund saves this on the phone so it is one tap next time.';
   $('sheetErr').textContent = '';
   $('scrim').classList.add('open');
   $('sheet').classList.add('open');
@@ -943,7 +909,7 @@ async function startMic(){
   lastFrame = performance.now();
   loop();
 
-  if (!contacts.length) setTimeout(() => { if (!contacts.length) openSheet(false); }, 900);
+  if (!contacts.length) setTimeout(() => { if (!contacts.length) openSheet(); }, 900);
 }
 
 function stopMic(){
@@ -1237,8 +1203,7 @@ $('secondaryBtn').addEventListener('click', () => {
   else triggerCall();
 });
 $('orb').addEventListener('click', () => { if (state === 'off' || state === 'error') startMic(); });
-$('pickBtn').addEventListener('click', openPicker);
-$('addBtn').addEventListener('click', () => openSheet(false));
+$('addBtn').addEventListener('click', openSheet);
 $('manageBtn').addEventListener('click', () => {
   const on = document.body.classList.toggle('managing');
   $('manageBtn').textContent = on ? 'Done' : 'Manage';
@@ -1268,10 +1233,6 @@ function wireSeg(el, value, onPick){
 }
 wireSeg($('sensSeg'), sensitivity, v => { sensitivity = v; save(KEY.sens, v); acc = 0; paint(); });
 wireSeg($('delaySeg'), cryDelay,   v => { cryDelay = parseInt(v,10); save(KEY.delay, cryDelay); acc = 0; paint(); });
-
-$('pickerNoteText').innerHTML = pickerSupported
-  ? '<b>Contacts</b> opens your address book — pick one or several, and they stay saved on this phone.'
-  : '<b>This browser keeps contacts private</b> (iPhone and desktop both do). Type the number once and it is one tap from then on.';
 
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => { if (state === 'cooldown' || state === 'incall' || state === 'off') paint(); }, 500);
@@ -1349,7 +1310,7 @@ const PRICE = {
   perCall:        4.90,
   includedMin:    2,
   perExtraMin:    1.90,
-  monthlyCap:     99,
+  monthlyCap:     399,
   firstCallFree:  true
 };
 
