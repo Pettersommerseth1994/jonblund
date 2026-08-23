@@ -302,8 +302,14 @@ body.dim .nightmark{opacity:1}
   display:flex;flex-direction:column;
 }
 .hiw.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.hiw-head{
+  display:flex;align-items:center;justify-content:center;
+  padding:19px 54px 17px;border-bottom:1px solid var(--line);
+  background:var(--white);position:relative;z-index:2;flex:none;
+}
+.hiw-title{font-family:var(--display);font-weight:400;font-size:19.5px;letter-spacing:-.012em}
 .hiw-close{
-  position:absolute;top:12px;right:14px;z-index:3;
+  position:absolute;top:14px;right:14px;z-index:3;
   border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
   width:30px;height:30px;border-radius:50%;
   font-size:19px;line-height:1;color:var(--slate);cursor:pointer;
@@ -315,7 +321,7 @@ body.dim .nightmark{opacity:1}
 .hiw-step{min-width:100%;display:flex;flex-direction:column}
 .hiw-art{
   background:radial-gradient(130% 120% at 68% 16%,var(--cloud-2),var(--paper) 68%,var(--white));
-  border-bottom:1px solid var(--line);padding:44px 16px 10px;
+  border-bottom:1px solid var(--line);padding:20px 16px 10px;
 }
 .hiw-art svg{width:100%;height:auto;display:block}
 .hiw-copy{padding:24px 26px 6px;text-align:center}
@@ -463,6 +469,7 @@ body.dim .nightmark{opacity:1}
 
 <div class="hiw-scrim" id="hiwScrim"></div>
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="How Jon Blund works">
+  <div class="hiw-head"><span class="hiw-title">How it works</span></div>
   <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -863,6 +870,15 @@ async function startMic(){
 
   await requestWakeLock();
 
+  // iOS only opens an audio path from a user gesture, and turning the
+  // microphone on is the last one we get before the phone is put down.
+  // Warm the line up here so the cry only has to dial.
+  const tel = window.JONBLUND_TELEPHONY;
+  if (tel && typeof tel.prepare === 'function'){
+    Promise.resolve(tel.prepare()).catch(() =>
+      notice('Could not reach the phone line. Detection still works.', 6000));
+  }
+
   floorDb = -70;
   calSamples = [];
   calibrateStartedAt = performance.now();
@@ -880,6 +896,8 @@ function stopMic(){
   analyser = srcNode = null;
   acc = 0; level = 0; smoothLevel = 0;
   releaseWakeLock();
+  const tel = window.JONBLUND_TELEPHONY;
+  if (tel && typeof tel.release === 'function'){ try { tel.release(); } catch(e){} }
   undim();
   setState('off');
 }
@@ -993,7 +1011,8 @@ async function triggerCall(){
 }
 
 function endCall(){
-  if (activeCall){ try { activeCall.hangUp(); } catch(e){} activeCall = null; }
+  const c = activeCall; activeCall = null;   // clear first: hangUp() can re-enter via onEnded
+  if (c){ try { c.hangUp(); } catch(e){} }
   acc = 0;
   cooldownUntil = performance.now() + COOLDOWN_MS;
   setState('cooldown');
