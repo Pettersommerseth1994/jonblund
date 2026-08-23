@@ -281,6 +281,76 @@ body.dim .nightmark{opacity:1}
 .nightmark .nm-t{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#39424f}
 .nightmark .nm-s{font-size:11px;color:#252c36;margin-top:8px}
 
+
+/* ---------- HOW IT WORKS ---------- */
+.hiw-open{
+  flex:0 0 auto;width:auto;margin:26px auto 0;padding:12px 26px;
+  opacity:0;animation:rise .8s .75s forwards;transform:translateY(16px);
+}
+.hiw-scrim{
+  position:fixed;inset:0;background:rgba(26,29,36,.38);backdrop-filter:blur(5px);
+  opacity:0;pointer-events:none;transition:opacity .35s;z-index:90;
+}
+.hiw-scrim.open{opacity:1;pointer-events:auto}
+.hiw{
+  position:fixed;left:50%;top:50%;z-index:91;
+  width:calc(100% - 34px);max-width:398px;max-height:90dvh;
+  transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;
+  transition:opacity .4s cubic-bezier(.16,1,.3,1),transform .4s cubic-bezier(.16,1,.3,1);
+  background:var(--white);border-radius:30px;overflow:hidden;
+  box-shadow:0 40px 90px rgba(26,29,36,.24);
+  display:flex;flex-direction:column;
+}
+.hiw.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.hiw-close{
+  position:absolute;top:12px;right:14px;z-index:3;
+  border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
+  width:30px;height:30px;border-radius:50%;
+  font-size:19px;line-height:1;color:var(--slate);cursor:pointer;
+  display:grid;place-items:center;transition:color .25s,background .25s;
+}
+.hiw-close:hover{color:var(--ink);background:var(--white)}
+.hiw-view{overflow:hidden;flex:1;min-height:0}
+.hiw-track{display:flex;transition:transform .48s cubic-bezier(.16,1,.3,1);height:100%}
+.hiw-step{min-width:100%;display:flex;flex-direction:column}
+.hiw-art{
+  background:radial-gradient(130% 120% at 68% 16%,var(--cloud-2),var(--paper) 68%,var(--white));
+  border-bottom:1px solid var(--line);padding:44px 16px 10px;
+}
+.hiw-art svg{width:100%;height:auto;display:block}
+.hiw-copy{padding:24px 26px 6px;text-align:center}
+.hiw-num{font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:11px}
+.hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
+.hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.hiw-copy p{font-size:14.5px;color:var(--slate);max-width:288px;margin:0 auto}
+.hiw-foot{padding:20px 26px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:13px}
+.hiw-dots{display:flex;gap:7px}
+.hiw-dot{width:7px;height:7px;border-radius:50%;background:var(--line);border:none;padding:0;cursor:pointer;transition:background .3s,width .3s}
+.hiw-dot.on{background:var(--accent-deep);width:21px;border-radius:4px}
+.hiw-foot .btn-primary{max-width:none;width:100%}
+.hiw-foot .btn-ghost{transition:opacity .3s}
+.hiw-foot .btn-ghost.gone{opacity:0;pointer-events:none}
+
+/* step artwork */
+.hiw-art .tag{font-family:var(--display);font-size:13px;fill:var(--accent-deep);text-anchor:middle}
+.hiw-art .hz{font-family:var(--display);font-style:italic;fill:var(--accent);opacity:0}
+.hiw-art .wave,.hiw-art .ringpulse,.hiw-art .shake{transform-box:fill-box;transform-origin:center}
+.hiw-step.active .bob{animation:hiwBob 3.4s ease-in-out infinite}
+.hiw-step.active .zdrift{animation:zrise 4.2s ease-in-out infinite}
+.hiw-step.active .wave{animation:hiwWave 2.4s ease-out infinite}
+.hiw-step.active .pick{animation:hiwPick 3.2s ease-in-out infinite}
+.hiw-step.active .ringpulse{animation:hiwRing 3s ease-in-out infinite}
+.hiw-step.active .shake{animation:hiwShake 1.8s ease-in-out infinite}
+.hiw-step.active .dash{animation:hiwDash 1.6s linear infinite}
+.hiw-step.active .fillring{animation:hiwFill 2.8s ease-out infinite}
+@keyframes hiwBob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
+@keyframes hiwWave{0%{opacity:0;transform:scale(.55)}22%{opacity:.8}100%{opacity:0;transform:scale(1.3)}}
+@keyframes hiwPick{0%,16%{opacity:0}30%,86%{opacity:1}100%{opacity:0}}
+@keyframes hiwRing{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.14);opacity:.08}}
+@keyframes hiwShake{0%,62%,100%{transform:rotate(0)}8%{transform:rotate(-3.5deg)}18%{transform:rotate(3.5deg)}28%{transform:rotate(-2.4deg)}38%{transform:rotate(2deg)}50%{transform:rotate(-1deg)}}
+@keyframes hiwDash{to{stroke-dashoffset:-30}}
+@keyframes hiwFill{0%{stroke-dashoffset:138.2}72%,100%{stroke-dashoffset:0}}
+
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes fade{to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
@@ -385,7 +455,172 @@ body.dim .nightmark{opacity:1}
     <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so it is not a lamp by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
   </div>
 
+  <button class="btn-soft hiw-open" id="hiwOpen">How it works</button>
+
   <footer>Jon Blund is not a medical or safety device.<br>Never use it as a substitute for supervision.</footer>
+</div>
+
+
+<div class="hiw-scrim" id="hiwScrim"></div>
+<div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="How Jon Blund works">
+  <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="hiwBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef2f8"/><stop offset="1" stop-color="#dde7f0"/>
+    </linearGradient>
+    <linearGradient id="hiwNest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/>
+    </linearGradient>
+    <filter id="hiwSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#6d8bab" flood-opacity="0.15"/>
+    </filter>
+  </defs></svg>
+
+  <div class="hiw-view">
+    <div class="hiw-track" id="hiwTrack">
+
+      <!-- 1 -->
+      <div class="hiw-step active">
+        <div class="hiw-art">
+          <svg viewBox="0 0 300 168" role="img" aria-label="Picking a contact from a saved list">
+            <rect x="58" y="16" width="184" height="136" rx="20" fill="#fff" stroke="#e8ecf1" filter="url(#hiwSoft)"/>
+            <g>
+              <circle cx="88" cy="48" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
+              <rect x="108" y="41" width="58" height="6" rx="3" fill="#dde7f0"/>
+              <rect x="108" y="53" width="40" height="5" rx="2.5" fill="#eef2f8"/>
+              <circle cx="216" cy="48" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
+            </g>
+            <g>
+              <circle cx="88" cy="84" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
+              <rect x="108" y="77" width="48" height="6" rx="3" fill="#dde7f0"/>
+              <rect x="108" y="89" width="46" height="5" rx="2.5" fill="#eef2f8"/>
+              <circle cx="216" cy="84" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
+            </g>
+            <g>
+              <circle cx="88" cy="120" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
+              <rect x="108" y="113" width="54" height="6" rx="3" fill="#dde7f0"/>
+              <rect x="108" y="125" width="42" height="5" rx="2.5" fill="#eef2f8"/>
+              <circle cx="216" cy="120" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
+              <g class="pick">
+                <rect x="70" y="102" width="160" height="36" rx="13" fill="none" stroke="#8ba9c9" stroke-width="1.6"/>
+                <circle cx="216" cy="120" r="7" fill="#6d8bab"/>
+                <circle cx="216" cy="120" r="2.6" fill="#fff"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div class="hiw-copy">
+          <div class="hiw-num">Step one</div>
+          <h3>Tell it <em>who to call.</em></h3>
+          <p>Pick a contact, or type a number once. Jon Blund keeps it on this phone, so next time it is a single tap.</p>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="hiw-step">
+        <div class="hiw-art">
+          <svg viewBox="0 0 300 168" role="img" aria-label="Phone A resting beside the cot">
+            <ellipse cx="88" cy="150" rx="66" ry="7" fill="#6d8bab" opacity=".07"/>
+            <g class="bob">
+              <rect x="22" y="92" width="130" height="46" rx="20" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.4"/>
+              <ellipse cx="32" cy="115" rx="12" ry="21" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.1"/>
+              <ellipse cx="142" cy="115" rx="12" ry="21" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.1"/>
+              <rect x="38" y="97" width="96" height="11" rx="5.5" fill="#eef2f8" stroke="#e3eaf3"/>
+              <text class="hz zdrift" x="112" y="84" font-size="19">z</text>
+              <text class="hz zdrift" x="128" y="90" font-size="13" style="animation-delay:1.6s">z</text>
+            </g>
+            <text class="tag" x="238" y="24">A</text>
+            <g filter="url(#hiwSoft)">
+              <rect x="206" y="32" width="64" height="112" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+              <rect x="213" y="41" width="50" height="94" rx="9" fill="url(#hiwBody)"/>
+              <circle class="ringpulse" cx="238" cy="88" r="21" fill="none" stroke="#8ba9c9" stroke-width="1.5"/>
+              <circle cx="238" cy="88" r="14" fill="#fff" stroke="#e8ecf1"/>
+            </g>
+          </svg>
+        </div>
+        <div class="hiw-copy">
+          <div class="hiw-num">Step two</div>
+          <h3>Leave this phone <em>by the baby.</em></h3>
+          <p>Turn on the microphone and set it down near the crib. Screen on, plugged in. That is the whole setup.</p>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="hiw-step">
+        <div class="hiw-art">
+          <svg viewBox="0 0 300 168" role="img" aria-label="Crying travels to the phone's microphone">
+            <ellipse cx="72" cy="148" rx="58" ry="6" fill="#6d8bab" opacity=".07"/>
+            <rect x="12" y="90" width="118" height="46" rx="20" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.4"/>
+            <ellipse cx="22" cy="113" rx="12" ry="21" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.1"/>
+            <ellipse cx="120" cy="113" rx="12" ry="21" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.1"/>
+            <rect x="28" y="95" width="86" height="11" rx="5.5" fill="#eef2f8" stroke="#e3eaf3"/>
+            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
+              <path class="wave" d="M144 98 a18 18 0 0 1 0 30"/>
+              <path class="wave" d="M156 90 a27 27 0 0 1 0 46" style="animation-delay:.4s"/>
+              <path class="wave" d="M168 82 a36 36 0 0 1 0 62" style="animation-delay:.8s"/>
+            </g>
+            <text class="tag" x="242" y="22">A</text>
+            <g filter="url(#hiwSoft)">
+              <rect x="210" y="30" width="64" height="112" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+              <rect x="217" y="39" width="50" height="94" rx="9" fill="url(#hiwBody)"/>
+              <circle cx="242" cy="86" r="22" fill="none" stroke="#e8ecf1" stroke-width="2.6"/>
+              <circle class="fillring" cx="242" cy="86" r="22" fill="none" stroke="#6d8bab" stroke-width="2.6"
+                      stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 242 86)"/>
+              <circle cx="242" cy="86" r="14" fill="#fff" stroke="#e8ecf1"/>
+            </g>
+          </svg>
+        </div>
+        <div class="hiw-copy">
+          <div class="hiw-num">Step three</div>
+          <h3>It listens for <em>crying.</em></h3>
+          <p>Not the fan, not the traffic outside. Only a sound that keeps going long enough to be a real cry.</p>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="hiw-step">
+        <div class="hiw-art">
+          <svg viewBox="0 0 300 168" role="img" aria-label="Phone A calls phone B, which rings">
+            <text class="tag" x="40" y="44">A</text>
+            <g>
+              <rect x="16" y="54" width="48" height="84" rx="11" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
+              <rect x="22" y="61" width="36" height="70" rx="7" fill="url(#hiwBody)"/>
+              <circle cx="40" cy="96" r="10" fill="#fff" stroke="#e8ecf1"/>
+            </g>
+            <path class="dash" d="M70 84 C104 44 148 42 176 68" fill="none" stroke="#8ba9c9"
+                  stroke-width="2" stroke-linecap="round" stroke-dasharray="2 8"/>
+            <text class="tag" x="214" y="24">B</text>
+            <g class="shake" filter="url(#hiwSoft)">
+              <rect x="182" y="32" width="64" height="116" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+              <rect x="189" y="41" width="50" height="98" rx="9" fill="url(#hiwBody)"/>
+              <rect x="196" y="58" width="36" height="6" rx="3" fill="#c6d3e2"/>
+              <rect x="202" y="70" width="24" height="5" rx="2.5" fill="#dde7f0"/>
+              <circle cx="214" cy="106" r="13" fill="#6d8bab"/>
+              <path d="M209 101h2.4l1.3 3.2-1.7 1.3a11 11 0 0 0 5.2 5.2l1.3-1.7 3.2 1.3v2.4a1.9 1.9 0 0 1-2 1.9 14.6 14.6 0 0 1-11.9-11.9 1.9 1.9 0 0 1 1.9-2z" fill="#fff"/>
+            </g>
+            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
+              <path class="wave" d="M256 76 a18 18 0 0 1 0 30"/>
+              <path class="wave" d="M268 68 a26 26 0 0 1 0 46" style="animation-delay:.4s"/>
+              <path class="wave" d="M280 60 a34 34 0 0 1 0 62" style="animation-delay:.8s"/>
+            </g>
+          </svg>
+        </div>
+        <div class="hiw-copy">
+          <div class="hiw-num">Step four</div>
+          <h3>Then your phone <em>rings.</em></h3>
+          <p>A real call, so it cuts through silent mode. Answer it and you hear the room. Hang up, and Jon Blund goes straight back to listening.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hiw-foot">
+    <div class="hiw-dots" id="hiwDots"></div>
+    <button class="btn-primary" id="hiwNext">Next</button>
+    <button class="btn-ghost" id="hiwSkip">Skip</button>
+  </div>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -968,6 +1203,72 @@ setInterval(() => { if (state === 'cooldown' || state === 'incall' || state === 
 renderContacts();
 setState('off');
 paint();
+
+/* ---------------- how it works ---------------- */
+const HIW_KEY = 'jonblund.seenIntro.v1';
+const hiwSteps = [...document.querySelectorAll('.hiw-step')];
+let hiwIndex = 0, hiwWasOpen = false;
+
+$('hiwDots').innerHTML = hiwSteps.map((_, i) =>
+  '<button class="hiw-dot" data-i="' + i + '" aria-label="Step ' + (i+1) + '"></button>').join('');
+
+function hiwGo(i){
+  hiwIndex = Math.max(0, Math.min(hiwSteps.length - 1, i));
+  $('hiwTrack').style.transform = 'translateX(' + (-100 * hiwIndex) + '%)';
+  hiwSteps.forEach((s, n) => s.classList.toggle('active', n === hiwIndex));
+  [...$('hiwDots').children].forEach((d, n) => d.classList.toggle('on', n === hiwIndex));
+  const last = hiwIndex === hiwSteps.length - 1;
+  $('hiwNext').textContent = last ? 'Got it' : 'Next';
+  $('hiwSkip').classList.toggle('gone', last);
+}
+function hiwShow(){
+  hiwWasOpen = true;
+  $('hiwScrim').classList.add('open');
+  $('hiw').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  hiwGo(0);
+  setTimeout(() => $('hiwNext').focus(), 420);
+}
+function hiwHide(){
+  $('hiwScrim').classList.remove('open');
+  $('hiw').classList.remove('open');
+  document.body.style.overflow = '';
+  save(HIW_KEY, true);
+}
+
+$('hiwOpen').addEventListener('click', hiwShow);
+$('hiwClose').addEventListener('click', hiwHide);
+$('hiwSkip').addEventListener('click', hiwHide);
+$('hiwScrim').addEventListener('click', hiwHide);
+$('hiwNext').addEventListener('click', () => {
+  if (hiwIndex === hiwSteps.length - 1) hiwHide(); else hiwGo(hiwIndex + 1);
+});
+$('hiwDots').addEventListener('click', e => {
+  const d = e.target.closest('.hiw-dot');
+  if (d) hiwGo(parseInt(d.dataset.i, 10));
+});
+addEventListener('keydown', e => {
+  if (!$('hiw').classList.contains('open')) return;
+  if (e.key === 'Escape') hiwHide();
+  else if (e.key === 'ArrowRight') hiwGo(hiwIndex + 1);
+  else if (e.key === 'ArrowLeft') hiwGo(hiwIndex - 1);
+});
+
+// swipe between steps
+let swipeX = null, swipeY = null;
+$('hiwTrack').addEventListener('touchstart', e => {
+  swipeX = e.touches[0].clientX; swipeY = e.touches[0].clientY;
+}, { passive:true });
+$('hiwTrack').addEventListener('touchend', e => {
+  if (swipeX === null) return;
+  const dx = e.changedTouches[0].clientX - swipeX;
+  const dy = e.changedTouches[0].clientY - swipeY;
+  if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) hiwGo(hiwIndex + (dx < 0 ? 1 : -1));
+  swipeX = swipeY = null;
+}, { passive:true });
+
+// first visit only
+if (!load(HIW_KEY, false)) setTimeout(hiwShow, 650);
 </script>
 </body>
 </html>
