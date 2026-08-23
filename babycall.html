@@ -212,12 +212,12 @@ body.managing .contact .mark{display:none}
 
 /* ---------- NOTES ---------- */
 .note{
-  display:flex;gap:11px;align-items:flex-start;
-  border-radius:16px;padding:14px 16px;margin-top:16px;
+  display:flex;flex-direction:column;gap:11px;align-items:flex-start;
+  border-radius:16px;padding:16px;margin-top:16px;
   font-size:13.5px;line-height:1.5;
 }
 .note .ic{
-  width:21px;height:21px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  width:21px;height:21px;border-radius:50%;flex-shrink:0;
   display:grid;place-items:center;font-size:12px;font-weight:700;
 }
 .note-info{background:var(--cloud-1);color:var(--slate)}
@@ -226,7 +226,7 @@ body.managing .contact .mark{display:none}
 .hidden{display:none!important}
 
 footer{
-  text-align:center;margin-top:auto;padding-top:34px;
+  text-align:center;margin-top:auto;padding:34px 0 44px;
   font-size:12px;color:var(--slate-light);
 }
 footer a{color:var(--slate-light)}
@@ -285,23 +285,23 @@ body.dim .nightmark{opacity:1}
 /* ---------- PRICING ---------- */
 /* the carousel clips on purpose; the pricing body has to be able to scroll */
 #pricing .hiw-view{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-.pr-body{padding:30px 26px 14px;text-align:center}
+.pr-body{padding:22px 26px 14px;text-align:center}
 .pr-free{
   display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.14em;
   text-transform:uppercase;color:var(--accent-deep);
-  background:var(--cloud-1);border-radius:100px;padding:6px 15px;margin-bottom:22px;
+  background:var(--cloud-1);border-radius:100px;padding:6px 15px;margin-bottom:16px;
 }
 .pr-amount{
-  font-family:var(--display);font-weight:300;font-size:56px;
+  font-family:var(--display);font-weight:300;font-size:50px;
   letter-spacing:-.035em;line-height:1;
 }
-.pr-amount span{font-size:26px;letter-spacing:-.02em}
-.pr-unit{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);margin-top:11px}
-.pr-fine{font-size:14px;color:var(--slate);max-width:290px;margin:20px auto 0}
+.pr-amount span{font-size:26px;letter-spacing:-.02em;vertical-align:.3em;margin-right:3px}
+.pr-unit{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);margin-top:9px}
+.pr-fine{font-size:14px;color:var(--slate);max-width:290px;margin:16px auto 0}
 .pr-fine b{color:var(--ink);font-weight:600}
 .pr-table{
   border:1px solid var(--line);border-radius:16px;overflow:hidden;
-  margin:24px 0 0;text-align:left;
+  margin:20px 0 0;text-align:left;
 }
 .pr-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-top:1px solid var(--line);font-size:14px}
 .pr-row:first-child{border-top:none}
@@ -313,7 +313,7 @@ body.dim .nightmark{opacity:1}
   min-width:62px;text-align:right;font-variant-numeric:tabular-nums;
 }
 .pr-row.cap .rv{color:var(--accent-deep)}
-.pr-note{font-size:13px;color:var(--slate-light);margin-top:14px}
+.pr-note{font-size:13px;color:var(--slate-light);margin-top:13px}
 
 /* ---------- HOW IT WORKS ---------- */
 .foot-actions{
@@ -1307,22 +1307,23 @@ $('hiwTrack').addEventListener('touchend', e => {
 /* ---------------- pricing ---------------- */
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
-  perCall:        4.90,
+  perCall:        0.99,
   includedMin:    2,
-  perExtraMin:    1.90,
-  monthlyCap:     399,
+  perExtraMin:    0.99,
+  monthlyCap:     39.99,
   firstCallFree:  true
 };
 
-const kr = n => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',').replace(',00', '');
+const usd      = n => '$' + n.toFixed(2);
+const usdWhole = n => '$' + Math.round(n);
 const monthCost = calls => Math.min(PRICE.monthlyCap, calls * PRICE.perCall);
 
 function renderPricing(){
   $('prFree').textContent = PRICE.firstCallFree ? 'Your first call is free' : 'No fixed monthly fee';
-  $('prAmount').innerHTML = kr(PRICE.perCall) + ' <span>kr</span>';
+  $('prAmount').innerHTML = '<span>$</span>' + PRICE.perCall.toFixed(2);
   $('prFine').innerHTML =
-    'Includes the first ' + PRICE.includedMin + ' minutes, then ' + kr(PRICE.perExtraMin) +
-    ' kr a minute. <b>Never more than ' + PRICE.monthlyCap + ' kr in a month</b>, however rough the nights get.';
+    'Includes the first ' + PRICE.includedMin + ' minutes, then ' + usd(PRICE.perExtraMin) +
+    ' a minute. <b>Never more than ' + usd(PRICE.monthlyCap) + ' in a month</b>, however rough the nights get.';
 
   const months = [
     ['A quiet month',  4],
@@ -1335,7 +1336,7 @@ function renderPricing(){
     return '<div class="pr-row' + (capped ? ' cap' : '') + '">' +
              '<span class="rl">' + label + '</span>' +
              '<span class="rc">' + calls + ' calls</span>' +
-             '<span class="rv">' + Math.round(cost) + ' kr</span>' +
+             '<span class="rv">' + usdWhole(cost) + '</span>' +
            '</div>';
   }).join('');
 
