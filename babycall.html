@@ -24,9 +24,6 @@
   --accent-deep:#6d8bab;
   --line:#e8ecf1;
   --warm:#b06a6a;
-  --warm-bg:#f6e7e7;
-  --good:#4d7d5c;
-  --good-bg:#e7f0e9;
   --display:'Fraunces',Georgia,serif;
   --body:'Manrope',system-ui,sans-serif;
 }
@@ -225,10 +222,7 @@ body.managing .contact .mark{display:none}
 }
 .note-info{background:var(--cloud-1);color:var(--slate)}
 .note-info .ic{background:var(--white);color:var(--accent-deep)}
-.note-warn{background:var(--warm-bg);color:#8d5555}
-.note-warn .ic{background:#fff;color:var(--warm)}
 .note b{color:var(--ink);font-weight:600}
-.note-warn b{color:#7a4747}
 .hidden{display:none!important}
 
 footer{
@@ -386,14 +380,9 @@ body.dim .nightmark{opacity:1}
     </div>
   </div>
 
-  <div class="note note-warn" id="screenNote">
-    <span class="ic">!</span>
-    <span><b>Keep this screen on and the phone plugged in.</b> Browsers stop the microphone when the screen locks or you switch apps. The screen dims itself after a while — tap to wake it.</span>
-  </div>
-
-  <div class="note note-info" id="demoNote">
+  <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
-    <span><b>Demo mode.</b> Detection, contacts and the full call flow are live — but no real phone call is placed until a telephony backend is connected.</span>
+    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so it is not a lamp by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
   </div>
 
   <footer>Jon Blund is not a medical or safety device.<br>Never use it as a substitute for supervision.</footer>
