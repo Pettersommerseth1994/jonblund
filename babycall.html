@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#eef2f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>jonblund — a baby call that actually calls you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#ffffff;
+  --paper:#fafbfc;
+  --cloud-1:#eef2f8;
+  --cloud-2:#e4eaf3;
+  --cloud-3:#dde7f0;
+  --ink:#1a1d24;
+  --slate:#6b7280;
+  --slate-light:#9aa1ac;
+  --accent:#8ba9c9;
+  --accent-deep:#6d8bab;
+  --line:#e8ecf1;
+  --warm:#b06a6a;
+  --warm-bg:#f6e7e7;
+  --good:#4d7d5c;
+  --good-bg:#e7f0e9;
+  --display:'Fraunces',Georgia,serif;
+  --body:'Manrope',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  background:
+    radial-gradient(150% 110% at 50% 0%, var(--cloud-3) 0%, var(--cloud-2) 22%, var(--cloud-1) 42%, var(--paper) 66%, var(--white) 100%)
+    no-repeat fixed;
+  min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 22px calc(40px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+}
+.shell{width:100%;max-width:440px;display:flex;flex-direction:column;flex:1}
+
+/* ---------- HEAD ---------- */
+.app-head{text-align:center;padding:calc(38px + env(safe-area-inset-top)) 0 4px;opacity:0;animation:rise .8s .05s forwards;transform:translateY(18px)}
+.logo{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:-.02em;line-height:1}
+.logo span{color:var(--accent-deep)}
+.slogan{
+  font-size:13px;color:var(--slate);margin-top:11px;
+  letter-spacing:.005em;
+}
+
+/* ---------- ORB ---------- */
+.stage{display:flex;flex-direction:column;align-items:center;padding:26px 0 6px;opacity:0;animation:fade 1.1s .25s forwards}
+.orb-wrap{position:relative;width:268px;height:268px;display:grid;place-items:center}
+.pring{
+  position:absolute;border-radius:50%;border:1.5px solid var(--accent);
+  opacity:0;pointer-events:none;
+}
+body.live .pring{animation:pulse 3.4s ease-in-out infinite}
+.pring.p1{inset:24px}
+.pring.p2{inset:24px;animation-delay:1.15s}
+.pring.p3{inset:24px;animation-delay:2.3s}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.34}
+  60%{opacity:.05}
+  100%{transform:scale(1.34);opacity:0}
+}
+.meter{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.meter-track{fill:none;stroke:var(--line);stroke-width:2}
+.meter-fill{
+  fill:none;stroke:var(--accent);stroke-width:3.4;stroke-linecap:round;
+  stroke-dasharray:653.45;stroke-dashoffset:653.45;
+  transition:stroke-dashoffset .1s linear,stroke .45s;
+}
+body.detecting .meter-fill{stroke:var(--accent-deep)}
+body.alerting .meter-fill{stroke:var(--warm)}
+.orb{
+  position:relative;width:190px;height:190px;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#ffffff,var(--cloud-2) 72%,var(--cloud-3));
+  border:1px solid var(--line);
+  box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 48px rgba(109,139,171,.20);
+  display:grid;place-items:center;
+  transition:transform .14s cubic-bezier(.16,1,.3,1),box-shadow .6s;
+  cursor:pointer;
+}
+body.detecting .orb{box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 54px rgba(109,139,171,.4)}
+body.alerting .orb{box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 54px rgba(176,106,106,.34)}
+.orb-face{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.readout{font-family:var(--display);font-weight:300;font-size:46px;letter-spacing:-.03em;color:var(--ink);line-height:1}
+.readout.sm{font-size:30px}
+.readout em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.orb-icon{width:52px;height:52px;color:var(--accent-deep)}
+.zzz{position:absolute;inset:0;pointer-events:none}
+.zz{font-family:var(--display);font-style:italic;fill:var(--accent);opacity:0}
+body.listening .zz{animation:zrise 4.2s ease-in-out infinite}
+.z1{font-size:23px}
+.z2{font-size:16px;animation-delay:1.4s}
+.z3{font-size:13px;animation-delay:2.8s}
+@keyframes zrise{0%{opacity:0;transform:translateY(0)}14%{opacity:.8}60%,100%{opacity:0;transform:translateY(-48px)}}
+
+/* ---------- STATUS ---------- */
+.status{
+  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-deep);margin-top:26px;text-align:center;
+  transition:color .4s;
+}
+body.alerting .status{color:var(--warm)}
+.substatus{font-size:14px;color:var(--slate);margin-top:7px;text-align:center;min-height:22px;padding:0 10px}
+
+/* ---------- BUTTONS ---------- */
+.actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:24px;width:100%}
+.btn-primary{
+  background:var(--ink);color:var(--white);border:none;
+  padding:16px 34px;border-radius:100px;font-family:var(--body);
+  font-size:15.5px;font-weight:600;cursor:pointer;
+  transition:transform .25s,box-shadow .25s,background .3s;
+  box-shadow:0 8px 24px rgba(26,29,36,.14);
+  width:100%;max-width:300px;
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:hover{box-shadow:0 14px 34px rgba(26,29,36,.2)}
+.btn-primary.warm{background:var(--warm);box-shadow:0 8px 24px rgba(176,106,106,.26)}
+.btn-primary.quiet{background:var(--white);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn-ghost{
+  background:none;border:none;color:var(--slate);font-family:var(--body);
+  font-size:14px;font-weight:600;cursor:pointer;padding:6px 4px;
+  transition:color .25s;
+}
+.btn-ghost:hover{color:var(--ink)}
+
+/* ---------- PANEL ---------- */
+.panel{
+  background:var(--white);border:1px solid var(--line);border-radius:24px;
+  padding:22px 20px;margin-top:34px;
+  box-shadow:0 18px 44px rgba(109,139,171,.07);
+  opacity:0;animation:rise .8s .45s forwards;transform:translateY(20px);
+}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.opt-label{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.link{background:none;border:none;font-family:var(--body);font-size:13px;font-weight:600;color:var(--accent-deep);cursor:pointer;padding:2px}
+.link:hover{color:var(--ink)}
+
+.contact-list{display:flex;flex-direction:column;gap:9px}
+.contact{
+  display:flex;align-items:center;gap:14px;
+  border:1px solid var(--line);border-radius:16px;padding:13px 15px;
+  cursor:pointer;background:var(--white);
+  transition:border-color .28s,background .28s,transform .28s;
+  text-align:left;font-family:var(--body);width:100%;
+}
+.contact:active{transform:scale(.99)}
+.contact.sel{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
+.contact .avatar{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--cloud-2) 78%,var(--cloud-3));
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  font-family:var(--display);font-size:16px;font-weight:400;color:var(--accent-deep);
+  transition:border-color .28s;
+}
+.contact.sel .avatar{border-color:var(--accent)}
+.contact .who{flex:1;min-width:0}
+.contact .who .n{font-size:15px;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact .who .t{font-size:13px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact .mark{
+  width:21px;height:21px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--line);display:grid;place-items:center;
+  transition:border-color .28s,background .28s;
+}
+.contact.sel .mark{border-color:var(--accent-deep);background:var(--accent-deep)}
+.contact.sel .mark::after{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
+.contact .del{
+  border:none;background:none;color:var(--slate-light);cursor:pointer;
+  font-size:19px;line-height:1;padding:4px 2px 6px;display:none;
+}
+body.managing .contact .del{display:block}
+body.managing .contact .mark{display:none}
+
+.empty{
+  text-align:center;padding:20px 10px 22px;border:1px dashed var(--line);border-radius:16px;
+}
+.empty p{font-size:14px;color:var(--slate);max-width:250px;margin:0 auto}
+
+.contact-actions{display:flex;gap:9px;margin-top:14px}
+.btn-soft{
+  flex:1;border:1px solid var(--line);background:var(--white);border-radius:100px;
+  padding:12px 10px;font-family:var(--body);font-size:13.5px;font-weight:600;color:var(--ink);
+  cursor:pointer;transition:border-color .25s,background .25s,transform .2s;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-soft:hover{border-color:var(--accent)}
+.btn-soft:active{transform:scale(.98)}
+.btn-soft svg{width:16px;height:16px;color:var(--accent-deep);flex-shrink:0}
+
+/* ---------- SETTINGS ROW ---------- */
+.tune{margin-top:16px;opacity:0;animation:rise .8s .6s forwards;transform:translateY(20px)}
+.tune-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 4px}
+.tune-row + .tune-row{border-top:1px solid var(--line)}
+.tune-row .tl{font-size:14px;color:var(--slate)}
+.seg{display:flex;border:1px solid var(--line);border-radius:100px;padding:3px;background:var(--white)}
+.seg button{
+  border:none;background:none;cursor:pointer;font-family:var(--body);
+  font-size:12.5px;font-weight:600;color:var(--slate);
+  padding:7px 14px;border-radius:100px;transition:background .25s,color .25s;
+}
+.seg button.sel{background:var(--ink);color:var(--white)}
+
+/* ---------- NOTES ---------- */
+.note{
+  display:flex;gap:11px;align-items:flex-start;
+  border-radius:16px;padding:14px 16px;margin-top:16px;
+  font-size:13.5px;line-height:1.5;
+}
+.note .ic{
+  width:21px;height:21px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  display:grid;place-items:center;font-size:12px;font-weight:700;
+}
+.note-info{background:var(--cloud-1);color:var(--slate)}
+.note-info .ic{background:var(--white);color:var(--accent-deep)}
+.note-warn{background:var(--warm-bg);color:#8d5555}
+.note-warn .ic{background:#fff;color:var(--warm)}
+.note b{color:var(--ink);font-weight:600}
+.note-warn b{color:#7a4747}
+.hidden{display:none!important}
+
+footer{
+  text-align:center;margin-top:auto;padding-top:34px;
+  font-size:12px;color:var(--slate-light);
+}
+footer a{color:var(--slate-light)}
+
+/* ---------- SHEET ---------- */
+.scrim{
+  position:fixed;inset:0;background:rgba(26,29,36,.34);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .35s;z-index:80;
+}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:81;
+  background:var(--white);border-radius:28px 28px 0 0;
+  padding:26px 24px calc(30px + env(safe-area-inset-bottom));
+  transform:translateY(102%);transition:transform .42s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 -20px 60px rgba(26,29,36,.16);
+  max-width:440px;margin:0 auto;
+}
+.sheet.open{transform:none}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 20px}
+.sheet h3{font-family:var(--display);font-weight:400;font-size:25px;letter-spacing:-.02em;margin-bottom:6px}
+.sheet h3 em{font-style:italic;color:var(--accent-deep)}
+.sheet .sub{font-size:14px;color:var(--slate);margin-bottom:22px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+.field input{
+  width:100%;border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;font-family:var(--body);font-size:16px;color:var(--ink);
+  background:var(--paper);transition:border-color .25s,background .25s;
+}
+.field input:focus{outline:none;border-color:var(--accent);background:var(--white)}
+.field .hint{font-size:12.5px;color:var(--slate-light);margin-top:7px}
+.sheet .btn-primary{max-width:none;margin-top:8px}
+.sheet-err{font-size:13px;color:var(--warm);margin-top:10px;min-height:18px}
+
+/* ---------- NIGHT DIM ---------- */
+.veil{
+  position:fixed;inset:0;background:#05070b;z-index:60;
+  opacity:0;pointer-events:none;transition:opacity 1.8s ease;
+}
+body.dim .veil{opacity:.975;pointer-events:auto}
+.nightmark{
+  position:fixed;inset:0;z-index:61;display:grid;place-items:center;
+  opacity:0;pointer-events:none;transition:opacity 1.8s ease;text-align:center;
+}
+body.dim .nightmark{opacity:1}
+.nightmark .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--accent);
+  margin:0 auto 16px;animation:breathe 3.6s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:.22;transform:scale(.8)}50%{opacity:.75;transform:scale(1.25)}}
+.nightmark .nm-t{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#39424f}
+.nightmark .nm-s{font-size:11px;color:#252c36;margin-top:8px}
+
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .app-head,.stage,.panel,.tune{opacity:1;transform:none}
+}
+@media(max-height:700px){
+  .app-head{padding-top:calc(22px + env(safe-area-inset-top))}
+  .orb-wrap{width:236px;height:236px}
+  .orb{width:166px;height:166px}
+  .stage{padding-top:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="app-head">
+    <div class="logo">jon<span>blund</span></div>
+    <p class="slogan">A baby call that actually calls you</p>
+  </header>
+
+  <main class="stage">
+    <div class="orb-wrap">
+      <div class="pring p1"></div>
+      <div class="pring p2"></div>
+      <div class="pring p3"></div>
+      <svg class="meter" viewBox="0 0 240 240" aria-hidden="true">
+        <circle class="meter-track" cx="120" cy="120" r="104"/>
+        <circle class="meter-fill" id="meterFill" cx="120" cy="120" r="104"/>
+      </svg>
+      <div class="orb" id="orb" role="button" tabindex="0" aria-label="Monitoring status">
+        <div class="orb-face" id="orbFace"></div>
+        <svg class="zzz" viewBox="0 0 190 190" aria-hidden="true">
+          <text class="zz z1" x="112" y="76">z</text>
+          <text class="zz z2" x="130" y="84">z</text>
+          <text class="zz z3" x="102" y="88">z</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="status" id="status">Microphone off</div>
+    <div class="substatus" id="substatus">Tap below and Jon Blund starts listening.</div>
+
+    <div class="actions">
+      <button class="btn-primary" id="powerBtn">Turn on microphone</button>
+      <button class="btn-ghost hidden" id="secondaryBtn"></button>
+    </div>
+  </main>
+
+  <section class="panel">
+    <div class="panel-head">
+      <span class="opt-label">Calls</span>
+      <button class="link" id="manageBtn">Manage</button>
+    </div>
+
+    <div class="contact-list" id="contactList"></div>
+
+    <div class="empty hidden" id="emptyState">
+      <p>No one to call yet. Pull in a contact or type a number — Jon Blund remembers it for next time.</p>
+    </div>
+
+    <div class="contact-actions">
+      <button class="btn-soft" id="pickBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M16 19v-1.5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3V19"/><circle cx="10" cy="7.5" r="3"/><path d="M18.5 8v5M21 10.5h-5"/></svg>
+        Contacts
+      </button>
+      <button class="btn-soft" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 14v2.6a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 6.2 2 2 0 0 1 6.5 4z"/></svg>
+        Add number
+      </button>
+    </div>
+
+    <div class="note note-info" id="pickerNote">
+      <span class="ic">i</span>
+      <span id="pickerNoteText"></span>
+    </div>
+  </section>
+
+  <div class="tune">
+    <div class="tune-row">
+      <span class="tl">Sensitivity</span>
+      <div class="seg" id="sensSeg">
+        <button data-v="low">Low</button>
+        <button data-v="medium">Medium</button>
+        <button data-v="high">High</button>
+      </div>
+    </div>
+    <div class="tune-row">
+      <span class="tl">Cry must last</span>
+      <div class="seg" id="delaySeg">
+        <button data-v="3">3s</button>
+        <button data-v="5">5s</button>
+        <button data-v="8">8s</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="note note-warn" id="screenNote">
+    <span class="ic">!</span>
+    <span><b>Keep this screen on and the phone plugged in.</b> Browsers stop the microphone when the screen locks or you switch apps. The screen dims itself after a while — tap to wake it.</span>
+  </div>
+
+  <div class="note note-info" id="demoNote">
+    <span class="ic">i</span>
+    <span><b>Demo mode.</b> Detection, contacts and the full call flow are live — but no real phone call is placed until a telephony backend is connected.</span>
+  </div>
+
+  <footer>Jon Blund is not a medical or safety device.<br>Never use it as a substitute for supervision.</footer>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <h3>Who should it <em>call?</em></h3>
+  <p class="sub" id="sheetSub">Jon Blund saves this on the phone so it is one tap next time.</p>
+  <div class="field">
+    <label for="nameInput">Name</label>
+    <input id="nameInput" type="text" autocomplete="name" placeholder="Mamma" enterkeyhint="next">
+  </div>
+  <div class="field">
+    <label for="telInput">Phone number</label>
+    <input id="telInput" type="tel" autocomplete="tel" inputmode="tel" placeholder="+47 123 45 678" enterkeyhint="done">
+    <div class="hint">Norwegian 8-digit numbers get +47 automatically.</div>
+  </div>
+  <div class="sheet-err" id="sheetErr"></div>
+  <button class="btn-primary" id="saveBtn">Save</button>
+  <button class="btn-ghost" id="cancelBtn" style="width:100%;margin-top:6px">Cancel</button>
+</div>
+
+<div class="veil"></div>
+<div class="nightmark" id="nightmark">
+  <div>
+    <div class="dot"></div>
+    <div class="nm-t" id="nmText">Listening</div>
+    <div class="nm-s">Tap to wake the screen</div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   jonblund — babycall
+   --------------------------------------------------------------------------
+   Everything that can run in the browser runs for real here:
+     · microphone capture + calibration
+     · cry detection (loudness over adaptive noise floor + 250–700 Hz tonality)
+     · contact storage in localStorage (Contact Picker API where supported)
+     · the full state machine, including "B hung up -> go back to listening"
+
+   The one thing a browser cannot do is dial the mobile network. That single
+   step is isolated behind the adapter below. Drop in a Twilio/Telnyx client
+   and the app is real:
+
+     window.JONBLUND_TELEPHONY = {
+       // start a call to `contact.tel`, bridging this page's mic into it.
+       // must resolve once the call is connected.
+       call: async (contact, { onEnded }) => { ...; return { hangUp(){} } }
+     }
+
+   `onEnded()` is what the provider's status webhook triggers when B hangs up.
+   ========================================================================== */
+
+const $ = (id) => document.getElementById(id);
+
+/* ---------------- storage ---------------- */
+const KEY = {
+  contacts: 'jonblund.contacts.v1',
+  selected: 'jonblund.selected.v1',
+  sens:     'jonblund.sensitivity.v1',
+  delay:    'jonblund.delay.v1'
+};
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+let contacts   = load(KEY.contacts, []);
+let selectedId = load(KEY.selected, null);
+let sensitivity= load(KEY.sens, 'medium');
+let cryDelay   = load(KEY.delay, 5);
+
+/* ---------------- tuning ---------------- */
+const SENS = {
+  low:    { margin: 17, ratio: 0.17 },
+  medium: { margin: 12, ratio: 0.13 },
+  high:   { margin: 8,  ratio: 0.10 }
+};
+const COOLDOWN_MS = 90000;
+const CALIBRATE_MS = 5000;
+const DIM_AFTER_MS = 30000;
+
+/* ---------------- state ---------------- */
+let state = 'off';           // off · starting · calibrating · listening · detecting · calling · incall · cooldown · error
+let stream = null, actx = null, analyser = null, srcNode = null;
+let timeBuf = null, freqBuf = null;
+let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
+let level = 0, smoothLevel = 0;
+let wakeLock = null, activeCall = null;
+let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
+let dimTimer = null;
+
+const CIRC = 653.45;
+
+/* ---------------- contacts ---------------- */
+const pickerSupported = ('contacts' in navigator) && ('ContactsManager' in window) && window.isSecureContext;
+
+function normalise(raw){
+  let s = String(raw||'').replace(/[^\d+]/g,'');
+  if (s.indexOf('+') > 0) s = s.replace(/\+/g,'');
+  if (s.startsWith('00')) s = '+' + s.slice(2);
+  if (!s.startsWith('+')) {
+    const d = s.replace(/\D/g,'');
+    if (d.length === 8) s = '+47' + d;            // Norwegian mobile/landline
+    else if (d.length === 10 && d.startsWith('0')) s = '+47' + d.slice(2);
+    else s = '+' + d;
+  }
+  return s;
+}
+function pretty(tel){
+  const m = /^\+47(\d{8})$/.exec(tel);
+  if (m) return '+47 ' + m[1].replace(/(\d{2})(?=\d)/g,'$1 ').trim();
+  const m2 = /^(\+\d{1,3})(\d+)$/.exec(tel);
+  if (m2) return m2[1] + ' ' + m2[2].replace(/(\d{3})(?=\d)/g,'$1 ').trim();
+  return tel;
+}
+function initials(name){
+  const p = String(name||'?').trim().split(/\s+/);
+  return ((p[0]||'?')[0] + (p.length>1 ? p[p.length-1][0] : '')).toUpperCase();
+}
+const selectedContact = () => contacts.find(c => c.id === selectedId) || null;
+
+function persistContacts(){
+  save(KEY.contacts, contacts);
+  save(KEY.selected, selectedId);
+}
+function addContact(name, tel){
+  const t = normalise(tel);
+  const existing = contacts.find(c => c.tel === t);
+  if (existing){ selectedId = existing.id; persistContacts(); return existing; }
+  const c = { id: 'c' + Math.random().toString(36).slice(2,9), name: (name||'').trim() || pretty(t), tel: t };
+  contacts.push(c);
+  selectedId = c.id;
+  persistContacts();
+  return c;
+}
+function removeContact(id){
+  contacts = contacts.filter(c => c.id !== id);
+  if (selectedId === id) selectedId = contacts.length ? contacts[0].id : null;
+  persistContacts();
+  renderContacts();
+}
+
+function renderContacts(){
+  const list = $('contactList');
+  list.innerHTML = '';
+  $('emptyState').classList.toggle('hidden', contacts.length > 0);
+
+  if (contacts.length && !selectedContact()) { selectedId = contacts[0].id; persistContacts(); }
+
+  contacts.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'contact' + (c.id === selectedId ? ' sel' : '');
+    row.innerHTML =
+      '<div class="avatar">' + initials(c.name) + '</div>' +
+      '<div class="who"><div class="n"></div><div class="t"></div></div>' +
+      '<div class="mark"></div>' +
+      '<button class="del" aria-label="Remove">&times;</button>';
+    row.querySelector('.n').textContent = c.name;
+    row.querySelector('.t').textContent = pretty(c.tel);
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.del')) { removeContact(c.id); return; }
+      selectedId = c.id; persistContacts(); renderContacts(); paint();
+    });
+    list.appendChild(row);
+  });
+  paint();
+}
+
+/* ---------------- contact picker ---------------- */
+async function openPicker(){
+  if (!pickerSupported) { openSheet(true); return; }
+  try {
+    const picked = await navigator.contacts.select(['name','tel'], { multiple: true });
+    let n = 0;
+    picked.forEach(p => {
+      const name = (p.name && p.name[0]) || '';
+      (p.tel || []).slice(0,2).forEach((t, i) => {
+        addContact(i === 0 ? name : name + ' (' + (i+1) + ')', t);
+        n++;
+      });
+    });
+    renderContacts();
+    if (n) notice(n + (n === 1 ? ' contact added.' : ' contacts added.'));
+  } catch(e){
+    if (e && e.name !== 'AbortError') openSheet(true);
+  }
+}
+
+/* ---------------- sheet ---------------- */
+let sheetOpen = false;
+function openSheet(explain){
+  sheetOpen = true;
+  $('sheetSub').textContent = explain && !pickerSupported
+    ? 'This browser will not hand out your address book, so type the number once — it is saved on this phone.'
+    : 'Jon Blund saves this on the phone so it is one tap next time.';
+  $('sheetErr').textContent = '';
+  $('scrim').classList.add('open');
+  $('sheet').classList.add('open');
+  setTimeout(() => $('nameInput').focus(), 380);
+}
+function closeSheet(){
+  sheetOpen = false;
+  $('scrim').classList.remove('open');
+  $('sheet').classList.remove('open');
+  $('nameInput').value = ''; $('telInput').value = '';
+}
+
+/* ---------------- audio ---------------- */
+async function startMic(){
+  setState('starting');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,   // all three off: we need absolute, unmassaged levels
+        noiseSuppression: false,
+        autoGainControl:  false,
+        channelCount: 1
+      }
+    });
+  } catch(e){
+    setState('error');
+    notice((e && e.name === 'NotAllowedError')
+      ? 'Microphone blocked. Allow it in the address bar, then try again.'
+      : 'Could not reach the microphone on this device.', Infinity);
+    return;
+  }
+
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') await actx.resume();
+  srcNode  = actx.createMediaStreamSource(stream);
+  analyser = actx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.55;
+  srcNode.connect(analyser);
+  timeBuf = new Float32Array(analyser.fftSize);
+  freqBuf = new Float32Array(analyser.frequencyBinCount);
+
+  stream.getAudioTracks()[0].addEventListener('ended', () => {
+    if (state !== 'off') { stopMic(); setState('error'); notice('The microphone was cut off. Tap to start listening again.', Infinity); }
+  });
+
+  await requestWakeLock();
+
+  floorDb = -70;
+  calSamples = [];
+  calibrateStartedAt = performance.now();
+  setState('calibrating');
+  lastFrame = performance.now();
+  loop();
+
+  if (!contacts.length) setTimeout(() => { if (!contacts.length) openSheet(false); }, 900);
+}
+
+function stopMic(){
+  if (rafId) cancelAnimationFrame(rafId), rafId = null;
+  if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
+  if (actx) { try { actx.close(); } catch(e){} actx = null; }
+  analyser = srcNode = null;
+  acc = 0; level = 0; smoothLevel = 0;
+  releaseWakeLock();
+  undim();
+  setState('off');
+}
+
+let calSamples = [];
+
+function analyse(){
+  analyser.getFloatTimeDomainData(timeBuf);
+  let sum = 0;
+  for (let i = 0; i < timeBuf.length; i++) sum += timeBuf[i] * timeBuf[i];
+  const rms = Math.sqrt(sum / timeBuf.length);
+  const db  = 20 * Math.log10(rms + 1e-9);
+
+  analyser.getFloatFrequencyData(freqBuf);
+  const binHz = actx.sampleRate / analyser.fftSize;
+  let cryBand = 0, wideBand = 0;
+  for (let i = 0; i < freqBuf.length; i++){
+    const hz = i * binHz;
+    if (hz < 80 || hz > 8000) continue;
+    const p = Math.pow(10, freqBuf[i] / 10);
+    wideBand += p;
+    if (hz >= 250 && hz <= 700) cryBand += p;
+  }
+  const ratio = wideBand > 0 ? cryBand / wideBand : 0;
+  return { db, ratio };
+}
+
+function loop(){
+  rafId = requestAnimationFrame(loop);
+  if (!analyser) return;
+
+  const now = performance.now();
+  const dt = Math.min((now - lastFrame) / 1000, 0.1);
+  lastFrame = now;
+
+  const { db, ratio } = analyse();
+
+  // live level for the ring: map floor..floor+40 dB onto 0..1
+  const raw = Math.max(0, Math.min(1, (db - (floorDb - 3)) / 42));
+  smoothLevel += (raw - smoothLevel) * (raw > smoothLevel ? 0.45 : 0.09);
+  level = smoothLevel;
+
+  if (state === 'calibrating'){
+    calSamples.push(db);
+    if (now - calibrateStartedAt >= CALIBRATE_MS){
+      calSamples.sort((a,b) => a - b);
+      floorDb = calSamples[Math.floor(calSamples.length * 0.25)] || -70;
+      setState('listening');
+    }
+    paint();
+    return;
+  }
+
+  if (state === 'cooldown'){
+    trackFloor(db, false);
+    if (now >= cooldownUntil) setState('listening');
+    paint();
+    return;
+  }
+
+  if (state !== 'listening' && state !== 'detecting'){ paint(); return; }
+
+  const cfg = SENS[sensitivity] || SENS.medium;
+  const loud  = db > floorDb + cfg.margin;
+  const tonal = ratio > cfg.ratio;
+  const hit   = loud && tonal;
+
+  trackFloor(db, loud);
+
+  acc = Math.max(0, Math.min(cryDelay, acc + (hit ? dt : -dt * 1.6)));
+
+  if (acc >= cryDelay) { triggerCall(); return; }
+  setState(acc > 0.45 ? 'detecting' : 'listening');
+  paint();
+}
+
+function trackFloor(db, loud){
+  // classic min-tracker: drop quickly toward quiet, creep up very slowly,
+  // and never let a screaming baby drag the floor up with it.
+  if (db < floorDb) floorDb += (db - floorDb) * 0.06;
+  else if (!loud)   floorDb += 0.0012;
+}
+
+/* ---------------- call flow ---------------- */
+async function triggerCall(){
+  const c = selectedContact();
+  acc = 0;
+  if (!c){
+    setState('listening');
+    notice('Heard crying — but nobody is picked to call.', 6000);
+    return;
+  }
+  setState('calling');
+  paint();
+  undim();
+
+  const adapter = window.JONBLUND_TELEPHONY;
+  try {
+    if (adapter && typeof adapter.call === 'function'){
+      activeCall = await adapter.call(c, { onEnded: endCall });
+    } else {
+      await new Promise(r => setTimeout(r, 2600));      // demo: pretend it rings
+      activeCall = { hangUp(){} };
+    }
+    callStartedAt = performance.now();
+    setState('incall');
+  } catch(e){
+    setState('listening');
+    notice('The call could not be placed. Still listening.', 6000);
+  }
+}
+
+function endCall(){
+  if (activeCall){ try { activeCall.hangUp(); } catch(e){} activeCall = null; }
+  acc = 0;
+  cooldownUntil = performance.now() + COOLDOWN_MS;
+  setState('cooldown');
+}
+
+/* ---------------- wake lock ---------------- */
+async function requestWakeLock(){
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch(e){}
+}
+function releaseWakeLock(){ if (wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; } }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible'){
+    if (state !== 'off' && state !== 'error') requestWakeLock();
+    if (actx && actx.state === 'suspended') actx.resume();
+  }
+});
+
+/* ---------------- night dim ---------------- */
+function scheduleDim(){
+  clearTimeout(dimTimer);
+  if (state === 'listening' || state === 'cooldown'){
+    dimTimer = setTimeout(() => {
+      if (state === 'listening' || state === 'cooldown') document.body.classList.add('dim');
+    }, DIM_AFTER_MS);
+  }
+}
+function undim(){ clearTimeout(dimTimer); document.body.classList.remove('dim'); scheduleDim(); }
+['pointerdown','keydown','touchstart'].forEach(ev =>
+  window.addEventListener(ev, () => { if (document.body.classList.contains('dim')) undim(); else scheduleDim(); }, { passive:true })
+);
+
+/* ---------------- render ---------------- */
+const ICONS = {
+  micOff: '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M30 15v-1a6 6 0 0 0-11.4-2.6"/><path d="M18 20v6a6 6 0 0 0 10.3 4.2"/><path d="M13 24a11 11 0 0 0 16.6 9.5M35 24v2a11 11 0 0 1-.4 3"/><path d="M24 35v5"/><path d="M9 9l30 30"/></svg>',
+  mic:    '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="18" y="8" width="12" height="20" rx="6"/><path d="M13 24a11 11 0 0 0 22 0"/><path d="M24 35v5"/></svg>',
+  phone:  '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8h5.2l2.8 6.8-3.6 2.8a24 24 0 0 0 11 11l2.8-3.6L38 27.8V33a4 4 0 0 1-4.4 4A30.8 30.8 0 0 1 11 12.4 4 4 0 0 1 13 8z"/></svg>',
+  alert:  '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M24 6a12 12 0 0 1 12 12v9l3 6H9l3-6v-9A12 12 0 0 1 24 6z"/><path d="M20 33a4 4 0 0 0 8 0"/></svg>'
+};
+
+const COPY = {
+  off:         ['Microphone off',    'Tap below and Jon Blund starts listening.'],
+  starting:    ['Waking up',         'Allow the microphone when your browser asks.'],
+  calibrating: ['Learning the room', 'Hold still — measuring how quiet it is in here.'],
+  listening:   ['Listening',         ''],
+  detecting:   ['Crying',            'Still crying — getting ready to call.'],
+  calling:     ['Calling',           ''],
+  incall:      ['On the call',       'You are hearing the room live.'],
+  cooldown:    ['Paused',            'Settling for a moment before it can call again.'],
+  error:       ['Microphone off',    'Something interrupted the microphone.']
+};
+
+let noticeText = '', noticeUntil = 0;
+function notice(msg, ms){
+  noticeText = msg;
+  noticeUntil = performance.now() + (ms === undefined ? 2600 : ms);
+  paint();
+}
+function clearNotice(){ noticeText = ''; noticeUntil = 0; }
+
+function setState(next){
+  if (state === next) return;
+  state = next;
+  clearNotice();
+  document.body.classList.toggle('live',      ['calibrating','listening','detecting','cooldown'].includes(state));
+  document.body.classList.toggle('listening', state === 'listening');
+  document.body.classList.toggle('detecting', state === 'detecting');
+  document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
+  if (state !== 'listening' && state !== 'cooldown') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
+  else scheduleDim();
+  paint();
+}
+
+function paint(){
+  const c = selectedContact();
+  const [title, sub] = COPY[state] || COPY.off;
+
+  $('status').textContent = title;
+
+  let subtitle = sub;
+  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' if the crying lasts ' + cryDelay + 's.') : 'Pick who to call, below.';
+  else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
+  else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
+  else if (state === 'cooldown')  subtitle = 'Back to listening in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + 's.';
+  if (noticeText){
+    if (performance.now() < noticeUntil) subtitle = noticeText;
+    else clearNotice();
+  }
+  $('substatus').textContent = subtitle;
+
+  // meter ring
+  let fillLevel = level;
+  if (state === 'detecting') fillLevel = Math.max(level, acc / cryDelay);
+  if (state === 'calling' || state === 'incall') fillLevel = 1;
+  if (state === 'off' || state === 'error') fillLevel = 0;
+  if (state === 'calibrating') fillLevel = Math.min(1, (performance.now() - calibrateStartedAt) / CALIBRATE_MS);
+  $('meterFill').style.strokeDashoffset = String(CIRC * (1 - fillLevel));
+
+  // orb scale reacts to loudness
+  const s = (state === 'listening' || state === 'detecting') ? 1 + level * 0.055 : 1;
+  $('orb').style.transform = 'scale(' + s.toFixed(3) + ')';
+
+  // orb face
+  const face = $('orbFace');
+  if (state === 'off' || state === 'error') face.innerHTML = ICONS.micOff;
+  else if (state === 'starting') face.innerHTML = ICONS.mic;
+  else if (state === 'calibrating'){
+    const left = Math.max(1, Math.ceil((CALIBRATE_MS - (performance.now() - calibrateStartedAt))/1000));
+    face.innerHTML = '<div class="readout">' + left + '</div>';
+  }
+  else if (state === 'listening') face.innerHTML = '';
+  else if (state === 'detecting'){
+    const left = Math.max(1, Math.ceil(cryDelay - acc));
+    face.innerHTML = '<div class="readout"><em>' + left + '</em></div>';
+  }
+  else if (state === 'calling') face.innerHTML = ICONS.phone;
+  else if (state === 'incall'){
+    const t = Math.floor((performance.now() - callStartedAt)/1000);
+    face.innerHTML = '<div class="readout sm">' + String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0') + '</div>';
+  }
+  else if (state === 'cooldown') face.innerHTML = ICONS.mic;
+
+  // buttons
+  const power = $('powerBtn'), secondary = $('secondaryBtn');
+  power.classList.remove('warm','quiet');
+  secondary.classList.add('hidden');
+
+  if (state === 'off' || state === 'error'){
+    power.textContent = 'Turn on microphone';
+    power.disabled = false;
+  } else if (state === 'starting'){
+    power.textContent = 'Waiting for permission…';
+    power.disabled = true;
+  } else if (state === 'calling' || state === 'incall'){
+    power.textContent = 'Hang up';
+    power.classList.add('warm');
+    power.disabled = false;
+  } else {
+    power.textContent = 'Stop listening';
+    power.classList.add('quiet');
+    power.disabled = false;
+    if (state === 'detecting'){
+      secondary.classList.remove('hidden');
+      secondary.textContent = 'Not a cry — hold on';
+    } else if (c){
+      secondary.classList.remove('hidden');
+      secondary.textContent = 'Test the call now';
+    }
+  }
+
+  $('nmText').textContent = state === 'cooldown' ? 'Paused' : 'Listening';
+}
+
+/* ---------------- wiring ---------------- */
+$('powerBtn').addEventListener('click', () => {
+  if (state === 'off' || state === 'error') startMic();
+  else if (state === 'calling' || state === 'incall') endCall();
+  else stopMic();
+});
+$('secondaryBtn').addEventListener('click', () => {
+  if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
+  else triggerCall();
+});
+$('orb').addEventListener('click', () => { if (state === 'off' || state === 'error') startMic(); });
+$('pickBtn').addEventListener('click', openPicker);
+$('addBtn').addEventListener('click', () => openSheet(false));
+$('manageBtn').addEventListener('click', () => {
+  const on = document.body.classList.toggle('managing');
+  $('manageBtn').textContent = on ? 'Done' : 'Manage';
+});
+$('scrim').addEventListener('click', closeSheet);
+$('cancelBtn').addEventListener('click', closeSheet);
+$('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('telInput').focus(); });
+$('telInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('saveBtn').click(); });
+$('saveBtn').addEventListener('click', () => {
+  const tel = $('telInput').value.trim();
+  if (tel.replace(/\D/g,'').length < 5){ $('sheetErr').textContent = 'That does not look like a phone number.'; return; }
+  addContact($('nameInput').value, tel);
+  closeSheet();
+  renderContacts();
+  notice('Saved. Jon Blund will remember.');
+});
+
+function wireSeg(el, value, onPick){
+  el.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('sel', b.dataset.v === String(value));
+    b.addEventListener('click', () => {
+      el.querySelectorAll('button').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      onPick(b.dataset.v);
+    });
+  });
+}
+wireSeg($('sensSeg'), sensitivity, v => { sensitivity = v; save(KEY.sens, v); acc = 0; paint(); });
+wireSeg($('delaySeg'), cryDelay,   v => { cryDelay = parseInt(v,10); save(KEY.delay, cryDelay); acc = 0; paint(); });
+
+$('pickerNoteText').innerHTML = pickerSupported
+  ? '<b>Contacts</b> opens your address book — pick one or several, and they stay saved on this phone.'
+  : '<b>This browser keeps contacts private</b> (iPhone and desktop both do). Type the number once and it is one tap from then on.';
+
+/* idle timers keep the countdowns honest even between audio frames */
+setInterval(() => { if (state === 'cooldown' || state === 'incall' || state === 'off') paint(); }, 500);
+
+renderContacts();
+setState('off');
+paint();
+</script>
+</body>
+</html>
