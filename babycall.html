@@ -282,11 +282,45 @@ body.dim .nightmark{opacity:1}
 .nightmark .nm-s{font-size:11px;color:#252c36;margin-top:8px}
 
 
+/* ---------- PRICING ---------- */
+/* the carousel clips on purpose; the pricing body has to be able to scroll */
+#pricing .hiw-view{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.pr-body{padding:30px 26px 14px;text-align:center}
+.pr-free{
+  display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent-deep);
+  background:var(--cloud-1);border-radius:100px;padding:6px 15px;margin-bottom:22px;
+}
+.pr-amount{
+  font-family:var(--display);font-weight:300;font-size:56px;
+  letter-spacing:-.035em;line-height:1;
+}
+.pr-amount span{font-size:26px;letter-spacing:-.02em}
+.pr-unit{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);margin-top:11px}
+.pr-fine{font-size:14px;color:var(--slate);max-width:290px;margin:20px auto 0}
+.pr-fine b{color:var(--ink);font-weight:600}
+.pr-table{
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  margin:24px 0 0;text-align:left;
+}
+.pr-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-top:1px solid var(--line);font-size:14px}
+.pr-row:first-child{border-top:none}
+.pr-row.cap{background:var(--cloud-1)}
+.pr-row .rl{color:var(--ink);flex:1}
+.pr-row .rc{color:var(--slate);font-variant-numeric:tabular-nums}
+.pr-row .rv{
+  font-family:var(--display);font-size:17px;color:var(--ink);
+  min-width:62px;text-align:right;font-variant-numeric:tabular-nums;
+}
+.pr-row.cap .rv{color:var(--accent-deep)}
+.pr-note{font-size:13px;color:var(--slate-light);margin-top:14px}
+
 /* ---------- HOW IT WORKS ---------- */
-.hiw-open{
-  flex:0 0 auto;width:auto;margin:26px auto 0;padding:12px 26px;
+.foot-actions{
+  display:flex;gap:10px;justify-content:center;margin-top:26px;
   opacity:0;animation:rise .8s .75s forwards;transform:translateY(16px);
 }
+.hiw-open{flex:0 0 auto;width:auto;padding:12px 26px}
 .hiw-scrim{
   position:fixed;inset:0;background:rgba(26,29,36,.38);backdrop-filter:blur(5px);
   opacity:0;pointer-events:none;transition:opacity .35s;z-index:90;
@@ -461,13 +495,36 @@ body.dim .nightmark{opacity:1}
     <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so it is not a lamp by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
   </div>
 
-  <button class="btn-soft hiw-open" id="hiwOpen">How it works</button>
+  <div class="foot-actions">
+    <button class="btn-soft hiw-open" id="hiwOpen">How it works</button>
+    <button class="btn-soft hiw-open" id="prOpen">Pricing</button>
+  </div>
 
   <footer>Jon Blund is not a medical or safety device.<br>Never use it as a substitute for supervision.</footer>
 </div>
 
 
 <div class="hiw-scrim" id="hiwScrim"></div>
+<div class="hiw" id="pricing" role="dialog" aria-modal="true" aria-label="Pricing">
+  <div class="hiw-head"><span class="hiw-title">Pricing</span></div>
+  <button class="hiw-close" id="prClose" aria-label="Close">&times;</button>
+
+  <div class="hiw-view">
+    <div class="pr-body">
+      <span class="pr-free" id="prFree"></span>
+      <div class="pr-amount" id="prAmount"></div>
+      <div class="pr-unit">per call</div>
+      <p class="pr-fine" id="prFine"></p>
+      <div class="pr-table" id="prTable"></div>
+      <p class="pr-note" id="prNote"></p>
+    </div>
+  </div>
+
+  <div class="hiw-foot">
+    <button class="btn-primary" id="prCard">Add a card</button>
+    <button class="btn-ghost" id="prLater">Not now</button>
+  </div>
+</div>
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="How Jon Blund works">
   <div class="hiw-head"><span class="hiw-title">How it works</span></div>
   <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
@@ -1285,6 +1342,78 @@ $('hiwTrack').addEventListener('touchend', e => {
   if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) hiwGo(hiwIndex + (dx < 0 ? 1 : -1));
   swipeX = swipeY = null;
 }, { passive:true });
+
+/* ---------------- pricing ---------------- */
+/* One place to change what Jon Blund costs. Amounts are NOK. */
+const PRICE = {
+  perCall:        3.90,
+  includedMin:    2,
+  perExtraMin:    1.90,
+  monthlyCap:     99,
+  firstCallFree:  true
+};
+
+const kr = n => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',').replace(',00', '');
+const monthCost = calls => Math.min(PRICE.monthlyCap, calls * PRICE.perCall);
+
+function renderPricing(){
+  $('prFree').textContent = PRICE.firstCallFree ? 'Your first call is free' : 'No fixed monthly fee';
+  $('prAmount').innerHTML = kr(PRICE.perCall) + ' <span>kr</span>';
+  $('prFine').innerHTML =
+    'Includes the first ' + PRICE.includedMin + ' minutes, then ' + kr(PRICE.perExtraMin) +
+    ' kr a minute. <b>Never more than ' + PRICE.monthlyCap + ' kr in a month</b>, however rough the nights get.';
+
+  const months = [
+    ['A quiet month',  4],
+    ['A normal month', 12],
+    ['A rough month',  26]
+  ];
+  $('prTable').innerHTML = months.map(([label, calls]) => {
+    const cost = monthCost(calls);
+    const capped = cost >= PRICE.monthlyCap;
+    return '<div class="pr-row' + (capped ? ' cap' : '') + '">' +
+             '<span class="rl">' + label + '</span>' +
+             '<span class="rc">' + calls + ' calls</span>' +
+             '<span class="rv">' + Math.round(cost) + ' kr</span>' +
+           '</div>';
+  }).join('');
+
+  $('prNote').textContent =
+    'You add a card once. Jon Blund charges only for calls it actually places, ' +
+    'and settles once a month rather than per call, so card fees do not eat the price.';
+}
+renderPricing();
+
+function prShow(){
+  renderPricing();
+  $('hiwScrim').classList.add('open');
+  $('pricing').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function prHide(){
+  $('hiwScrim').classList.remove('open');
+  $('pricing').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('prOpen').addEventListener('click', prShow);
+$('prClose').addEventListener('click', prHide);
+$('prLater').addEventListener('click', prHide);
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('pricing').classList.contains('open')) prHide();
+});
+
+/* Same shape as the telephony seam: a billing provider drops in here.
+   window.JONBLUND_BILLING = { addCard: async () => {...} } */
+$('prCard').addEventListener('click', async () => {
+  const billing = window.JONBLUND_BILLING;
+  if (billing && typeof billing.addCard === 'function'){
+    try { await billing.addCard(); prHide(); notice('Card saved.'); }
+    catch(e){ notice('That card could not be saved. Nothing was charged.', 6000); }
+  } else {
+    prHide();
+    notice('Card payments are not switched on yet — calls are free for now.', 6000);
+  }
+});
 
 // first visit only
 if (!load(HIW_KEY, false)) setTimeout(hiwShow, 650);
