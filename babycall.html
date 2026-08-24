@@ -111,6 +111,13 @@ body.listening .zz{animation:zrise 4.2s ease-in-out infinite}
 }
 body.alerting .status{color:var(--warm)}
 .substatus{font-size:14px;color:var(--slate);margin-top:7px;text-align:center;min-height:22px;padding:0 10px}
+.status{cursor:pointer}
+.diag{
+  display:none;margin-top:14px;text-align:center;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px;line-height:1.8;color:var(--slate-light);letter-spacing:.01em;
+}
+body.diagnostics .diag{display:block}
 
 /* ---------- BUTTONS ---------- */
 .actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:24px;width:100%}
@@ -435,6 +442,7 @@ body.dim .nightmark{opacity:1}
 
     <div class="status" id="status">Microphone off</div>
     <div class="substatus" id="substatus">Tap below and Jon Blund starts listening.</div>
+    <div class="diag" id="diag"></div>
 
     <div class="actions">
       <button class="btn-primary" id="powerBtn">Turn on microphone</button>
@@ -472,11 +480,11 @@ body.dim .nightmark{opacity:1}
       </div>
     </div>
     <div class="tune-row">
-      <span class="tl">Cry must last</span>
+      <span class="tl">Call after</span>
       <div class="seg" id="delaySeg">
-        <button data-v="3">3s</button>
-        <button data-v="5">5s</button>
-        <button data-v="8">8s</button>
+        <button data-v="2">2 cries</button>
+        <button data-v="3">3 cries</button>
+        <button data-v="4">4 cries</button>
       </div>
     </div>
   </div>
@@ -738,7 +746,10 @@ body.dim .nightmark{opacity:1}
         throw new Error('Denne nettleseren kan ikke ringe');
       }
       device = new Twilio.Device(await getToken(), { codecPreferences: ['opus', 'pcmu'] });
-      device.on('error', e => console.warn('[jonblund]', e.code, e.message));
+      device.on('error', e => {
+        console.warn('[jonblund]', e.code, e.message);
+        if (window.jonblundNotice) window.jonblundNotice('Twilio ' + e.code + ': ' + e.message, 12000);
+      });
 
       clearInterval(refresh);
       refresh = setInterval(async () => {
@@ -804,7 +815,7 @@ const KEY = {
   contacts: 'jonblund.contacts.v1',
   selected: 'jonblund.selected.v1',
   sens:     'jonblund.sensitivity.v1',
-  delay:    'jonblund.delay.v1'
+  bursts:   'jonblund.bursts.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
@@ -812,14 +823,21 @@ const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } cat
 let contacts   = load(KEY.contacts, []);
 let selectedId = load(KEY.selected, null);
 let sensitivity= load(KEY.sens, 'medium');
-let cryDelay   = load(KEY.delay, 5);
+let burstsNeeded = load(KEY.bursts, 3);
 
 /* ---------------- tuning ---------------- */
 const SENS = {
-  low:    { margin: 17, ratio: 0.17 },
-  medium: { margin: 12, ratio: 0.13 },
-  high:   { margin: 8,  ratio: 0.10 }
+  low:    { margin: 12, ratio: 0.12 },
+  medium: { margin: 8,  ratio: 0.09 },
+  high:   { margin: 5,  ratio: 0.07 }
 };
+
+/* Gråt er ikke én lang lyd. Det er skrik, innpust, skrik. Så vi teller
+   utbrudd i et vindu i stedet for å kreve én ubrutt strekning. */
+const BURST_MIN_MS = 250;    // kortere enn dette er et klikk, ikke et skrik
+const BURST_GAP_MS = 350;    // stille så lenge avslutter et utbrudd
+const WINDOW_MS    = 15000;  // se så langt tilbake
+const LONG_WAIL_MS = 4000;   // ett ubrutt skrik så lenge holder alene
 const COOLDOWN_MS = 90000;
 const CALIBRATE_MS = 5000;
 const DIM_AFTER_MS = 30000;
@@ -829,6 +847,7 @@ let state = 'off';           // off · starting · calibrating · listening · d
 let stream = null, actx = null, analyser = null, srcNode = null;
 let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
+let bursts = [], burstStart = 0, lastHit = 0, lastDb = -99, lastRatio = 0;
 let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
@@ -1056,12 +1075,25 @@ function loop(){
   const tonal = ratio > cfg.ratio;
   const hit   = loud && tonal;
 
+  lastDb = db; lastRatio = ratio;
   trackFloor(db, loud);
 
-  acc = Math.max(0, Math.min(cryDelay, acc + (hit ? dt : -dt * 1.6)));
+  // spor utbrudd: start når lyden kommer, lukk når den har vært borte en stund
+  if (hit){
+    if (!burstStart) burstStart = now;
+    lastHit = now;
+  } else if (burstStart && now - lastHit > BURST_GAP_MS){
+    if (lastHit - burstStart >= BURST_MIN_MS) bursts.push(lastHit);
+    burstStart = 0;
+  }
+  bursts = bursts.filter(t => now - t < WINDOW_MS);
 
-  if (acc >= cryDelay) { triggerCall(); return; }
-  setState(acc > 0.45 ? 'detecting' : 'listening');
+  // to veier til å ringe: nok utbrudd, eller ett langt sammenhengende skrik
+  const wailMs = burstStart ? now - burstStart : 0;
+  if (bursts.length >= burstsNeeded || wailMs >= LONG_WAIL_MS){ triggerCall(); return; }
+
+  acc = Math.max(bursts.length / burstsNeeded, wailMs / LONG_WAIL_MS);
+  setState((bursts.length > 0 || wailMs > BURST_MIN_MS) ? 'detecting' : 'listening');
   paint();
 }
 
@@ -1075,7 +1107,7 @@ function trackFloor(db, loud){
 /* ---------------- call flow ---------------- */
 async function triggerCall(){
   const c = selectedContact();
-  acc = 0;
+  acc = 0; bursts = []; burstStart = 0;
   if (!c){
     setState('listening');
     notice('Heard crying — but nobody is picked to call.', 6000);
@@ -1097,14 +1129,16 @@ async function triggerCall(){
     setState('incall');
   } catch(e){
     setState('listening');
-    notice('The call could not be placed. Still listening.', 6000);
+    const why = (e && (e.message || e.code)) ? String(e.message || e.code) : 'unknown';
+    notice('Call failed: ' + why, 12000);
+    console.error('[jonblund] call failed', e);
   }
 }
 
 function endCall(){
   const c = activeCall; activeCall = null;   // clear first: hangUp() can re-enter via onEnded
   if (c){ try { c.hangUp(); } catch(e){} }
-  acc = 0;
+  acc = 0; bursts = []; burstStart = 0;
   cooldownUntil = performance.now() + COOLDOWN_MS;
   setState('cooldown');
 }
@@ -1152,7 +1186,7 @@ const COPY = {
   starting:    ['Waking up',         'Allow the microphone when your browser asks.'],
   calibrating: ['Learning the room', 'Hold still — measuring how quiet it is in here.'],
   listening:   ['Listening',         ''],
-  detecting:   ['Crying',            'Still crying — getting ready to call.'],
+  detecting:   ['Crying',            'Counting how many times.'],
   calling:     ['Calling',           ''],
   incall:      ['On the call',       'You are hearing the room live.'],
   cooldown:    ['Paused',            'Settling for a moment before it can call again.'],
@@ -1187,7 +1221,7 @@ function paint(){
   $('status').textContent = title;
 
   let subtitle = sub;
-  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' if the crying lasts ' + cryDelay + 's.') : 'Pick who to call, below.';
+  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' after ' + burstsNeeded + ' cries.') : 'Pick who to call, below.';
   else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
   else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
   else if (state === 'cooldown')  subtitle = 'Back to listening in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + 's.';
@@ -1199,7 +1233,7 @@ function paint(){
 
   // meter ring
   let fillLevel = level;
-  if (state === 'detecting') fillLevel = Math.max(level, acc / cryDelay);
+  if (state === 'detecting') fillLevel = Math.max(level, acc);
   if (state === 'calling' || state === 'incall') fillLevel = 1;
   if (state === 'off' || state === 'error') fillLevel = 0;
   if (state === 'calibrating') fillLevel = Math.min(1, (performance.now() - calibrateStartedAt) / CALIBRATE_MS);
@@ -1219,8 +1253,7 @@ function paint(){
   }
   else if (state === 'listening') face.innerHTML = '';
   else if (state === 'detecting'){
-    const left = Math.max(1, Math.ceil(cryDelay - acc));
-    face.innerHTML = '<div class="readout"><em>' + left + '</em></div>';
+    face.innerHTML = '<div class="readout sm"><em>' + bursts.length + '</em>/' + burstsNeeded + '</div>';
   }
   else if (state === 'calling') face.innerHTML = ICONS.phone;
   else if (state === 'incall'){
@@ -1258,6 +1291,19 @@ function paint(){
   }
 
   $('nmText').textContent = state === 'cooldown' ? 'Paused' : 'Listening';
+
+  if (document.body.classList.contains('diagnostics')){
+    const cfg = SENS[sensitivity] || SENS.medium;
+    const live = analyser !== null;
+    const wail = burstStart ? ((performance.now() - burstStart) / 1000).toFixed(1) : '0.0';
+    $('diag').innerHTML = live
+      ? 'level ' + lastDb.toFixed(0) + ' dB &nbsp;floor ' + floorDb.toFixed(0) +
+        ' &nbsp;needs &gt; ' + (floorDb + cfg.margin).toFixed(0) + '<br>' +
+        'tone ' + lastRatio.toFixed(3) + ' &nbsp;needs &gt; ' + cfg.ratio.toFixed(2) + '<br>' +
+        'cries ' + bursts.length + '/' + burstsNeeded + ' &nbsp;wail ' + wail + 's / ' +
+        (LONG_WAIL_MS/1000) + 's'
+      : 'microphone off';
+  }
 }
 
 /* ---------------- wiring ---------------- */
@@ -1271,6 +1317,7 @@ $('secondaryBtn').addEventListener('click', () => {
   else triggerCall();
 });
 $('orb').addEventListener('click', () => { if (state === 'off' || state === 'error') startMic(); });
+$('status').addEventListener('click', () => { document.body.classList.toggle('diagnostics'); paint(); });
 $('addBtn').addEventListener('click', openSheet);
 $('manageBtn').addEventListener('click', () => {
   const on = document.body.classList.toggle('managing');
@@ -1299,8 +1346,12 @@ function wireSeg(el, value, onPick){
     });
   });
 }
-wireSeg($('sensSeg'), sensitivity, v => { sensitivity = v; save(KEY.sens, v); acc = 0; paint(); });
-wireSeg($('delaySeg'), cryDelay,   v => { cryDelay = parseInt(v,10); save(KEY.delay, cryDelay); acc = 0; paint(); });
+wireSeg($('sensSeg'), sensitivity, v => { sensitivity = v; save(KEY.sens, v); bursts = []; burstStart = 0; acc = 0; paint(); });
+wireSeg($('delaySeg'), burstsNeeded, v => { burstsNeeded = parseInt(v,10); save(KEY.bursts, burstsNeeded); bursts = []; burstStart = 0; acc = 0; paint(); });
+
+/* the telephony adapter reports through this, so failures land on screen
+   instead of only in a console nobody opens on a phone */
+window.jonblundNotice = notice;
 
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => { if (state === 'cooldown' || state === 'incall' || state === 'off') paint(); }, 500);
