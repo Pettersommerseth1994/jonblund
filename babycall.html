@@ -504,7 +504,7 @@ body.dim .nightmark{opacity:1}
     <div class="pr-body">
       <span class="pr-free" id="prFree"></span>
       <div class="pr-amount" id="prAmount"></div>
-      <div class="pr-unit">per call</div>
+      <div class="pr-unit" id="prUnit">a month</div>
       <p class="pr-fine" id="prFine"></p>
       <div class="pr-table" id="prTable"></div>
       <p class="pr-note" id="prNote"></p>
@@ -1307,23 +1307,26 @@ $('hiwTrack').addEventListener('touchend', e => {
 /* ---------------- pricing ---------------- */
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
-  perCall:        0.99,
+  monthlyBase:    2.99,
+  perCall:        0.49,
   includedMin:    2,
-  perExtraMin:    0.99,
+  perExtraMin:    0.49,
   monthlyCap:     39.99,
   firstCallFree:  true
 };
 
 const usd      = n => '$' + n.toFixed(2);
 const usdWhole = n => '$' + Math.round(n);
-const monthCost = calls => Math.min(PRICE.monthlyCap, calls * PRICE.perCall);
+const monthCost = calls => Math.min(PRICE.monthlyCap, PRICE.monthlyBase + calls * PRICE.perCall);
 
 function renderPricing(){
   $('prFree').textContent = PRICE.firstCallFree ? 'Your first call is free' : 'No fixed monthly fee';
-  $('prAmount').innerHTML = '<span>$</span>' + PRICE.perCall.toFixed(2);
+  $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
+  $('prUnit').textContent = 'a month';
   $('prFine').innerHTML =
-    'Includes the first ' + PRICE.includedMin + ' minutes, then ' + usd(PRICE.perExtraMin) +
-    ' a minute. <b>Never more than ' + usd(PRICE.monthlyCap) + ' in a month</b>, however rough the nights get.';
+    'Plus ' + usd(PRICE.perCall) + ' a call, the first ' + PRICE.includedMin +
+    ' minutes included. <b>Never more than ' + usd(PRICE.monthlyCap) +
+    ' in a month</b>, however rough the nights get.';
 
   const months = [
     ['A quiet month',  4],
@@ -1341,8 +1344,8 @@ function renderPricing(){
   }).join('');
 
   $('prNote').textContent =
-    'You add a card once. Jon Blund charges only for calls it actually places, ' +
-    'and settles once a month rather than per call, so card fees do not eat the price.';
+    'Calls running past ' + PRICE.includedMin + ' minutes add ' + usd(PRICE.perExtraMin) +
+    ' a minute. One card, one charge a month — the fee and your calls together.';
 }
 renderPricing();
 
