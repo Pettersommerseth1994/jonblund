@@ -346,7 +346,7 @@ body.dim .nightmark{opacity:1}
 /* En bestemt hoyde pa selve modalen. Alt under - view, spor, steg - regner
    prosenter mot denne, og da slutter teksten a bli klemt bort. Prisskjermen
    deler .hiw-klassen, men skal fortsatt folge sitt eget innhold. */
-#hiw{height:min(92dvh,620px)}
+#hiw{height:min(94dvh,680px)}
 .hiw-head{
   display:flex;align-items:center;justify-content:center;
   padding:19px 54px 17px;border-bottom:1px solid var(--line);
@@ -373,7 +373,7 @@ body.dim .nightmark{opacity:1}
   /* Bestemt hoyde. Uten den forhandler bildet og teksten om plassen, og
      bildet vinner - som er hvorfor teksten forsvant pa lave skjermer. */
   flex:0 0 auto;
-  height:32dvh;min-height:148px;max-height:224px;
+  height:24dvh;min-height:104px;max-height:166px;
 }
 .hiw-art svg{width:100%;height:100%;display:block}
 .hiw-copy{
@@ -397,7 +397,7 @@ body.dim .nightmark{opacity:1}
 .ob-share{margin-top:4px}
 .hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
 .hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
-.hiw-copy p{font-size:14.5px;color:var(--slate);max-width:288px;margin:0 auto}
+.hiw-copy p{font-size:14.5px;color:var(--slate);max-width:none;margin:0 auto}
 .hiw-foot{padding:20px 26px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:13px}
 .hiw-dots{display:flex;gap:7px}
 .hiw-dot{width:7px;height:7px;border-radius:50%;background:var(--line);border:none;padding:0;cursor:pointer;transition:background .3s,width .3s}
@@ -496,24 +496,6 @@ body.dim .nightmark{opacity:1}
     </div>
   </section>
 
-  <div class="tune">
-    <div class="tune-row">
-      <span class="tl">Sensitivity</span>
-      <div class="seg" id="sensSeg">
-        <button data-v="low">Low</button>
-        <button data-v="medium">Medium</button>
-        <button data-v="high">High</button>
-      </div>
-    </div>
-    <div class="tune-row">
-      <span class="tl">Call after</span>
-      <div class="seg" id="delaySeg">
-        <button data-v="2">2 cries</button>
-        <button data-v="3">3 cries</button>
-        <button data-v="4">4 cries</button>
-      </div>
-    </div>
-  </div>
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
@@ -600,7 +582,7 @@ body.dim .nightmark{opacity:1}
         <div class="hiw-copy">
           <div class="hiw-num">Step 1</div>
           <h3>A baby monitor that <em>actually calls.</em></h3>
-          <p>Jon Blund works just like a baby monitor, except it really rings your phone. No app to install and nothing to buy — just two phones with coverage.</p>
+          <p><b>You need two phones.</b> Lay one down side by side with your baby. Jon Blund works just like a baby monitor, except it really rings your phone. No app to install and no equipment to buy — just two phones with coverage.</p>
         </div>
       </div>
 
@@ -610,6 +592,7 @@ body.dim .nightmark{opacity:1}
           <div class="hiw-num">Step 2</div>
           <h3>Which phone should it <em>ring?</em></h3>
           <p>The one you keep with you. Saved here, so it is one tap from now on.</p>
+          <div id="obPick"></div>
           <div class="field">
             <label for="obName">Name</label>
             <input id="obName" type="text" autocomplete="name" placeholder="Lone" enterkeyhint="next">
@@ -788,36 +771,25 @@ const $ = (id) => document.getElementById(id);
 const KEY = {
   contacts: 'jonblund.contacts.v1',
   selected: 'jonblund.selected.v1',
-  sens:     'jonblund.sensitivity.v1',
-  bursts:   'jonblund.bursts.v1'
+  baby:     'jonblund.baby.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 
 let contacts   = load(KEY.contacts, []);
 let selectedId = load(KEY.selected, null);
-let sensitivity= load(KEY.sens, 'medium');
-let burstsNeeded = load(KEY.bursts, 3);
 
 /* ---------------- tuning ---------------- */
-/* Terskler over støygulvet. Strammere enn før, fordi utbruddstelling i seg
-   selv utløser lettere enn å kreve én lang sammenhengende lyd. */
-const SENS = {
-  low:    { margin: 20, ratio: 0.17 },
-  medium: { margin: 15, ratio: 0.14 },
-  high:   { margin: 11, ratio: 0.11 }
-};
+/* Én fast innstilling. Jon Blund ringer så snart lyden har holdt seg
+   over terskelen lenge nok til å være gråt og ikke et smell. */
+const GATE = { margin: 15, ratio: 0.14 };
 
-/* En baby som gråter en meter fra telefonen er høy, i absolutte tall. Denne
-   grensen dreper romsus som tilfeldigvis ligger over et lavt støygulv. */
+/* En baby som gråter en meter fra telefonen er høy, i absolutte tall.
+   Denne grensen dreper romsus som ligger over et lavt støygulv. */
 const ABS_MIN_DB = -45;
 
-/* Gråt er ikke én lang lyd. Det er skrik, innpust, skrik. Så vi teller
-   utbrudd i et vindu i stedet for å kreve én ubrutt strekning. */
-const BURST_MIN_MS = 400;    // kortere enn dette er et klikk, ikke et skrik
-const BURST_GAP_MS = 350;    // stille så lenge avslutter et utbrudd
-const WINDOW_MS    = 15000;  // se så langt tilbake
-const LONG_WAIL_MS = 4000;   // ett ubrutt skrik så lenge holder alene
+const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
+const CRY_MS       = 1200;  // dørsmell 150 ms, hoste 400 — dette er en baby
 const COOLDOWN_MS = 90000;
 const CALIBRATE_MS = 5000;
 const DIM_AFTER_MS = 30000;
@@ -827,7 +799,7 @@ let state = 'off';           // off · starting · calibrating · listening · d
 let stream = null, actx = null, analyser = null, srcNode = null;
 let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
-let bursts = [], burstStart = 0, lastHit = 0, lastDb = -99, lastRatio = 0;
+let burstStart = 0, lastHit = 0, cryHeard = 0, lastDb = -99, lastRatio = 0;
 let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
@@ -1049,30 +1021,27 @@ function loop(){
 
   if (state !== 'listening' && state !== 'detecting'){ paint(); return; }
 
-  const cfg = SENS[sensitivity] || SENS.medium;
-  const loud  = db > floorDb + cfg.margin && db > ABS_MIN_DB;
-  const tonal = ratio > cfg.ratio;
+  const loud  = db > floorDb + GATE.margin && db > ABS_MIN_DB;
+  const tonal = ratio > GATE.ratio;
   const hit   = loud && tonal;
 
   lastDb = db; lastRatio = ratio;
   trackFloor(db, loud);
 
-  // spor utbrudd: start når lyden kommer, lukk når den har vært borte en stund
+  // Tell lyd, ikke veggur. Ellers utløser et enkelt rop fordi
+  // pausetoleransen etterpå teller med i varigheten.
   if (hit){
-    if (!burstStart) burstStart = now;
+    if (!burstStart){ burstStart = now; cryHeard = 0; }
+    cryHeard += dt * 1000;
     lastHit = now;
   } else if (burstStart && now - lastHit > BURST_GAP_MS){
-    if (lastHit - burstStart >= BURST_MIN_MS) bursts.push(lastHit);
-    burstStart = 0;
+    burstStart = 0; cryHeard = 0;
   }
-  bursts = bursts.filter(t => now - t < WINDOW_MS);
 
-  // to veier til å ringe: nok utbrudd, eller ett langt sammenhengende skrik
-  const wailMs = burstStart ? now - burstStart : 0;
-  if (bursts.length >= burstsNeeded || wailMs >= LONG_WAIL_MS){ triggerCall(); return; }
+  if (cryHeard >= CRY_MS){ triggerCall(); return; }
 
-  acc = Math.max(bursts.length / burstsNeeded, wailMs / LONG_WAIL_MS);
-  setState((bursts.length > 0 || wailMs > BURST_MIN_MS) ? 'detecting' : 'listening');
+  acc = cryHeard / CRY_MS;
+  setState(cryHeard > 250 ? 'detecting' : 'listening');
   paint();
 }
 
@@ -1086,7 +1055,7 @@ function trackFloor(db, loud){
 /* ---------------- call flow ---------------- */
 async function triggerCall(){
   const c = selectedContact();
-  acc = 0; bursts = []; burstStart = 0;
+  acc = 0; burstStart = 0; cryHeard = 0;
   if (!c){
     setState('listening');
     notice('Heard crying — but nobody is picked to call.', 6000);
@@ -1117,7 +1086,7 @@ async function triggerCall(){
 function endCall(){
   const c = activeCall; activeCall = null;   // clear first: hangUp() can re-enter via onEnded
   if (c){ try { c.hangUp(); } catch(e){} }
-  acc = 0; bursts = []; burstStart = 0;
+  acc = 0; burstStart = 0; cryHeard = 0;
   cooldownUntil = performance.now() + COOLDOWN_MS;
   setState('cooldown');
 }
@@ -1165,7 +1134,7 @@ const COPY = {
   starting:    ['Waking up',         'Allow the microphone when your browser asks.'],
   calibrating: ['Learning the room', 'Hold still — measuring how quiet it is in here.'],
   listening:   ['Listening',         ''],
-  detecting:   ['Crying',            'Counting how many times.'],
+  detecting:   ['Crying',            'Getting ready to call.'],
   calling:     ['Calling',           ''],
   incall:      ['On the call',       'You are hearing the room live.'],
   cooldown:    ['Paused',            'Settling for a moment before it can call again.'],
@@ -1200,7 +1169,7 @@ function paint(){
   $('status').textContent = title;
 
   let subtitle = sub;
-  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' after ' + burstsNeeded + ' cries.') : 'Pick who to call, below.';
+  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' the moment it hears crying.') : 'Pick who to call, below.';
   else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
   else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
   else if (state === 'cooldown')  subtitle = 'Back to listening in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + 's.';
@@ -1232,7 +1201,7 @@ function paint(){
   }
   else if (state === 'listening') face.innerHTML = '';
   else if (state === 'detecting'){
-    face.innerHTML = '<div class="readout sm"><em>' + bursts.length + '</em>/' + burstsNeeded + '</div>';
+    face.innerHTML = '';
   }
   else if (state === 'calling') face.innerHTML = ICONS.phone;
   else if (state === 'incall'){
@@ -1272,17 +1241,15 @@ function paint(){
   $('nmText').textContent = state === 'cooldown' ? 'Paused' : 'Listening';
 
   if (document.body.classList.contains('diagnostics')){
-    const cfg = SENS[sensitivity] || SENS.medium;
     const live = analyser !== null;
-    const wail = burstStart ? ((performance.now() - burstStart) / 1000).toFixed(1) : '0.0';
+    const wail = (cryHeard / 1000).toFixed(1);
     $('diag').innerHTML = live
       ? 'level ' + lastDb.toFixed(0) + ' &nbsp;floor ' + floorDb.toFixed(0) +
-        ' &nbsp;gate ' + Math.max(floorDb + cfg.margin, ABS_MIN_DB).toFixed(0) + ' dB ' +
-        (lastDb > Math.max(floorDb + cfg.margin, ABS_MIN_DB) ? '&check;' : '&times;') + '<br>' +
-        'tone ' + lastRatio.toFixed(3) + ' &nbsp;gate ' + cfg.ratio.toFixed(2) + ' ' +
-        (lastRatio > cfg.ratio ? '&check;' : '&times;') + '<br>' +
-        'cries ' + bursts.length + '/' + burstsNeeded + ' &nbsp;wail ' + wail + 's/' +
-        (LONG_WAIL_MS/1000) + 's'
+        ' &nbsp;gate ' + Math.max(floorDb + GATE.margin, ABS_MIN_DB).toFixed(0) + ' dB ' +
+        (lastDb > Math.max(floorDb + GATE.margin, ABS_MIN_DB) ? '&check;' : '&times;') + '<br>' +
+        'tone ' + lastRatio.toFixed(3) + ' &nbsp;gate ' + GATE.ratio.toFixed(2) + ' ' +
+        (lastRatio > GATE.ratio ? '&check;' : '&times;') + '<br>' +
+        'cry ' + wail + 's / ' + (CRY_MS/1000) + 's'
       : 'microphone off';
   }
 }
@@ -1364,8 +1331,6 @@ function wireSeg(el, value, onPick){
     });
   });
 }
-wireSeg($('sensSeg'), sensitivity, v => { sensitivity = v; save(KEY.sens, v); bursts = []; burstStart = 0; acc = 0; paint(); });
-wireSeg($('delaySeg'), burstsNeeded, v => { burstsNeeded = parseInt(v,10); save(KEY.bursts, burstsNeeded); bursts = []; burstStart = 0; acc = 0; paint(); });
 
 /* the telephony adapter reports through this, so failures land on screen
    instead of only in a console nobody opens on a phone */
@@ -1464,6 +1429,30 @@ $('hiwNext').addEventListener('click', () => {
   if (!obLinkReady) { obMakeLink(); return; }
   hiwHide();
 });
+
+/* Contact Picker finnes bare i Chrome pa Android. Der den finnes,
+   fyller den feltene under i stedet for a be deg taste. */
+if (pickerSupported){
+  const b = document.createElement('button');
+  b.className = 'btn-soft';
+  b.style.cssText = 'width:100%;margin-bottom:16px';
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+              + 'stroke-linecap="round"><path d="M16 19v-1.5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3V19"/>'
+              + '<circle cx="10" cy="7.5" r="3"/><path d="M18.5 8v5M21 10.5h-5"/></svg> Choose from contacts';
+  b.addEventListener('click', async () => {
+    try {
+      const picked = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+      const person = picked && picked[0];
+      if (!person) return;
+      $('obName').value = (person.name && person.name[0]) || '';
+      $('obTel').value  = (person.tel && person.tel[0]) || '';
+      $('obErr').textContent = '';
+    } catch (e) {
+      if (e && e.name !== 'AbortError') notice('Could not open your contacts.', 5000);
+    }
+  });
+  $('obPick').appendChild(b);
+}
 
 $('obName').addEventListener('keydown', e => { if (e.key === 'Enter') $('obTel').focus(); });
 $('obTel').addEventListener('keydown',  e => { if (e.key === 'Enter') $('hiwNext').click(); });
