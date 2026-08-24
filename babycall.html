@@ -782,7 +782,12 @@ let selectedId = load(KEY.selected, null);
 /* ---------------- tuning ---------------- */
 /* Én fast innstilling. Jon Blund ringer så snart lyden har holdt seg
    over terskelen lenge nok til å være gråt og ikke et smell. */
-const GATE = { margin: 9, ratio: 0.18 };
+/* Malt mot syntetiske signaler i nettleser:
+     grat naer 0.92 · grat gjennom rom 0.77 · grat langt unna 0.42
+     tale 0.36 · vifte 0.26 · lav brumming 0.00
+   0.38 fanger den fjerne graten og ligger fortsatt over tale og vifte.
+   Bommer heller mot et anrop for mye enn en grat for lite. */
+const GATE = { margin: 7, ratio: 0.38 };
 
 const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
 const CRY_MS       = 1200;  // dørsmell 150 ms, hoste 400 — dette er en baby
@@ -797,6 +802,7 @@ let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
 let burstStart = 0, lastHit = 0, cryHeard = 0, lastDb = -99, lastRatio = 0;
 let peakDb = -99, peakRatio = 0, peakAt = 0;   // hoyeste sett siste 30 s
+let gateWhy = '';                               // hvorfor den ikke armerer
 let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
@@ -977,7 +983,7 @@ function analyse(){
     if (hz < 80 || hz > 8000) continue;
     const p = Math.pow(10, freqBuf[i] / 10);
     wideBand += p;
-    if (hz >= 250 && hz <= 700) cryBand += p;
+    if (hz >= 250 && hz <= 2500) cryBand += p;   // grunntone OG overtoner
   }
   const ratio = wideBand > 0 ? cryBand / wideBand : 0;
   return { db, ratio };
@@ -1037,6 +1043,13 @@ function loop(){
   } else if (burstStart && now - lastHit > BURST_GAP_MS){
     burstStart = 0; cryHeard = 0;
   }
+
+  // Si fra hvorfor den ikke armerer. En forelder som tester skal slippe
+  // a lure pa om mikrofonen er i stykker.
+  if (hit)            gateWhy = '';
+  else if (loud)      gateWhy = 'Hearing sound, but it does not sound like crying.';
+  else if (db > floorDb + 3) gateWhy = 'Hearing something, but too faint.';
+  else                gateWhy = '';
 
   if (cryHeard >= CRY_MS){ triggerCall(); return; }
 
@@ -1169,7 +1182,8 @@ function paint(){
   $('status').textContent = title;
 
   let subtitle = sub;
-  if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' the moment it hears crying.') : 'Pick who to call, below.';
+  if (state === 'listening')      subtitle = !c ? 'Pick who to call, below.'
+                                    : (gateWhy || 'Will call ' + c.name + ' the moment it hears crying.');
   else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
   else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
   else if (state === 'cooldown')  subtitle = 'Not listening. Back on in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + ' seconds.';
