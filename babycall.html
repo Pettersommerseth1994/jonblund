@@ -746,6 +746,16 @@ body.dim .nightmark{opacity:1}
         throw new Error('Denne nettleseren kan ikke ringe');
       }
       device = new Twilio.Device(await getToken(), { codecPreferences: ['opus', 'pcmu'] });
+
+      // Telefon A ligger ved senga. SDK-en spiller ringetone ut av
+      // høyttaleren når den ringer, og en tone når samtalen brytes — begge
+      // rett i øret på den som sover. Alle tre er på som standard.
+      try {
+        device.audio.outgoing(false);
+        device.audio.incoming(false);
+        device.audio.disconnect(false);
+      } catch (e) { console.warn('[jonblund] kunne ikke dempe SDK-lyder', e); }
+
       device.on('error', e => {
         console.warn('[jonblund]', e.code, e.message);
         if (window.jonblundNotice) window.jonblundNotice('Twilio ' + e.code + ': ' + e.message, 12000);
