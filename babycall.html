@@ -394,6 +394,35 @@ body.dim .nightmark{opacity:1}
   line-height:1.5;text-align:left;
 }
 .ob-row{display:flex;gap:9px}
+.vcard{
+  border:1px solid var(--line);border-radius:22px;padding:24px 18px 18px;
+  text-align:center;margin:2px 0 6px;
+  background:radial-gradient(120% 100% at 30% 0%,var(--cloud-2),var(--cloud-1) 55%,var(--white));
+  box-shadow:0 14px 34px rgba(109,139,171,.14);
+}
+.vc-avatar{
+  width:74px;height:74px;border-radius:50%;margin:0 auto 13px;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--cloud-2) 74%,var(--cloud-3));
+  border:1px solid var(--line);display:grid;place-items:center;
+  font-family:var(--display);font-size:29px;font-weight:400;color:var(--accent-deep);
+}
+.vc-org{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-light)}
+.vc-name{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;margin:3px 0 15px}
+.vc-acts{display:flex;justify-content:center;gap:11px;margin-bottom:16px}
+.vc-act{
+  width:41px;height:41px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.72);border:1px solid var(--line);color:var(--slate-light);
+}
+.vc-act.on{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
+.vc-act svg{width:17px;height:17px}
+.vc-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:14px;
+  padding:10px 14px;text-align:left;
+}
+.vc-row span{font-size:12px;color:var(--slate)}
+.vc-row b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.btn-primary:disabled{opacity:.35;pointer-events:none}
 .ob-share{margin-top:4px}
 .hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
 .hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
@@ -615,13 +644,28 @@ body.dim .nightmark{opacity:1}
             <label for="obBaby">Baby&rsquo;s name</label>
             <input id="obBaby" type="text" placeholder="Emma" enterkeyhint="done">
           </div>
-          <div class="ob-share hidden" id="obShare">
-            <div class="ob-link" id="obLink"></div>
-            <div class="ob-row">
-              <button class="btn-soft" id="obSend">Send it</button>
-              <button class="btn-soft" id="obCopy">Copy link</button>
+        </div>
+      </div>
+
+      <!-- 4 · kortet, slik det lander hos mottakeren -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 4</div>
+          <h3>Send the <em>contact card.</em></h3>
+          <p>This is what lands in their phone.</p>
+          <div class="vcard">
+            <div class="vc-avatar" id="vcInitial">S</div>
+            <div class="vc-org">JON BLUND</div>
+            <div class="vc-name" id="vcName">Sonja</div>
+            <div class="vc-acts">
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3.1-6.3L20 5v5h-5"/></svg></span>
+              <span class="vc-act on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 4h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 14v2.6a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 6.2 2 2 0 0 1 6.5 4z"/></svg></span>
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="14" height="12" rx="3"/><path d="M17 10l4-2v8l-4-2"/></svg></span>
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/></svg></span>
             </div>
+            <div class="vc-row"><span>mobile</span><b>+1 (240) 232-6663</b></div>
           </div>
+          <div class="ob-link hidden" id="obLink"></div>
         </div>
       </div>
     </div>
@@ -719,21 +763,36 @@ body.dim .nightmark{opacity:1}
       if (device){ try { device.destroy(); } catch (e) {} device = null; }
     },
 
-    async call(contact, { onEnded }){
+    async call(contact, { onEnded, onConnected }){
       if (!device) await this.prepare();
 
       const call = await device.connect({ params: { To: contact.tel } });
-      let weHungUp = false;
+      let weHungUp = false, done = false;
 
-      // answerOnBridge gjør at 'accept' betyr at B faktisk tok den.
-      await new Promise((resolve, reject) => {
-        call.once('accept', resolve);
-        call.once('disconnect', () => reject(new Error('Ingen svar')));
-        call.once('error', reject);
-      });
+      const finish = () => { if (!done && !weHungUp){ done = true; onEnded(); } };
 
-      call.once('disconnect', () => { if (!weHungUp) onEnded(); });
+      // Telefon A ligger ved senga og skal aldri spille lyd. answerOnBridge
+      // sender ekte ringetone inn i nettleser-leggen, og den ville kommet
+      // rett ut av hoyttaleren ved barnet. Demp alt vi mottar - A trenger
+      // aldri a hore noe.
+      const muteRemote = () => {
+        try {
+          const rs = call.getRemoteStream && call.getRemoteStream();
+          if (rs){ rs.getAudioTracks().forEach(t => { t.enabled = false; }); return true; }
+        } catch (e) {}
+        return false;
+      };
+      if (!muteRemote()){
+        let tries = 0;
+        const t = setInterval(() => { if (muteRemote() || ++tries > 40) clearInterval(t); }, 100);
+      }
 
+      call.once('accept', () => { muteRemote(); if (!weHungUp) onConnected(); });
+      call.once('disconnect', finish);
+      call.once('error', finish);
+
+      // Handtaket returneres med en gang. Ventet vi pa 'accept' her, ville
+      // "Hang up" vaere koblet til ingenting hele tiden den ringer.
       return {
         hangUp(){ weHungUp = true; try { call.disconnect(); } catch (e) {} }
       };
@@ -787,10 +846,10 @@ let selectedId = load(KEY.selected, null);
      tale 0.36 · vifte 0.26 · lav brumming 0.00
    0.38 fanger den fjerne graten og ligger fortsatt over tale og vifte.
    Bommer heller mot et anrop for mye enn en grat for lite. */
-const GATE = { margin: 7, ratio: 0.38 };
+const GATE = { margin: 9, ratio: 0.42 };
 
 const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
-const CRY_MS       = 1200;  // dørsmell 150 ms, hoste 400 — dette er en baby
+const CRY_MS       = 2000;  // to sekunder faktisk lyd. Den sterkeste barrieren.
 const COOLDOWN_MS = 20000;   // tid til a komme inn til barnet for den kan ringe igjen
 const CALIBRATE_MS = 5000;
 const DIM_AFTER_MS = 30000;
@@ -802,7 +861,7 @@ let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
 let burstStart = 0, lastHit = 0, cryHeard = 0, lastDb = -99, lastRatio = 0;
 let peakDb = -99, peakRatio = 0, peakAt = 0;   // hoyeste sett siste 30 s
-let gateWhy = '';                               // hvorfor den ikke armerer
+let gateWhy = '', gateWhyAt = 0;                // hvorfor den ikke armerer
 let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
@@ -1046,10 +1105,13 @@ function loop(){
 
   // Si fra hvorfor den ikke armerer. En forelder som tester skal slippe
   // a lure pa om mikrofonen er i stykker.
-  if (hit)            gateWhy = '';
-  else if (loud)      gateWhy = 'Hearing sound, but it does not sound like crying.';
-  else if (db > floorDb + 3) gateWhy = 'Hearing something, but too faint.';
-  else                gateWhy = '';
+  const why = hit ? ''
+            : loud ? 'Hearing sound, but it does not sound like crying.'
+            : db > floorDb + 3 ? 'Hearing something, but too faint.'
+            : '';
+  // hold en melding i minst to og et halvt sekund, ellers flakker den
+  // for fort til at noen rekker a lese den
+  if (why !== gateWhy && now - gateWhyAt > 2500){ gateWhy = why; gateWhyAt = now; }
 
   if (cryHeard >= CRY_MS){ triggerCall(); return; }
 
@@ -1081,13 +1143,16 @@ async function triggerCall(){
   const adapter = window.JONBLUND_TELEPHONY;
   try {
     if (adapter && typeof adapter.call === 'function'){
-      activeCall = await adapter.call(c, { onEnded: endCall });
+      activeCall = await adapter.call(c, {
+        onEnded: endCall,
+        onConnected(){ callStartedAt = performance.now(); setState('incall'); }
+      });
     } else {
-      await new Promise(r => setTimeout(r, 2600));      // demo: pretend it rings
-      activeCall = { hangUp(){} };
+      activeCall = { hangUp(){} };                      // demo: pretend it rings
+      setTimeout(() => {
+        if (state === 'calling'){ callStartedAt = performance.now(); setState('incall'); }
+      }, 2600);
     }
-    callStartedAt = performance.now();
-    setState('incall');
   } catch(e){
     setState('listening');
     const why = (e && (e.message || e.code)) ? String(e.message || e.code) : 'unknown';
@@ -1367,7 +1432,7 @@ const BABY_KEY = 'jonblund.baby.v1';
 const VCARD_BASE = 'https://jonblund-voice.vercel.app/api/vcard';
 
 const hiwSteps = [...document.querySelectorAll('.hiw-step')];
-let hiwIndex = 0, obLinkReady = false;
+let hiwIndex = 0, obSent = false;
 
 $('hiwDots').innerHTML = hiwSteps.map((_, i) =>
   '<button class="hiw-dot" data-i="' + i + '" aria-label="Step ' + (i+1) + '"></button>').join('');
@@ -1375,7 +1440,15 @@ $('hiwDots').innerHTML = hiwSteps.map((_, i) =>
 function obNextLabel(){
   if (hiwIndex === 0) return 'Here\u2019s how to start';
   if (hiwIndex === 1) return 'Save and continue';
-  return obLinkReady ? 'Done' : 'Make the link';
+  if (hiwIndex === 2) return 'Next';
+  return obSent ? 'Done' : 'Send contact card';
+}
+
+/* Steg 3 slipper ingen videre for barnet har et navn - kortet er
+   meningslost uten. */
+function obSyncNext(){
+  $('hiwNext').textContent = obNextLabel();
+  $('hiwNext').disabled = (hiwIndex === 2 && !$('obBaby').value.trim());
 }
 
 function hiwGo(i){
@@ -1383,7 +1456,7 @@ function hiwGo(i){
   $('hiwTrack').style.transform = 'translateX(' + (-100 * hiwIndex) + '%)';
   hiwSteps.forEach((s, n) => s.classList.toggle('active', n === hiwIndex));
   [...$('hiwDots').children].forEach((d, n) => d.classList.toggle('on', n === hiwIndex));
-  $('hiwNext').textContent = obNextLabel();
+  obSyncNext();
 
   // steg 3 vet hvem lenken skal til, sa den kan si det
   if (hiwIndex === 2){
@@ -1425,15 +1498,15 @@ function obSaveRecipient(){
 }
 
 /* steg 3: lag kontaktkort-lenken */
-function obMakeLink(){
+/* Bygger kortet slik det vil se ut hos mottakeren. */
+function obBuildCard(){
   const baby = $('obBaby').value.trim();
-  if (!baby){ $('obBaby').focus(); return false; }
+  if (!baby) return false;
   save(BABY_KEY, baby);
-  const url = VCARD_BASE + '?name=' + encodeURIComponent(baby);
-  $('obLink').textContent = url;
-  $('obShare').classList.remove('hidden');
-  obLinkReady = true;
-  $('hiwNext').textContent = obNextLabel();
+  $('obLink').textContent = VCARD_BASE + '?name=' + encodeURIComponent(baby);
+  $('vcInitial').textContent = baby.charAt(0).toUpperCase();
+  $('vcName').textContent = baby + ' \u2665\uFE0F';
+  obSent = false;
   return true;
 }
 
@@ -1441,11 +1514,14 @@ $('hiwOpen').addEventListener('click', hiwShow);
 $('hiwClose').addEventListener('click', hiwHide);
 $('hiwScrim').addEventListener('click', hiwHide);
 
-$('hiwNext').addEventListener('click', () => {
+$('hiwNext').addEventListener('click', async () => {
   if (hiwIndex === 0) return hiwGo(1);
   if (hiwIndex === 1) { if (obSaveRecipient()) hiwGo(2); return; }
-  if (!obLinkReady) { obMakeLink(); return; }
-  hiwHide();
+  if (hiwIndex === 2) { if (obBuildCard()) hiwGo(3); return; }
+  if (obSent) { hiwHide(); return; }
+  await obShareCard();
+  obSent = true;                 // tilbake fra delearket
+  obSyncNext();
 });
 
 /* Contact Picker finnes bare i Chrome pa Android. Der den finnes,
@@ -1475,11 +1551,9 @@ if (pickerSupported){
 $('obName').addEventListener('keydown', e => { if (e.key === 'Enter') $('obTel').focus(); });
 $('obTel').addEventListener('keydown',  e => { if (e.key === 'Enter') $('hiwNext').click(); });
 $('obBaby').addEventListener('keydown', e => { if (e.key === 'Enter') $('hiwNext').click(); });
-$('obBaby').addEventListener('input', () => {
-  if (obLinkReady){ obLinkReady = false; $('obShare').classList.add('hidden'); $('hiwNext').textContent = obNextLabel(); }
-});
+$('obBaby').addEventListener('input', obSyncNext);
 
-$('obSend').addEventListener('click', async () => {
+async function obShareCard(){
   const baby = $('obBaby').value.trim() || 'the baby';
   const url  = $('obLink').textContent;
   const text = 'Hi!\n\nSave this so Jon Blund can reach you when ' + baby +
@@ -1504,13 +1578,9 @@ $('obSend').addEventListener('click', async () => {
   }
 
   try { await navigator.clipboard.writeText(url); notice('Link copied.'); }
-  catch(e){ notice('Copy the link above and send it on.', 6000); }
-});
+  catch(e){ notice('Could not share on this device.', 6000); }
+}
 
-$('obCopy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText($('obLink').textContent); notice('Link copied.'); }
-  catch(e){ notice('Could not copy \u2014 select the link above instead.', 6000); }
-});
 
 addEventListener('keydown', e => {
   if (!$('hiw').classList.contains('open')) return;
