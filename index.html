@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jon Blund — Gi natten tilbake til hele familien</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#eef2f8">
+<title>Jon Blund — the baby monitor that calls your phone</title>
+<meta name="description" content="A baby monitor that rings your phone instead of buzzing a receiver. No app, no hardware, no dead spots through brick walls. Free for a week.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --white:#ffffff;
@@ -20,1125 +22,628 @@
   --accent:#8ba9c9;
   --accent-deep:#6d8bab;
   --line:#e8ecf1;
+  --warm:#b06a6a;
+  --warm-bg:#f6e7e7;
   --display:'Fraunces',Georgia,serif;
-  --body:'Manrope',system-ui,sans-serif;
+  --body:'Manrope',system-ui,-apple-system,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  font-family:var(--body);
-  color:var(--ink);
-  background:var(--white);
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  font-family:var(--body);color:var(--ink);background:var(--white);
+  line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
-.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 28px}
+a{color:inherit}
 
 /* ---------- NAV ---------- */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
-  padding:22px 40px;
-  background:rgba(255,255,255,0.72);
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid transparent;
+  padding:20px 32px;background:rgba(255,255,255,.76);
+  backdrop-filter:blur(18px);border-bottom:1px solid transparent;
   transition:border-color .4s,padding .4s;
 }
-nav.scrolled{border-bottom:1px solid var(--line);padding:16px 40px}
-.logo{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;display:inline-block}
+nav.scrolled{border-bottom-color:var(--line);padding:14px 32px}
+.logo{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;text-decoration:none}
 .logo span{color:var(--accent-deep)}
-.nav-links{display:flex;gap:38px;align-items:center;margin-left:auto}
-.nav-right{display:flex;align-items:center;gap:14px;margin-left:24px}
+.nav-links{display:flex;gap:32px;align-items:center;margin-left:auto}
 .nav-links a{color:var(--slate);text-decoration:none;font-size:14.5px;font-weight:500;transition:color .25s}
 .nav-links a:hover{color:var(--ink)}
 .nav-cta{
-  background:var(--ink);color:var(--white)!important;
-  padding:10px 22px;border-radius:100px;font-size:14px;
-  transition:transform .25s,background .25s;
+  background:var(--ink);color:var(--white)!important;text-decoration:none;
+  padding:10px 22px;border-radius:100px;font-size:14px;font-weight:600;
+  margin-left:22px;transition:transform .25s,background .25s;
+  box-shadow:0 6px 18px rgba(26,29,36,.12);
 }
 .nav-cta:hover{transform:translateY(-1px);background:var(--accent-deep)}
-.lang-toggle{
-  background:none;border:1px solid var(--line);
-  color:var(--slate);font-family:var(--body);font-size:13.5px;font-weight:700;cursor:pointer;
-  padding:8px 16px;border-radius:100px;letter-spacing:.06em;transition:border-color .25s,color .25s;
+@media(max-width:820px){ .nav-links a:not(.nav-cta){display:none} .nav-cta{margin-left:0} }
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-block;text-decoration:none;border-radius:100px;
+  font-family:var(--body);font-size:15.5px;font-weight:600;
+  padding:16px 32px;transition:transform .25s,box-shadow .25s,background .25s;
 }
-.lang-toggle:hover{border-color:var(--accent);color:var(--ink)}
-.menu-btn{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink)}
+.btn-primary{background:var(--ink);color:var(--white);box-shadow:0 10px 28px rgba(26,29,36,.16)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(26,29,36,.22)}
+.btn-ghost{
+  color:var(--ink);display:inline-flex;align-items:center;gap:8px;
+  padding:16px 8px;transition:gap .25s;
+}
+.btn-ghost:hover{gap:14px}
 
 /* ---------- HERO ---------- */
 .hero{
-  position:relative;min-height:100vh;
-  background:
-    radial-gradient(140% 120% at 85% 15%, var(--cloud-3) 0%, var(--cloud-2) 30%, var(--cloud-1) 55%, var(--paper) 78%, var(--white) 100%);
-  overflow:hidden;
-  display:flex;align-items:center;
-  padding:120px 0 60px;
+  background:radial-gradient(140% 115% at 78% 12%,var(--cloud-3) 0%,var(--cloud-2) 28%,var(--cloud-1) 52%,var(--paper) 76%,var(--white) 100%);
+  padding:150px 0 90px;
 }
-.hero-inner{
-  max-width:1180px;width:100%;margin:0 auto;padding:0 32px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;
-}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
 .eyebrow{
-  display:inline-flex;align-items:center;gap:9px;
-  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--accent-deep);margin-bottom:26px;
-  opacity:0;animation:rise .8s .1s forwards;
+  display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:22px;
 }
-.hero h1{
-  font-family:var(--display);
-  font-weight:300;
-  font-size:clamp(42px,5.6vw,72px);
-  line-height:1.02;letter-spacing:-.025em;
-  margin-bottom:26px;
+.eyebrow::before{content:"";width:22px;height:1px;background:var(--accent)}
+h1{
+  font-family:var(--display);font-weight:300;
+  font-size:clamp(40px,5.4vw,66px);line-height:1.02;letter-spacing:-.028em;
+  margin-bottom:24px;text-wrap:balance;
 }
-.hero h1 em{font-style:italic;color:var(--accent-deep);font-weight:400}
-.hero h1 .word{display:inline-block;opacity:0;animation:rise .9s forwards}
-.hero-copy{max-width:720px;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
-.hero p.lead{
-  font-size:18px;color:var(--slate);max-width:520px;margin:0 auto 38px;
-  opacity:0;animation:rise .8s .5s forwards;
+h1 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.lead{font-size:18.5px;color:var(--slate);max-width:46ch;margin-bottom:34px}
+.hero-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.hero-note{font-size:13.5px;color:var(--slate-light);margin-top:22px}
+.hero-art{position:relative}
+.hero-art svg{width:100%;height:auto;display:block}
+@media(max-width:920px){
+  .hero{padding:126px 0 70px}
+  .hero-grid{grid-template-columns:1fr;gap:38px}
+  .hero-art{order:-1;max-width:420px;margin:0 auto}
 }
-.hero-actions{display:flex;gap:16px;align-items:center;justify-content:center;opacity:0;animation:rise .8s .65s forwards}
-.btn-primary{
-  background:var(--ink);color:var(--white);border:none;
-  padding:15px 30px;border-radius:100px;font-family:var(--body);
-  font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;
-  display:inline-block;transition:transform .25s,box-shadow .25s;
-  box-shadow:0 8px 24px rgba(26,29,36,.12);
-}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(26,29,36,.2)}
-.btn-ghost{
-  color:var(--ink);text-decoration:none;font-size:15px;font-weight:600;
-  display:inline-flex;align-items:center;gap:8px;transition:gap .25s;
-}
-.btn-ghost:hover{gap:13px}
-.hero-stats{display:flex;gap:34px;margin-top:56px;opacity:0;animation:rise .8s .8s forwards}
-.stat .n{font-family:var(--display);font-size:30px;font-weight:400;letter-spacing:-.02em}
-.stat .l{font-size:12.5px;color:var(--slate);letter-spacing:.02em}
-
-/* ---------- PRODUCT RENDER (hero) ---------- */
-.hero-render{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;margin-top:44px;width:100%}
-.render-stage{width:100%;max-width:380px;opacity:0;animation:fade 1.2s .4s forwards}
-.mount-strap{animation:bob 3.4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(-9px)}50%{transform:translateY(9px)}}
-.spring{transform-origin:200px 48px;animation:stretch 3.4s ease-in-out infinite}
-@keyframes stretch{0%,100%{transform:scaleY(.82)}50%{transform:scaleY(1.18)}}
-.floor-shadow{transform-origin:200px 486px;animation:shadowPulse 3.4s ease-in-out infinite}
-@keyframes shadowPulse{0%,100%{transform:scaleX(.9);opacity:.08}50%{transform:scaleX(1.05);opacity:.13}}
-.zz{font-family:var(--display);font-style:italic;fill:#8ba9c9;opacity:0;animation:zrise 4.2s ease-in-out infinite}
-.z1{font-size:21px}
-.z2{font-size:15px;animation-delay:1.4s}
-.z3{font-size:12px;animation-delay:2.8s}
-@keyframes zrise{0%{opacity:0;transform:translateY(0)}14%{opacity:.85}60%,100%{opacity:0;transform:translateY(-54px)}}
 
 /* ---------- SECTIONS ---------- */
 section{position:relative}
-.section-pad{padding:120px 0}
-.sec-eyebrow{
-  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--accent-deep);margin-bottom:18px;
-}
+.pad{padding:110px 0}
+.sec-eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:16px}
 .sec-title{
   font-family:var(--display);font-weight:300;
-  font-size:clamp(30px,4vw,48px);line-height:1.08;letter-spacing:-.02em;
-  max-width:640px;margin-bottom:20px;
+  font-size:clamp(30px,4.1vw,48px);line-height:1.08;letter-spacing:-.022em;
+  max-width:19ch;margin-bottom:20px;text-wrap:balance;
 }
-.sec-title em{font-style:italic;color:var(--accent-deep);font-weight:400}
-.sec-intro{font-size:17px;color:var(--slate);max-width:520px}
+.sec-title em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.sec-title.wide{max-width:26ch}
+.sec-intro{font-size:17.5px;color:var(--slate);max-width:56ch}
+.center{text-align:center}
+.center .sec-title,.center .sec-intro{margin-left:auto;margin-right:auto}
 
-/* HOW IT WORKS */
-.how{background:linear-gradient(180deg,var(--white) 0%,var(--paper) 100%)}
-.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:64px}
-.how-card{
-  background:var(--white);border:1px solid var(--line);border-radius:22px;
-  padding:34px 30px;transition:transform .35s,box-shadow .35s;
+/* ---------- WALLS ---------- */
+.walls{background:linear-gradient(180deg,var(--white),var(--paper))}
+.walls-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:60px}
+.wall-card{
+  border:1px solid var(--line);border-radius:26px;padding:34px 32px 30px;background:var(--white);
 }
-.how-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(109,139,171,.12)}
-.how-num{font-family:var(--display);font-size:15px;color:var(--accent);margin-bottom:20px;font-weight:500}
-.how-icon{width:52px;height:52px;margin-bottom:22px;color:var(--accent-deep)}
-.how-card h3{font-size:19px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
-.how-card p{font-size:14.5px;color:var(--slate)}
+.wall-card.good{
+  background:linear-gradient(160deg,var(--white),var(--cloud-1));
+  border-color:var(--accent);
+  box-shadow:0 24px 56px rgba(109,139,171,.14);
+}
+.wall-tag{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:20px;
+}
+.wall-card .wall-tag{background:var(--warm-bg);color:var(--warm)}
+.wall-card.good .wall-tag{background:var(--accent-deep);color:#fff}
+.wall-card h3{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;margin-bottom:10px}
+.wall-card p{font-size:15px;color:var(--slate)}
+.wall-card svg{width:100%;height:auto;margin:22px 0 6px;display:block}
+@media(max-width:820px){ .walls-grid{grid-template-columns:1fr} }
 
-/* MODES */
-.modes{background:radial-gradient(120% 100% at 50% 0%,var(--cloud-1) 0%,var(--white) 60%)}
-.mode-panel{
-  display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center;margin-top:60px;
+/* ---------- STEPS ---------- */
+.steps{background:radial-gradient(120% 100% at 50% 0%,var(--cloud-1),var(--white) 62%)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:62px}
+.step{
+  background:var(--white);border:1px solid var(--line);border-radius:24px;
+  padding:0 0 30px;overflow:hidden;transition:transform .35s,box-shadow .35s;
 }
-.mode-list{display:flex;flex-direction:column;gap:14px}
-.mode-item{
-  border:1px solid var(--line);border-radius:18px;padding:24px 26px;cursor:pointer;
-  background:var(--white);transition:border-color .3s,background .3s,transform .3s;
-  display:flex;align-items:center;gap:22px;
+.step:hover{transform:translateY(-6px);box-shadow:0 22px 52px rgba(109,139,171,.13)}
+.step-art{
+  background:radial-gradient(130% 120% at 66% 16%,var(--cloud-2),var(--paper) 70%,var(--white));
+  border-bottom:1px solid var(--line);padding:20px 18px 14px;
 }
-.mode-item:hover{transform:translateX(4px)}
-.mode-item.active{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
-.mode-time{
-  font-family:var(--display);font-size:26px;font-weight:400;letter-spacing:-.02em;
-  min-width:78px;color:var(--accent-deep);
-}
-.mode-item h4{font-size:17px;font-weight:600;margin-bottom:3px}
-.mode-item p{font-size:14px;color:var(--slate)}
-.mode-visual{
-  position:relative;background:var(--white);border:1px solid var(--line);
-  border-radius:28px;padding:44px;min-height:360px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  box-shadow:0 30px 60px rgba(109,139,171,.10);
-}
-.device{
-  width:150px;height:150px;border-radius:50%;
-  background:radial-gradient(circle at 38% 32%,var(--white),var(--cloud-2) 75%,var(--cloud-3));
-  border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;position:relative;
-  box-shadow:inset 0 2px 8px rgba(255,255,255,.9),0 12px 30px rgba(109,139,171,.16);
-}
-.device-ring{
-  position:absolute;inset:-14px;border-radius:50%;border:1.5px solid var(--accent);
-  opacity:.35;animation:pulse 3s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.08);opacity:.08}}
-.device-readout{font-family:var(--display);font-size:34px;color:var(--ink);font-weight:400;letter-spacing:-.02em}
-.device-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);margin-top:26px}
-.mode-leds{display:flex;gap:10px;margin-top:16px}
-.led{width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .3s}
-.led.on{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.step-art svg{width:100%;height:auto;display:block}
+.step-body{padding:26px 28px 0}
+.step-n{font-family:var(--display);font-size:14px;font-weight:500;color:var(--accent);margin-bottom:12px}
+.step h3{font-size:19px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.step p{font-size:14.5px;color:var(--slate)}
+@media(max-width:900px){ .steps-grid{grid-template-columns:1fr;max-width:440px;margin-left:auto;margin-right:auto} }
 
-/* SPECS */
-.specs{background:var(--ink);color:var(--white)}
-.specs .sec-eyebrow{color:var(--accent)}
-.specs .sec-title{color:var(--white)}
-.specs .sec-title em{color:var(--accent)}
-.spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden;margin-top:60px}
-.spec-cell{background:var(--ink);padding:32px 26px}
-.spec-cell .k{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
-.spec-cell .v{font-family:var(--display);font-size:27px;font-weight:300;letter-spacing:-.02em;margin-bottom:6px}
-.spec-cell .d{font-size:13.5px;color:var(--slate-light)}
+/* ---------- BENEFITS ---------- */
+.bens{background:var(--ink);color:var(--white)}
+.bens .sec-eyebrow{color:var(--accent)}
+.bens .sec-title{color:var(--white)}
+.bens .sec-intro{color:var(--slate-light)}
+.ben-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:60px;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;overflow:hidden;
+}
+.ben{background:var(--ink);padding:34px 30px 32px}
+.ben svg{width:26px;height:26px;color:var(--accent);margin-bottom:18px}
+.ben h4{font-size:17px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.ben p{font-size:14.5px;color:var(--slate-light)}
+@media(max-width:900px){ .ben-grid{grid-template-columns:1fr 1fr} }
+@media(max-width:600px){ .ben-grid{grid-template-columns:1fr} }
 
-/* GALLERY / RENDERS */
-.gallery-grid{display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:auto auto;gap:24px;margin-top:60px}
-.render-tile{
-  border-radius:26px;border:1px solid var(--line);overflow:hidden;position:relative;
-  background:radial-gradient(130% 120% at 70% 20%,var(--cloud-2),var(--paper) 70%,var(--white));
-  display:flex;align-items:center;justify-content:center;padding:40px;min-height:280px;
+/* ---------- PRICING ---------- */
+.pricing{background:linear-gradient(180deg,var(--paper),var(--white))}
+.price-card{
+  max-width:520px;margin:60px auto 0;background:var(--white);
+  border:1px solid var(--line);border-radius:30px;padding:44px 40px 38px;
+  box-shadow:0 30px 70px rgba(109,139,171,.13);text-align:center;
 }
-.render-tile.tall{grid-row:span 2;min-height:auto}
-.render-tile .caption{
-  position:absolute;left:26px;bottom:24px;font-size:13.5px;color:var(--slate);
-  background:rgba(255,255,255,.7);padding:6px 14px;border-radius:100px;backdrop-filter:blur(6px);
+.price-free{
+  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent-deep);background:var(--cloud-1);
+  border-radius:100px;padding:7px 17px;margin-bottom:26px;
 }
+.price-big{font-family:var(--display);font-weight:300;font-size:64px;letter-spacing:-.035em;line-height:1}
+.price-big sup{font-size:28px;vertical-align:.42em;margin-right:3px;letter-spacing:-.02em}
+.price-unit{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);margin-top:12px}
+.price-rows{border:1px solid var(--line);border-radius:18px;margin:30px 0 26px;text-align:left}
+.price-row{display:flex;justify-content:space-between;gap:14px;padding:14px 18px;font-size:14.5px}
+.price-row+.price-row{border-top:1px solid var(--line)}
+.price-row span{color:var(--slate)}
+.price-row b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price-cap{background:var(--cloud-1);border-radius:0 0 17px 17px}
+.price-cap b{color:var(--accent-deep)}
+.price-card .btn{width:100%;text-align:center}
+.price-fine{font-size:13px;color:var(--slate-light);margin-top:18px}
 
-/* SHOP / CONFIGURATOR */
-.shop{background:linear-gradient(180deg,var(--paper) 0%,var(--white) 100%)}
-.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:60px}
-.pcard{
-  border:1px solid var(--line);border-radius:26px;padding:36px;background:var(--white);
-  display:flex;flex-direction:column;transition:box-shadow .35s,transform .35s;position:relative;
+/* ---------- HONEST ---------- */
+.honest-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:56px}
+.honest{border:1px solid var(--line);border-radius:24px;padding:30px 30px 26px;background:var(--white)}
+.honest h4{font-size:17px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:11px}
+.honest h4::before{
+  content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;
 }
-.pcard:hover{transform:translateY(-4px);box-shadow:0 24px 56px rgba(109,139,171,.12)}
-.pcard-visual{
-  border-radius:18px;background:radial-gradient(130% 120% at 68% 22%,var(--cloud-2),var(--paper) 72%,var(--white));
-  display:flex;align-items:center;justify-content:center;padding:26px;margin-bottom:26px;min-height:200px;
-}
-.pcard h3{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
-.pcard .ptag{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
-.pcard .pdesc{font-size:14.5px;color:var(--slate);margin-bottom:24px;flex:1}
-.opt-label{font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin-bottom:12px}
-.swatches{display:flex;gap:12px;margin-bottom:26px}
-.swatch{
-  width:42px;height:42px;border-radius:50%;cursor:pointer;border:2px solid var(--line);
-  position:relative;transition:transform .2s,border-color .2s;
-}
-.swatch:hover{transform:scale(1.06)}
-.swatch.sel{border-color:var(--accent-deep)}
-.swatch.sel::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--accent);opacity:.6}
-.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:100px;padding:4px;margin-bottom:26px;width:fit-content}
-.seg button{
-  border:none;background:none;cursor:pointer;font-family:var(--body);font-size:14px;font-weight:600;
-  color:var(--slate);padding:9px 20px;border-radius:100px;transition:background .25s,color .25s;
-}
-.seg button.sel{background:var(--ink);color:var(--white)}
-.addon{
-  display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:16px;
-  padding:16px 18px;margin-bottom:26px;cursor:pointer;transition:border-color .25s,background .25s;
-}
-.addon.sel{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
-.addon .box{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .25s,background .25s}
-.addon.sel .box{border-color:var(--accent-deep);background:var(--accent-deep)}
-.addon.sel .box::after{content:"✓";color:#fff;font-size:13px;font-weight:700}
-.addon .info h5{font-size:15px;font-weight:600;margin-bottom:2px}
-.addon .info p{font-size:13px;color:var(--slate)}
-.addon .ap{margin-left:auto;font-family:var(--display);font-size:19px;color:var(--ink)}
-.price-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;padding-top:22px;border-top:1px solid var(--line)}
-.price-row .pl{font-size:14px;color:var(--slate)}
-.price-row .pv{font-family:var(--display);font-size:34px;font-weight:400;letter-spacing:-.02em}
-.pcard .btn-primary{width:100%;text-align:center;box-shadow:none}
-.pcard .btn-primary:hover{box-shadow:0 12px 30px rgba(26,29,36,.18)}
+.honest p{font-size:14.5px;color:var(--slate)}
+@media(max-width:820px){ .honest-grid{grid-template-columns:1fr} }
 
-/* DOS & DON'TS */
-.dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:60px}
-.dd-card{border:1px solid var(--line);border-radius:26px;padding:34px 32px;background:var(--white)}
-.dd-card h3{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
-.dd-ic{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
-.dd-do .dd-ic{background:#e7f0e9;color:#4d7d5c}
-.dd-dont .dd-ic{background:#f6e7e7;color:#b06a6a}
-.dd-item{display:flex;gap:14px;align-items:flex-start;padding:15px 0;border-top:1px solid var(--line);font-size:14.5px;color:var(--slate)}
-.dd-item:first-of-type{border-top:none;margin-top:8px}
-.dd-item .dd-ic{margin-top:1px}
-
-/* CTA */
+/* ---------- CTA ---------- */
 .cta{
-  background:radial-gradient(120% 130% at 50% 0%,var(--cloud-3),var(--cloud-1) 45%,var(--white));
-  text-align:center;padding:130px 40px;
+  background:radial-gradient(120% 130% at 50% 0%,var(--cloud-3),var(--cloud-1) 46%,var(--white));
+  text-align:center;padding:120px 28px;
 }
-.cta h2{font-family:var(--display);font-weight:300;font-size:clamp(34px,5vw,60px);letter-spacing:-.025em;margin-bottom:22px;line-height:1.05}
-.cta h2 em{font-style:italic;color:var(--accent-deep);font-weight:400}
-.cta p{font-size:18px;color:var(--slate);max-width:460px;margin:0 auto 40px}
+.cta h2{
+  font-family:var(--display);font-weight:300;font-size:clamp(34px,5vw,58px);
+  letter-spacing:-.028em;line-height:1.05;margin-bottom:20px;text-wrap:balance;
+}
+.cta h2 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.cta p{font-size:18px;color:var(--slate);max-width:44ch;margin:0 auto 36px}
 .cta-note{font-size:13px;color:var(--slate-light);margin-top:20px}
 
-/* FOOTER */
-footer{background:var(--white);border-top:1px solid var(--line);padding:70px 40px 44px}
-.foot-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
-.foot-brand .logo{font-size:26px;margin-bottom:14px;display:inline-block}
-.foot-brand p{font-size:14px;color:var(--slate);max-width:260px}
-.foot-col h5{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:18px;font-weight:600}
-.foot-col a{display:block;color:var(--slate);text-decoration:none;font-size:14.5px;margin-bottom:11px;transition:color .2s}
-.foot-col a:hover{color:var(--accent-deep)}
-.foot-bottom{max-width:1180px;margin:50px auto 0;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px;color:var(--slate-light)}
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--white)}
+.foot{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.foot p{font-size:14px;color:var(--slate);max-width:34ch;margin-top:12px}
+.foot-links{display:flex;gap:26px;font-size:14.5px}
+.foot-links a{color:var(--slate);text-decoration:none;transition:color .2s}
+.foot-links a:hover{color:var(--accent-deep)}
+.foot-bottom{
+  max-width:1140px;margin:40px auto 0;padding-top:24px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-size:13px;color:var(--slate-light);
+}
 
-/* reveal */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+/* ---------- ART ---------- */
+.zz{font-family:var(--display);font-style:italic;fill:var(--accent);opacity:0;animation:zrise 4.4s ease-in-out infinite}
+@keyframes zrise{0%{opacity:0;transform:translateY(0)}14%{opacity:.8}60%,100%{opacity:0;transform:translateY(-40px)}}
+.wave{transform-box:fill-box;transform-origin:center;animation:wave 2.6s ease-out infinite}
+@keyframes wave{0%{opacity:0;transform:scale(.55)}22%{opacity:.8}100%{opacity:0;transform:scale(1.3)}}
+.dash{animation:dash 1.8s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-30}}
+.shake{transform-box:fill-box;transform-origin:center;animation:shake 1.9s ease-in-out infinite}
+@keyframes shake{0%,62%,100%{transform:rotate(0)}8%{transform:rotate(-3.5deg)}18%{transform:rotate(3.5deg)}28%{transform:rotate(-2.4deg)}38%{transform:rotate(2deg)}50%{transform:rotate(-1deg)}}
+.fade{opacity:.35}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1)}
 .reveal.in{opacity:1;transform:none}
-
-@keyframes rise{to{opacity:1;transform:none}}
-@keyframes fade{to{opacity:1}}
-.eyebrow,.hero p.lead,.hero-actions,.hero-stats{transform:translateY(20px)}
-.hero h1 .word{transform:translateY(30px)}
-
-/* ---------- RESPONSIVE ---------- */
-@media(max-width:940px){
-  .hero{padding-top:110px}
-  .hero-render{margin-top:36px}
-  .how-grid{grid-template-columns:1fr 1fr}
-  .shop-grid{grid-template-columns:1fr}
-  .dd-grid{grid-template-columns:1fr}
-  .mode-panel{grid-template-columns:1fr;gap:40px}
-  .spec-grid{grid-template-columns:repeat(2,1fr)}
-  .gallery-grid{grid-template-columns:1fr}
-  .render-tile.tall{grid-row:auto}
-  .foot-grid{grid-template-columns:1fr 1fr}
-  .nav-links{
-    display:none;position:absolute;top:100%;left:0;right:0;
-    background:var(--white);flex-direction:column;align-items:flex-start;
-    gap:18px;padding:20px 40px 26px;border-bottom:1px solid var(--line);
-    box-shadow:0 18px 40px rgba(26,29,36,.08);
-  }
-  .nav-links.open{display:flex}
-  .nav-right{margin-left:auto}
-  .menu-btn{display:block}
-}
-@media(max-width:560px){
-  .wrap,nav,.hero-inner,.cta,footer{padding-left:22px;padding-right:22px}
-  .how-grid{grid-template-columns:1fr}
-  .shop-grid{grid-template-columns:1fr}
-  .hero-stats{gap:22px;flex-wrap:wrap}
-  .spec-grid{grid-template-columns:1fr}
-  .foot-grid{grid-template-columns:1fr}
-  .foot-bottom{flex-direction:column;gap:10px}
-}
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
-  .eyebrow,.hero p.lead,.hero-actions,.hero-stats,.hero h1 .word,.render-stage{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
 
+<!-- shared svg parts -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef2f8"/><stop offset="1" stop-color="#dde7f0"/>
+  </linearGradient>
+  <linearGradient id="nest" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="0" dy="10" stdDeviation="13" flood-color="#6d8bab" flood-opacity="0.16"/>
+  </filter>
+</defs></svg>
+
 <nav id="nav">
-  <div class="logo">jon<span>blund</span></div>
+  <a class="logo" href="#top">jon<span>blund</span></a>
   <div class="nav-links">
-    <a href="#how">Slik virker det</a>
-    <a href="#modes">Moduser</a>
-    <a href="#specs">Spesifikasjoner</a>
-    <a href="#safety">Sikkerhet</a>
-    <a href="#gallery">Design</a>
-    <a href="#shop" class="nav-cta">Kjøp</a>
-  </div>
-  <div class="nav-right">
-    <button class="lang-toggle" id="langToggle" aria-label="Switch language" title="Bytt språk / Switch language">EN</button>
-    <button class="menu-btn" aria-label="Meny">☰</button>
+    <a href="#walls">Why it works</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a class="nav-cta" href="https://www.jonblund.site/babycall.html">Get started</a>
   </div>
 </nav>
 
 <!-- ================= HERO ================= -->
-<header class="hero">
-  <div class="hero-inner">
-  <div class="hero-copy">
-    <span class="eyebrow">Nylansering · Forhåndsbestill nå</span>
-    <h1>
-      <span class="word" style="animation-delay:.15s">Gi</span>
-      <span class="word" style="animation-delay:.22s">natten</span>
-      <span class="word" style="animation-delay:.29s">tilbake</span><br>
-      <span class="word" style="animation-delay:.36s">til</span>
-      <span class="word" style="animation-delay:.43s"><em>hele familien.</em></span>
-    </h1>
-    <p class="lead">Jon Blund festes med vaier og karabinkrok der du vil, og reimen justeres i flere trinn til riktig høyde. Den milde gyngingen gjør resten.</p>
-    <div class="hero-actions">
-      <a href="#order" class="btn-primary">Forhåndsbestill</a>
-      <a href="#how" class="btn-ghost">Se hvordan &rarr;</a>
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Free for a week</span>
+      <h1>A baby monitor that <em>actually calls you.</em></h1>
+      <p class="lead">Jon Blund listens by the crib and rings your phone the moment your baby cries. Not a notification you might sleep through — a real call, on the mobile network.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Get started</a>
+        <a class="btn btn-ghost" href="#how">See how it works &rarr;</a>
+      </div>
+      <p class="hero-note">No app to install. No hardware to buy. Two phones and coverage.</p>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><div class="n">3</div><div class="l">gynge­moduser</div></div>
-      <div class="stat"><div class="n">40t</div><div class="l">på én lading</div></div>
-      <div class="stat"><div class="n">25kg</div><div class="l">totalvekt</div></div>
-    </div>
-  </div>
 
-  <div class="hero-render">
-    <svg class="render-stage" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Render av Jon Blund-motoren som henger i tak med reim og vugge">
-      <defs>
-        <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef2f8"/><stop offset="1" stop-color="#dde7f0"/>
-        </linearGradient>
-        <linearGradient id="bodyEdge" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfdbe8"/>
-        </linearGradient>
-        <radialGradient id="btn" cx="40%" cy="35%" r="70%">
-          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c3d3e4"/>
-        </radialGradient>
-        <linearGradient id="strap" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#c6d3e2"/><stop offset="1" stop-color="#9fb4cb"/>
-        </linearGradient>
-        <linearGradient id="nest" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/>
-        </linearGradient>
-        <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#6d8bab" flood-opacity="0.16"/>
-        </filter>
-      </defs>
+    <div class="hero-art">
+      <svg viewBox="0 0 460 320" role="img" aria-label="A phone beside a sleeping baby calls a second phone">
+        <ellipse cx="128" cy="268" rx="98" ry="9" fill="#6d8bab" opacity=".07"/>
+        <rect x="34" y="214" width="196" height="34" rx="17" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.4"/>
+        <ellipse cx="76" cy="212" rx="33" ry="13" fill="#eef2f8" stroke="#e3eaf3"/>
+        <path d="M112 198 H214 a19 19 0 0 1 19 19 v6 a9 9 0 0 1 -9 9 H112 z" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.4"/>
+        <path d="M114 214 H224" stroke="#dde7f0" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="80" cy="184" r="26" fill="url(#body)" stroke="#d5e0ec" stroke-width="1.4"/>
+        <path d="M81 158 q7 -10 15 -5" fill="none" stroke="#b5c4d6" stroke-width="2.8" stroke-linecap="round"/>
+        <path d="M68 185 q5 5 10 0" fill="none" stroke="#6d8bab" stroke-width="2.3" stroke-linecap="round"/>
+        <path d="M86 185 q5 5 10 0" fill="none" stroke="#6d8bab" stroke-width="2.3" stroke-linecap="round"/>
+        <path d="M76 197 q4.5 4 9 0" fill="none" stroke="#8ba9c9" stroke-width="2.1" stroke-linecap="round"/>
+        <circle cx="63" cy="192" r="4.4" fill="#8ba9c9" opacity=".26"/>
+        <text class="zz" x="118" y="152" font-size="22">z</text>
+        <text class="zz" x="138" y="160" font-size="15" style="animation-delay:1.6s">z</text>
 
-      <!-- ceiling mount / nagle with carabiner (fixed) -->
-      <rect x="176" y="10" width="48" height="10" rx="5" fill="#cfdbe8"/>
-      <path d="M200 20 v6" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
-      <!-- carabiner -->
-      <rect x="192" y="24" width="16" height="24" rx="8" fill="none" stroke="#9fb4cb" stroke-width="3"/>
-      <path d="M200 26 v8" stroke="#c6d3e2" stroke-width="2" stroke-linecap="round"/>
-
-      <!-- spring: stretches and compresses from the fixed mount -->
-      <g class="spring">
-        <path d="M200 48 L200 60" fill="none" stroke="#9fb4cb" stroke-width="2.4"/>
-        <path d="M200 60 q10 8 -0 16 q-10 8 0 16 q10 8 0 12" fill="none" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
-      </g>
-
-      <!-- bobbing group: device, straps and nest move up and down together -->
-      <g class="mount-strap">
-        <!-- device body -->
-        <g filter="url(#soft)" transform="translate(200 150) scale(.78) translate(-200 -150)">
-          <ellipse cx="200" cy="150" rx="82" ry="70" fill="url(#body)" stroke="url(#bodyEdge)" stroke-width="1.5"/>
-          <ellipse cx="200" cy="150" rx="82" ry="70" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="1"/>
-          <!-- top highlight -->
-          <ellipse cx="182" cy="128" rx="34" ry="22" fill="#ffffff" opacity=".55"/>
-          <!-- power button -->
-          <circle cx="200" cy="150" r="26" fill="url(#btn)" stroke="#ffffff" stroke-width="1.5"/>
-          <circle cx="200" cy="150" r="26" fill="none" stroke="#b9c8da" stroke-width=".8"/>
-          <path d="M200 138 v13" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
-          <path d="M188 146 a15 15 0 1 0 24 0" fill="none" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
-          <!-- mode leds -->
-          <circle cx="182" cy="188" r="3.4" fill="#8ba9c9"/>
-          <circle cx="200" cy="191" r="3.4" fill="#c6d3e2"/>
-          <circle cx="218" cy="188" r="3.4" fill="#c6d3e2"/>
-        </g>
-
-        <!-- single continuous strap from motor down to the carabiner -->
-        <path d="M200 205 L200 344" fill="none" stroke="#9fb4cb" stroke-width="7" stroke-linecap="round"/>
-        <!-- step rungs (adjustable levels) crossing the strap -->
-        <g stroke="#7d97b3" stroke-width="2.4" stroke-linecap="round">
-          <path d="M193 243 h14"/>
-          <path d="M193 277 h14"/>
-          <path d="M193 311 h14"/>
-        </g>
-        <!-- carabiner joining strap to carrycot straps -->
-        <rect x="193" y="342" width="14" height="19" rx="7" fill="none" stroke="#8ba9c9" stroke-width="3"/>
-
-        <!-- carrycot (bæreseng) with carrying straps pointing UP to the carabiner -->
         <g filter="url(#soft)">
-          <!-- carrying straps arcing upward from the cot sides to the carabiner -->
-          <path d="M151 397 C166 383 183 369 198 361" fill="none" stroke="#9fb4cb" stroke-width="5" stroke-linecap="round"/>
-          <path d="M249 397 C234 383 217 369 202 361" fill="none" stroke="#9fb4cb" stroke-width="5" stroke-linecap="round"/>
-          <!-- cot body: soft capsule with puffy gathered ends -->
-          <rect x="118" y="390" width="164" height="62" rx="26" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.5"/>
-          <ellipse cx="132" cy="421" rx="16" ry="28" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
-          <ellipse cx="268" cy="421" rx="16" ry="28" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
-          <!-- gathered drawstring detail on the ends -->
-          <path d="M124 402 q6 16 0 32 M276 402 q-6 16 0 32" fill="none" stroke="#c6d3e2" stroke-width="1.6" stroke-linecap="round"/>
-          <!-- opening / mattress rim -->
-          <rect x="140" y="396" width="120" height="15" rx="7.5" fill="#eef2f8" stroke="#e3eaf3" stroke-width="1"/>
-          <!-- small strap keepers on the cot where straps meet the body -->
-          <rect x="145" y="393" width="10" height="14" rx="3" fill="#d7e0eb"/>
-          <rect x="245" y="393" width="10" height="14" rx="3" fill="#d7e0eb"/>
+          <rect x="252" y="150" width="60" height="106" rx="13" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+          <rect x="258" y="158" width="48" height="90" rx="8" fill="url(#body)"/>
+          <circle cx="282" cy="200" r="18" fill="none" stroke="#8ba9c9" stroke-width="1.4" opacity=".5"/>
+          <circle cx="282" cy="200" r="12" fill="#fff" stroke="#e8ecf1"/>
         </g>
 
-        <!-- z's drifting up from the bed -->
-        <g aria-hidden="true">
-          <text class="zz z1" x="238" y="384">z</text>
-          <text class="zz z2" x="254" y="390">z</text>
-          <text class="zz z3" x="228" y="392">z</text>
-        </g>
-      </g>
+        <path class="dash" d="M320 178 C356 130 396 128 420 150" fill="none" stroke="#8ba9c9"
+              stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2 9"/>
 
-      <!-- ambient shadow on floor: subtle scale in sync with bob -->
-      <ellipse class="floor-shadow" cx="200" cy="486" rx="96" ry="14" fill="#6d8bab" opacity=".10"/>
-    </svg>
-  </div>
+        <g class="shake" filter="url(#soft)">
+          <rect x="352" y="52" width="72" height="126" rx="16" fill="#fff" stroke="#d5e0ec" stroke-width="1.5"/>
+          <rect x="360" y="61" width="56" height="108" rx="11" fill="url(#body)"/>
+          <rect x="368" y="82" width="40" height="7" rx="3.5" fill="#c6d3e2"/>
+          <rect x="375" y="96" width="26" height="6" rx="3" fill="#dde7f0"/>
+          <circle cx="388" cy="136" r="15" fill="#6d8bab"/>
+          <path d="M382 130h2.7l1.5 3.7-2 1.5a12.5 12.5 0 0 0 6 6l1.5-2 3.7 1.5v2.7a2.2 2.2 0 0 1-2.3 2.2 16.8 16.8 0 0 1-13.7-13.7 2.2 2.2 0 0 1 2.2-2.2z" fill="#fff"/>
+        </g>
+        <g fill="none" stroke="#8ba9c9" stroke-width="2.4" stroke-linecap="round">
+          <path class="wave" d="M436 98 a20 20 0 0 1 0 34"/>
+          <path class="wave" d="M448 88 a29 29 0 0 1 0 54" style="animation-delay:.4s"/>
+        </g>
+      </svg>
+    </div>
   </div>
 </header>
 
-<!-- ================= HOW IT WORKS ================= -->
-<section class="how section-pad" id="how">
+<!-- ================= WALLS ================= -->
+<section class="walls pad" id="walls">
   <div class="wrap">
     <div class="reveal">
-      <div class="sec-eyebrow">Slik virker det</div>
-      <h2 class="sec-title">Fire deler. <em>Ingen kompliserte greier.</em></h2>
-      <p class="sec-intro">Jon Blund er bevisst enkel. Motor, fjær, vaier og en flertrinns reim samarbeider om å holde en jevn, beroligende gynge i gang, akkurat nok dytt til at bevegelsen aldri dør ut.</p>
-    </div>
-    <div class="how-grid">
-      <div class="how-card reveal">
-        <div class="how-num">01</div>
-        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="14" width="32" height="20" rx="6"/><circle cx="24" cy="24" r="6"/><path d="M24 20v4l3 2"/></svg>
-        <h3>Motoren</h3>
-        <p>En stillegående girmotor gir korte, rytmiske drag i reimen. Du hører den knapt, men du merker den milde bevegelsen.</p>
-      </div>
-      <div class="how-card reveal">
-        <div class="how-num">02</div>
-        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 6v6"/><path d="M20 12c0 4 8 4 8 8s-8 4-8 8 8 4 8 8"/><path d="M24 42v-2"/></svg>
-        <h3>Fjæren</h3>
-        <p>En mykt fjærende oppheng absorberer hvert drag og gjør bevegelsen jevn og trygg. Fjæren gjør jobben lett for motoren.</p>
-      </div>
-      <div class="how-card reveal">
-        <div class="how-num">03</div>
-        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 6v22"/><path d="M18 28h12l-2 12h-8z"/><circle cx="24" cy="10" r="3"/></svg>
-        <h3>Vaieren</h3>
-        <p>En sterk stålvaier med karabinkroker fester Jon Blund trygt til en nagle i taket, en dørkarm eller et stativ. Kobles av og på på sekunder.</p>
-      </div>
-      <div class="how-card reveal">
-        <div class="how-num">04</div>
-        <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8h12M18 18h12M18 28h12M18 38h12"/><path d="M24 8v30"/></svg>
-        <h3>Flertrinns reim</h3>
-        <p>Reimen har flere trinn med karabinkroker, så du kan henge sovepose eller nest fra akkurat den høyden som passer barnet og rommet.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= MODES ================= -->
-<section class="modes section-pad" id="modes">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="sec-eyebrow">Tre moduser</div>
-      <h2 class="sec-title">Ett trykk. <em>Så roer det seg.</em></h2>
-      <p class="sec-intro">Bla gjennom modusene med én knapp. Lysringen viser hvilken som er aktiv. Når tiden er ute stopper Jon Blund rolig av seg selv.</p>
+      <div class="sec-eyebrow">Why it works anywhere</div>
+      <h2 class="sec-title wide">Thick walls beat <em>most baby monitors.</em> They do not beat a phone call.</h2>
+      <p class="sec-intro">Ordinary monitors talk over their own little radio link. Brick, concrete, old plaster and a floor in between all eat that signal — which is why so many of them crackle, cut out, or go silent in exactly the room you needed them in.</p>
     </div>
 
-    <div class="mode-panel">
-      <div class="mode-list">
-        <div class="mode-item active" data-mode="0" data-readout="10:00" data-leds="1">
-          <div class="mode-time">10 min</div>
-          <div><h4>Kort blund</h4><p>For den raske døsingen før måltid eller trilletur.</p></div>
-        </div>
-        <div class="mode-item" data-mode="1" data-readout="20:00" data-leds="2">
-          <div class="mode-time">20 min</div>
-          <div><h4>Legge seg</h4><p>Nok tid til å sovne dypt før den skrur seg av selv.</p></div>
-        </div>
-        <div class="mode-item" data-mode="2" data-readout="&infin;" data-leds="3">
-          <div class="mode-time">&infin;</div>
-          <div><h4>Uendelig</h4><p>Fortsetter til du slår av. For de lange, urolige nettene.</p></div>
-        </div>
-      </div>
-
-      <div class="mode-visual reveal">
-        <div class="device">
-          <div class="device-ring"></div>
-          <div class="device-readout" id="readout">10:00</div>
-        </div>
-        <div class="device-label" id="modeLabel">Kort blund</div>
-        <div class="mode-leds" id="leds">
-          <span class="led on"></span><span class="led"></span><span class="led"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= SPECS ================= -->
-<section class="specs section-pad" id="specs">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="sec-eyebrow">Spesifikasjoner</div>
-      <h2 class="sec-title">Bygget for å <em>forsvinne</em> i bakgrunnen.</h2>
-    </div>
-    <div class="spec-grid">
-      <div class="spec-cell reveal"><div class="k">Strøm</div><div class="v">Oppladbart</div><div class="d">USB-C, innebygd litiumbatteri</div></div>
-      <div class="spec-cell reveal"><div class="k">Driftstid</div><div class="v">Inntil 40t</div><div class="d">Ca. 60 blunder per lading</div></div>
-      <div class="spec-cell reveal"><div class="k">Maks last</div><div class="v">25 kg</div><div class="d">Sovepose, nest eller vugge</div></div>
-      <div class="spec-cell reveal"><div class="k">Lydnivå</div><div class="v">&lt; 25 dB</div><div class="d">Stillere enn en hvisking</div></div>
-      <div class="spec-cell reveal"><div class="k">Vekt</div><div class="v">180 g</div><div class="d">Motor, fjær, vaier og reim</div></div>
-      <div class="spec-cell reveal"><div class="k">Sikkerhet</div><div class="v">Fail-safe</div><div class="d">Låser reimen ved strømbrudd</div></div>
-      <div class="spec-cell reveal"><div class="k">Oppheng</div><div class="v">Vaier</div><div class="d">Karabinkroker til nagle, karm eller stativ</div></div>
-      <div class="spec-cell reveal"><div class="k">Styring</div><div class="v">Én knapp</div><div class="d">Tre moduser, lysring­indikator</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= DOS & DON'TS ================= -->
-<section class="section-pad" id="safety">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="sec-eyebrow">Sikkerhet</div>
-      <h2 class="sec-title">Gjør og <em>ikke gjør.</em></h2>
-      <p class="sec-intro">Noen enkle regler gjør Jon Blund trygg for både barn og hjem.</p>
-    </div>
-    <div class="dd-grid">
-      <div class="dd-card dd-do reveal">
-        <h3><span class="dd-ic">&#10003;</span><span>Gjør</span></h3>
-        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Hold alltid lav høyde, heng sengen lavt over gulvet.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Fest i bjelker eller andre punkter du vet er stødige og solide.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Plasser med god avstand til vegger og møbler, og unna trekk.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10003;</span><span>Sjekk feste, fjær og reim jevnlig for slitasje.</span></div>
-      </div>
-      <div class="dd-card dd-dont reveal">
-        <h3><span class="dd-ic">&#10005;</span><span>Ikke gjør</span></h3>
-        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke heng opp høyt over gulvet.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke overskrid maks totalvekt på 25 kg.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke bruk uten tilsyn når barnet kan rulle eller sette seg opp.</span></div>
-        <div class="dd-item"><span class="dd-ic">&#10005;</span><span>Ikke plasser nær varmekilder eller åpen ild.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= GALLERY / RENDERS ================= -->
-<section class="section-pad" id="gallery">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="sec-eyebrow">Design</div>
-      <h2 class="sec-title">Ren, hvit, <em>nesten usynlig.</em></h2>
-      <p class="sec-intro">Ingen skjermer, ingen blinkende lys. Bare et mykt, rundt objekt i matt hvitt som passer inn hvor som helst i hjemmet.</p>
-    </div>
-
-    <div class="gallery-grid">
-      <!-- big front render -->
-      <div class="render-tile tall reveal">
-        <svg viewBox="0 0 320 460" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Frontrender av Jon Blund-motoren">
-          <defs>
-            <radialGradient id="g-body" cx="38%" cy="30%" r="80%">
-              <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef2f8"/><stop offset="1" stop-color="#d3dfec"/>
-            </radialGradient>
-            <filter id="g-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#6d8bab" flood-opacity="0.18"/></filter>
-          </defs>
-          <g filter="url(#g-soft)">
-            <circle cx="160" cy="180" r="118" fill="url(#g-body)" stroke="#ffffff" stroke-width="2"/>
-            <ellipse cx="128" cy="132" rx="48" ry="34" fill="#ffffff" opacity=".55"/>
-            <circle cx="160" cy="180" r="42" fill="#ffffff" stroke="#c3d3e4" stroke-width="1.2"/>
-            <path d="M160 160v20" stroke="#6d8bab" stroke-width="4" stroke-linecap="round"/>
-            <path d="M142 172a22 22 0 1 0 36 0" fill="none" stroke="#6d8bab" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="136" cy="240" r="4" fill="#8ba9c9"/><circle cx="160" cy="245" r="4" fill="#d3dfec"/><circle cx="184" cy="240" r="4" fill="#d3dfec"/>
+    <div class="walls-grid">
+      <div class="wall-card reveal">
+        <span class="wall-tag">The usual way</span>
+        <svg viewBox="0 0 380 150" role="img" aria-label="A monitor signal breaking up as it passes through a thick wall">
+          <rect x="14" y="58" width="44" height="58" rx="10" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+          <circle cx="36" cy="80" r="7" fill="#eef2f8" stroke="#e3eaf3"/>
+          <g fill="none" stroke="#8ba9c9" stroke-width="2.4" stroke-linecap="round">
+            <path d="M70 76 a14 14 0 0 1 0 24"/>
+            <path d="M80 68 a22 22 0 0 1 0 40" opacity=".72"/>
+            <path d="M90 60 a30 30 0 0 1 0 56" opacity=".4"/>
           </g>
-          <rect x="150" y="42" width="20" height="8" rx="4" fill="#c3d3e4"/>
-          <path d="M160 50 q6 6 0 12 q-6 6 0 12" fill="none" stroke="#b5c4d6" stroke-width="3" stroke-linecap="round"/>
-          <ellipse cx="160" cy="430" rx="90" ry="12" fill="#6d8bab" opacity=".1"/>
+          <rect x="150" y="20" width="34" height="112" rx="4" fill="#e4eaf3" stroke="#d5e0ec"/>
+          <g stroke="#cfdbe8" stroke-width="1.2">
+            <path d="M150 44h34M150 68h34M150 92h34M150 116h34"/>
+            <path d="M167 20v24M158 44v24M176 44v24M167 68v24M158 92v24M176 92v24"/>
+          </g>
+          <g fill="none" stroke="#b06a6a" stroke-width="2.4" stroke-linecap="round" opacity=".55">
+            <path d="M206 84 a10 10 0 0 1 0 16" stroke-dasharray="3 7"/>
+            <path d="M216 78 a16 16 0 0 1 0 28" stroke-dasharray="2 9" opacity=".5"/>
+          </g>
+          <rect x="300" y="58" width="44" height="58" rx="10" fill="#fff" stroke="#e8ecf1" stroke-width="1.4" class="fade"/>
+          <circle cx="322" cy="80" r="7" fill="#f4f6fa" stroke="#eef2f8" class="fade"/>
+          <text x="322" y="140" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#b06a6a" text-anchor="middle">no signal</text>
         </svg>
-        <span class="caption">Frontprofil i matt hvit</span>
+        <h3>Range you have to hope for</h3>
+        <p>Two units and a radio link between them. Every wall, floor and steel beam takes a bite out of it, and the further you walk the less you can trust it.</p>
       </div>
 
-      <!-- USB-C detail -->
-      <div class="render-tile reveal">
-        <svg viewBox="0 0 300 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Detalj av USB-C ladeport">
-          <defs><linearGradient id="d-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde7f0"/></linearGradient></defs>
-          <rect x="60" y="70" width="180" height="90" rx="45" fill="url(#d-body)" stroke="#e3eaf3" stroke-width="1.5"/>
-          <ellipse cx="110" cy="95" rx="30" ry="14" fill="#ffffff" opacity=".6"/>
-          <rect x="200" y="106" width="26" height="18" rx="9" fill="#8ba9c9"/>
-          <rect x="204" y="111" width="18" height="8" rx="4" fill="#ffffff"/>
-          <ellipse cx="150" cy="182" rx="70" ry="9" fill="#6d8bab" opacity=".08"/>
+      <div class="wall-card good reveal">
+        <span class="wall-tag">Jon Blund</span>
+        <svg viewBox="0 0 380 150" role="img" aria-label="A phone call travelling through the mobile network, unaffected by the wall">
+          <rect x="14" y="58" width="44" height="58" rx="10" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+          <circle cx="36" cy="80" r="7" fill="#eef2f8" stroke="#e3eaf3"/>
+          <path d="M186 26 l-13 44M186 26 l13 44M177 56h18" fill="none" stroke="#6d8bab" stroke-width="2.4" stroke-linecap="round"/>
+          <g fill="none" stroke="#8ba9c9" stroke-width="2" stroke-linecap="round">
+            <path class="wave" d="M204 24 a14 14 0 0 1 0 22"/>
+            <path class="wave" d="M168 46 a14 14 0 0 0 0 -22" style="animation-delay:.5s"/>
+          </g>
+          <path class="dash" d="M64 78 C110 30 150 26 182 30" fill="none" stroke="#8ba9c9" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 9"/>
+          <path class="dash" d="M190 30 C222 26 268 34 314 74" fill="none" stroke="#8ba9c9" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 9"/>
+          <rect x="150" y="86" width="34" height="46" rx="4" fill="#e4eaf3" stroke="#d5e0ec"/>
+          <g stroke="#cfdbe8" stroke-width="1.2"><path d="M150 108h34M167 86v22M158 108v24M176 108v24"/></g>
+          <g class="shake">
+            <rect x="300" y="58" width="44" height="58" rx="10" fill="#fff" stroke="#8ba9c9" stroke-width="1.5"/>
+            <circle cx="322" cy="82" r="10" fill="#6d8bab"/>
+            <path d="M318 78h1.9l1 2.6-1.4 1a8.6 8.6 0 0 0 4.1 4.1l1-1.4 2.6 1v1.9a1.5 1.5 0 0 1-1.6 1.5 11.6 11.6 0 0 1-9.5-9.5 1.5 1.5 0 0 1 1.5-1.6z" fill="#fff"/>
+          </g>
+          <text x="322" y="140" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#6d8bab" text-anchor="middle">ringing</text>
         </svg>
-        <span class="caption">USB-C, én kabel</span>
-      </div>
-
-      <!-- in-room render -->
-      <div class="render-tile reveal">
-        <svg viewBox="0 0 300 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jon Blund montert i et rom over en vugge">
-          <defs>
-            <linearGradient id="r-strap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6d3e2"/><stop offset="1" stop-color="#9fb4cb"/></linearGradient>
-            <linearGradient id="r-nest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/></linearGradient>
-          </defs>
-          <rect x="132" y="18" width="36" height="8" rx="4" fill="#cfdbe8"/>
-          <circle cx="150" cy="52" r="20" fill="#ffffff" stroke="#d3dfec" stroke-width="1.4"/>
-          <circle cx="150" cy="52" r="7" fill="#eef2f8" stroke="#c3d3e4" stroke-width="1"/>
-          <path d="M124 66 C124 120 124 150 150 162" fill="none" stroke="url(#r-strap)" stroke-width="4" stroke-linecap="round"/>
-          <path d="M176 66 C176 120 176 150 150 162" fill="none" stroke="url(#r-strap)" stroke-width="4" stroke-linecap="round"/>
-          <path d="M104 166 q46 26 92 0 q-8 34 -46 34 q-38 0 -46 -34Z" fill="url(#r-nest)" stroke="#d5e0ec" stroke-width="1.4"/>
-          <ellipse cx="150" cy="166" rx="46" ry="11" fill="#ffffff" stroke="#e3eaf3" stroke-width="1.2"/>
-          <ellipse cx="150" cy="210" rx="60" ry="8" fill="#6d8bab" opacity=".08"/>
-        </svg>
-        <span class="caption">Montert over vugge</span>
+        <h3>Range you already pay for</h3>
+        <p>The call goes over the mobile network, the same one that reaches you in the basement, the garden or three floors up. If your phone has coverage, Jon Blund reaches you.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= SHOP / CONFIGURATOR ================= -->
-<section class="shop section-pad" id="shop">
+<!-- ================= HOW ================= -->
+<section class="steps pad" id="how">
   <div class="wrap">
-    <div class="reveal">
-      <div class="sec-eyebrow">Sett sammen din Jon Blund</div>
-      <h2 class="sec-title">Velg farge, oppheng <em>og tilbehør.</em></h2>
-      <p class="sec-intro">Bygg pakken som passer hjemmet ditt. Alt legges rett i handlekurven og går til sikker betaling.</p>
+    <div class="reveal center">
+      <div class="sec-eyebrow">How it works</div>
+      <h2 class="sec-title">Three steps, <em>then you can sleep.</em></h2>
+      <p class="sec-intro">Nothing to unbox, nothing to pair, nothing to charge but the phone you already own.</p>
     </div>
 
-    <div class="shop-grid">
-      <!-- Configurator card -->
-      <div class="pcard reveal">
-        <div class="pcard-visual">
-          <svg viewBox="0 0 240 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jon Blund motor">
-            <defs>
-              <radialGradient id="cfg-body" cx="38%" cy="32%" r="80%">
-                <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef2f8"/><stop offset="1" stop-color="#d3dfec"/>
-              </radialGradient>
-              <filter id="cfg-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#6d8bab" flood-opacity="0.16"/></filter>
-            </defs>
-            <g filter="url(#cfg-soft)">
-              <circle id="cfg-shell" cx="120" cy="100" r="72" fill="url(#cfg-body)" stroke="#ffffff" stroke-width="2"/>
-              <ellipse cx="98" cy="72" rx="30" ry="20" fill="#ffffff" opacity=".5"/>
-              <circle cx="120" cy="100" r="26" fill="#ffffff" stroke="#c3d3e4" stroke-width="1.2"/>
-              <path d="M120 88v13" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
-              <path d="M108 96a14 14 0 1 0 24 0" fill="none" stroke="#6d8bab" stroke-width="3" stroke-linecap="round"/>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <div class="step-art">
+          <svg viewBox="0 0 300 150" role="img" aria-label="A phone lying beside a sleeping baby">
+            <ellipse cx="92" cy="136" rx="70" ry="6" fill="#6d8bab" opacity=".07"/>
+            <rect x="14" y="98" width="150" height="26" rx="13" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.3"/>
+            <ellipse cx="44" cy="96" rx="25" ry="10" fill="#eef2f8" stroke="#e3eaf3"/>
+            <path d="M68 88 H148 a15 15 0 0 1 15 15 v5 a8 8 0 0 1 -8 8 H68 z" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
+            <circle cx="46" cy="78" r="19" fill="url(#body)" stroke="#d5e0ec" stroke-width="1.3"/>
+            <path d="M47 60 q6 -8 11 -4" fill="none" stroke="#b5c4d6" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M37 79 q4 4 8 0M51 79 q4 4 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
+            <path d="M43 88 q3.5 3 7 0" fill="none" stroke="#8ba9c9" stroke-width="1.8" stroke-linecap="round"/>
+            <text class="zz" x="76" y="60" font-size="17">z</text>
+            <g filter="url(#soft)">
+              <rect x="206" y="42" width="56" height="94" rx="12" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
+              <rect x="212" y="49" width="44" height="80" rx="8" fill="url(#body)"/>
+              <circle cx="234" cy="88" r="16" fill="none" stroke="#8ba9c9" stroke-width="1.3" opacity=".5"/>
+              <circle cx="234" cy="88" r="11" fill="#fff" stroke="#e8ecf1"/>
             </g>
           </svg>
         </div>
-        <div class="ptag">Komplett sett</div>
-        <h3>Jon Blund</h3>
-        <p class="pdesc">Motor, fjær, vaier med karabinkroker og flertrinns reim. Alt du trenger for å henge opp og gynge.</p>
-
-        <div class="opt-label">Farge</div>
-        <div class="swatches" id="swatches">
-          <div class="swatch sel" data-color="Skyhvit" style="background:radial-gradient(circle at 38% 32%,#ffffff,#e4eaf3)" title="Skyhvit"></div>
-          <div class="swatch" data-color="Beige" style="background:radial-gradient(circle at 38% 32%,#fdfbf6,#e2d3b8)" title="Beige"></div>
-          <div class="swatch" data-color="Tåkegrå" style="background:radial-gradient(circle at 38% 32%,#f0f2f5,#b9c2cf)" title="Tåkegrå"></div>
-          <div class="swatch" data-color="Nattblå" style="background:radial-gradient(circle at 38% 32%,#8ba9c9,#4f6580)" title="Nattblå"></div>
+        <div class="step-body">
+          <div class="step-n">01</div>
+          <h3>Put a phone by the crib</h3>
+          <p>Open the page, allow the microphone, and set the phone down beside your baby. Screen on, plugged in. That is the whole setup.</p>
         </div>
-
-        <div class="opt-label">Reimlengde</div>
-        <div class="seg" id="lenSeg">
-          <button class="sel" data-len="Standard (opptil 2 m)" data-add="0">Standard</button>
-          <button data-len="Lang (opptil 3 m)" data-add="200">Lang (+200 kr)</button>
-        </div>
-
-        <div class="addon" id="addonMount">
-          <div class="box"></div>
-          <div class="info">
-            <h5>Legg til bordfeste</h5>
-            <p>C-klemme i stål for feste rett på bordkant</p>
-          </div>
-          <div class="ap">+399 kr</div>
-        </div>
-
-        <div class="price-row">
-          <span class="pl">Din pris</span>
-          <span class="pv" id="totalPrice">1 299 kr</span>
-        </div>
-        <div id="buy-nooma"></div>
-        <a href="#" class="btn-primary" id="buy-nooma-fallback" onclick="return false">Legg i handlekurv</a>
       </div>
 
-      <!-- Tabletop mount standalone card -->
-      <div class="pcard reveal">
-        <div class="pcard-visual">
-          <svg viewBox="0 0 240 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bordfeste i stål, C-klemme">
-            <defs>
-              <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#f4f6f9"/><stop offset=".5" stop-color="#c9d3df"/><stop offset="1" stop-color="#aab7c6"/>
-              </linearGradient>
-              <filter id="mnt-soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#6d8bab" flood-opacity="0.18"/></filter>
-            </defs>
-            <!-- table edge -->
-            <rect x="40" y="96" width="150" height="16" rx="3" fill="#eef2f8" stroke="#dde7f0" stroke-width="1"/>
-            <rect x="40" y="112" width="150" height="6" rx="2" fill="#dde7f0"/>
-            <!-- C-clamp in steel -->
-            <g filter="url(#mnt-soft)">
-              <path d="M150 60
-                       h26 a10 10 0 0 1 10 10
-                       v70 a10 10 0 0 1 -10 10
-                       h-26 a8 8 0 0 1 0 -16 h18 v-58 h-18 a8 8 0 0 1 0 -16 Z"
-                    fill="url(#steel)" stroke="#9fb4cb" stroke-width="1.4"/>
-              <!-- clamp screw -->
-              <rect x="158" y="140" width="10" height="26" rx="4" fill="#c9d3df" stroke="#9fb4cb" stroke-width="1"/>
-              <circle cx="163" cy="170" r="8" fill="#aab7c6" stroke="#8ba9c9" stroke-width="1"/>
-              <!-- hanging eye at top -->
-              <circle cx="186" cy="52" r="9" fill="none" stroke="#9fb4cb" stroke-width="3"/>
+      <div class="step reveal">
+        <div class="step-art">
+          <svg viewBox="0 0 300 150" role="img" aria-label="A crying baby, the sound reaching the phone">
+            <ellipse cx="80" cy="136" rx="66" ry="6" fill="#6d8bab" opacity=".07"/>
+            <rect x="10" y="98" width="142" height="26" rx="13" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.3"/>
+            <ellipse cx="40" cy="96" rx="24" ry="10" fill="#eef2f8" stroke="#e3eaf3"/>
+            <path d="M62 88 H136 a15 15 0 0 1 15 15 v5 a8 8 0 0 1 -8 8 H62 z" fill="url(#nest)" stroke="#d5e0ec" stroke-width="1.2"/>
+            <g class="shake">
+              <circle cx="42" cy="78" r="19" fill="url(#body)" stroke="#d5e0ec" stroke-width="1.3"/>
+              <path d="M43 60 q6 -8 11 -4" fill="none" stroke="#b5c4d6" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M32 77 q4 -4.5 8 0M46 77 q4 -4.5 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
+              <path d="M31 69 l9 3M55 69 l-9 3" fill="none" stroke="#9fb4cb" stroke-width="1.7" stroke-linecap="round"/>
+              <ellipse cx="42" cy="89" rx="5" ry="6" fill="#6d8bab"/>
+              <circle cx="28" cy="85" r="3.5" fill="#8ba9c9" opacity=".34"/>
+              <circle cx="56" cy="85" r="3.5" fill="#8ba9c9" opacity=".34"/>
+            </g>
+            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
+              <path class="wave" d="M166 86 a16 16 0 0 1 0 28"/>
+              <path class="wave" d="M177 78 a24 24 0 0 1 0 44" style="animation-delay:.4s"/>
+            </g>
+            <g filter="url(#soft)">
+              <rect x="208" y="42" width="56" height="94" rx="12" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
+              <rect x="214" y="49" width="44" height="80" rx="8" fill="url(#body)"/>
+              <circle cx="236" cy="88" r="18" fill="none" stroke="#e8ecf1" stroke-width="2.4"/>
+              <circle cx="236" cy="88" r="18" fill="none" stroke="#6d8bab" stroke-width="2.4"
+                      stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="34" transform="rotate(-90 236 88)"/>
+              <circle cx="236" cy="88" r="11" fill="#fff" stroke="#e8ecf1"/>
             </g>
           </svg>
         </div>
-        <div class="ptag">Tilbehør</div>
-        <h3>Jon Blund Bordfeste</h3>
-        <p class="pdesc">Et C-formet stålfeste som klemmes fast på en bordkant, så Jon Blund kan henge fra kun ett bord. Ingen boring, ingen takkrok. Perfekt på reise eller i leiligheten.</p>
-
-        <div class="price-row">
-          <span class="pl">Pris</span>
-          <span class="pv">399 kr</span>
+        <div class="step-body">
+          <div class="step-n">02</div>
+          <h3>It listens for crying</h3>
+          <p>Not the fan, not the traffic outside, not a door closing downstairs. It waits for a sound that keeps going long enough to be a real cry.</p>
         </div>
-        <div id="buy-mount"></div>
-        <a href="#" class="btn-primary" id="buy-mount-fallback" onclick="return false">Legg i handlekurv</a>
+      </div>
+
+      <div class="step reveal">
+        <div class="step-art">
+          <svg viewBox="0 0 300 150" role="img" aria-label="One phone calling another">
+            <g>
+              <rect x="20" y="46" width="44" height="76" rx="10" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
+              <rect x="26" y="52" width="32" height="64" rx="6" fill="url(#body)"/>
+              <circle cx="42" cy="84" r="9" fill="#fff" stroke="#e8ecf1"/>
+            </g>
+            <path class="dash" d="M70 76 C104 38 146 36 176 60" fill="none" stroke="#8ba9c9"
+                  stroke-width="2" stroke-linecap="round" stroke-dasharray="2 8"/>
+            <g class="shake" filter="url(#soft)">
+              <rect x="184" y="26" width="60" height="106" rx="13" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+              <rect x="190" y="34" width="48" height="90" rx="9" fill="url(#body)"/>
+              <rect x="198" y="50" width="32" height="6" rx="3" fill="#c6d3e2"/>
+              <rect x="204" y="62" width="20" height="5" rx="2.5" fill="#dde7f0"/>
+              <circle cx="214" cy="96" r="12" fill="#6d8bab"/>
+              <path d="M209 91h2.2l1.2 3-1.6 1.2a10 10 0 0 0 4.8 4.8l1.2-1.6 3 1.2v2.2a1.8 1.8 0 0 1-1.9 1.8 13.4 13.4 0 0 1-11-11 1.8 1.8 0 0 1 1.8-1.9z" fill="#fff"/>
+            </g>
+            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
+              <path class="wave" d="M256 68 a16 16 0 0 1 0 28"/>
+              <path class="wave" d="M268 60 a24 24 0 0 1 0 44" style="animation-delay:.4s"/>
+            </g>
+          </svg>
+        </div>
+        <div class="step-body">
+          <div class="step-n">03</div>
+          <h3>Your phone rings</h3>
+          <p>A real call, so it cuts through silent mode. Answer and you hear the room. Hang up, and Jon Blund goes straight back to listening.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BENEFITS ================= -->
+<section class="bens pad">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">What you get</div>
+      <h2 class="sec-title wide">Everything a monitor does, <em>minus the monitor.</em></h2>
+    </div>
+    <div class="ben-grid">
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <h4>Nothing to buy</h4>
+        <p>No second device to order, unbox, pair and eventually lose the charger for. You already own both halves.</p>
+      </div>
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M12 9v6M9 12h6"/></svg>
+        <h4>No app, no account wall</h4>
+        <p>It is a web page. Open it, allow the microphone, and it works. Nothing to install on either phone.</p>
+      </div>
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 14v2.6a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 6.2 2 2 0 0 1 6.5 4z"/></svg>
+        <h4>It rings, it does not ping</h4>
+        <p>A notification is easy to sleep through and easy to silence. A phone call is neither, which is the entire point.</p>
+      </div>
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 12a9 9 0 0 1 18 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+        <h4>Walls are not the limit</h4>
+        <p>Downstairs, in the garden, at the neighbour's for coffee. Coverage is the only range you have to think about.</p>
+      </div>
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        <h4>Back to listening in seconds</h4>
+        <p>Hang up and it waits twenty seconds — long enough to reach the crib — then starts listening again on its own.</p>
+      </div>
+      <div class="ben reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        <h4>You control the ceiling</h4>
+        <p>Spending stops at a limit you can see. Jon Blund pauses rather than quietly running up a bill you did not agree to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section class="pricing pad" id="pricing">
+  <div class="wrap">
+    <div class="reveal center">
+      <div class="sec-eyebrow">Pricing</div>
+      <h2 class="sec-title">Pay for the nights <em>you actually use it.</em></h2>
+      <p class="sec-intro">A small monthly fee and a little per call. A quiet month costs less than a coffee, and a rough one is capped.</p>
+    </div>
+
+    <div class="price-card reveal">
+      <span class="price-free">First week free</span>
+      <div class="price-big"><sup>$</sup>2.99</div>
+      <div class="price-unit">a month</div>
+
+      <div class="price-rows">
+        <div class="price-row"><span>Every call it makes</span><b>$0.49</b></div>
+        <div class="price-row"><span>First two minutes of each call</span><b>included</b></div>
+        <div class="price-row"><span>After that</span><b>$0.49 / min</b></div>
+        <div class="price-row price-cap"><span>Spending stops at</span><b>$39.99 a month</b></div>
+      </div>
+
+      <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Start the free week</a>
+      <p class="price-fine">Cancel any time. The week runs before anything is charged.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HONEST ================= -->
+<section class="pad">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-eyebrow">Before you start</div>
+      <h2 class="sec-title wide">What Jon Blund needs, <em>and what it is not.</em></h2>
+      <p class="sec-intro">Better you read this here than find it out at three in the morning.</p>
+    </div>
+    <div class="honest-grid">
+      <div class="honest reveal">
+        <h4>Two phones with coverage</h4>
+        <p>One stays by the crib and listens. The other stays with you and rings. Both need a mobile signal — that is the whole hardware list.</p>
+      </div>
+      <div class="honest reveal">
+        <h4>The listening phone stays awake</h4>
+        <p>Browsers stop the microphone when a screen locks, so that phone keeps its screen on and stays plugged in. Jon Blund dims itself so it is not a lamp beside the cot.</p>
+      </div>
+      <div class="honest reveal">
+        <h4>Save the number it calls from</h4>
+        <p>Jon Blund sends you a contact card to pass on. Saved in the other phone, the call gets through even when everything else is silenced.</p>
+      </div>
+      <div class="honest reveal">
+        <h4>It is not a medical device</h4>
+        <p>Jon Blund listens for crying. It does not monitor breathing, movement or anything else, and it never replaces someone checking on the baby.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ================= CTA ================= -->
-<section class="cta" id="order">
-  <div class="reveal">
-    <h2>Gi natten <em>tilbake</em> til hele familien.</h2>
-    <p>Jon Blund lanseres til høsten. Forhåndsbestill nå og få 20 % rabatt på første serie.</p>
-
-    <!-- Shopify Buy Button monteres her. Fyll inn butikk-detaljer i skriptet nederst. -->
-    <div id="shopify-buy-button"></div>
-
-    <!-- Reserveknapp: vises hvis Shopify ikke er konfigurert ennå -->
-    <a href="#" class="btn-primary" id="fallback-buy" onclick="return false">Forhåndsbestill</a>
-
-    <div class="cta-note">Fri frakt i Norge · 60 dagers åpent kjøp · 2 års garanti</div>
-  </div>
+<section class="cta">
+  <h2>Try it tonight. <em>It is free for a week.</em></h2>
+  <p>Open it on the phone that will sit by the crib. Two minutes and it is listening.</p>
+  <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Get started</a>
+  <p class="cta-note">No card for the first week. No app. No hardware.</p>
 </section>
 
-<!-- ================= FOOTER ================= -->
 <footer>
-  <div class="foot-grid">
-    <div class="foot-brand">
-      <div class="logo">jon<span>blund</span></div>
-      <p>Gi natten tilbake til hele familien. Motor, vaier og reim, resten bestemmer du.</p>
+  <div class="foot">
+    <div>
+      <a class="logo" href="#top">jon<span>blund</span></a>
+      <p>A baby monitor that calls your phone, so the night reaches you wherever you are in the house.</p>
     </div>
-    <div class="foot-col">
-      <h5>Produkt</h5>
-      <a href="#how">Slik virker det</a><a href="#modes">Moduser</a><a href="#specs">Spesifikasjoner</a><a href="#gallery">Design</a>
-    </div>
-    <div class="foot-col">
-      <h5>Selskap</h5>
-      <a href="#" onclick="return false">Om oss</a><a href="#" onclick="return false">Bærekraft</a><a href="#" onclick="return false">Kontakt</a>
-    </div>
-    <div class="foot-col">
-      <h5>Hjelp</h5>
-      <a href="#" onclick="return false">Sikkerhet</a><a href="#" onclick="return false">Garanti</a><a href="#" onclick="return false">Vanlige spørsmål</a>
+    <div class="foot-links">
+      <a href="#walls">Why it works</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://www.jonblund.site/babycall.html">Get started</a>
     </div>
   </div>
   <div class="foot-bottom">
-    <span>© 2026 Jon Blund AS</span>
-    <span>Personvern · Vilkår</span>
+    <span>&copy; 2026 Jon Blund</span>
+    <span>Not a medical or safety device. Never a substitute for supervision.</span>
   </div>
 </footer>
 
 <script>
-// nav scroll state
-const nav=document.getElementById('nav');
-addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20));
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 20));
 
-// hamburger menu (mobile)
-const menuBtn=document.querySelector('.menu-btn');
-const navLinks=document.querySelector('.nav-links');
-menuBtn.addEventListener('click',()=>navLinks.classList.toggle('open'));
-navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navLinks.classList.remove('open')));
-
-/* ---- Norsk / English ---- */
-const I18N=[
-["Slik virker det","How it works"],
-["Moduser","Modes"],
-["Spesifikasjoner","Specifications"],
-["Kjøp","Buy"],
-["Nylansering · Forhåndsbestill nå","New launch · Pre-order now"],
-["Jon Blund festes med vaier og karabinkrok der du vil, og reimen justeres i flere trinn til riktig høyde. Den milde gyngingen gjør resten.","Jon Blund attaches with a wire and carabiner wherever you like, and the strap adjusts in steps to just the right height. The gentle rocking does the rest."],
-["Forhåndsbestill","Pre-order"],
-["Se hvordan \u2192","See how \u2192"],
-["gynge\u00admoduser","rocking modes"],
-["på én lading","per charge"],
-["totalvekt","max weight"],
-["Fire deler.","Four parts."],
-["Ingen kompliserte greier.","Nothing complicated."],
-["Jon Blund er bevisst enkel. Motor, fjær, vaier og en flertrinns reim samarbeider om å holde en jevn, beroligende gynge i gang, akkurat nok dytt til at bevegelsen aldri dør ut.","Jon Blund is deliberately simple. Motor, spring, wire and a multi-step strap work together to keep a steady, soothing rocking going, just enough push so the motion never dies out."],
-["Motoren","The motor"],
-["En stillegående girmotor gir korte, rytmiske drag i reimen. Du hører den knapt, men du merker den milde bevegelsen.","A quiet gear motor gives short, rhythmic pulls on the strap. You barely hear it, but you feel the gentle motion."],
-["Fjæren","The spring"],
-["En mykt fjærende oppheng absorberer hvert drag og gjør bevegelsen jevn og trygg. Fjæren gjør jobben lett for motoren.","A softly sprung mount absorbs every pull and keeps the motion smooth and safe. The spring makes the motor's job easy."],
-["Vaieren","The wire"],
-["En sterk stålvaier med karabinkroker fester Jon Blund trygt til en nagle i taket, en dørkarm eller et stativ. Kobles av og på på sekunder.","A strong steel wire with carabiners fastens Jon Blund securely to a ceiling hook, a door frame or a stand. Clips on and off in seconds."],
-["Flertrinns reim","Multi-step strap"],
-["Reimen har flere trinn med karabinkroker, så du kan henge sovepose eller nest fra akkurat den høyden som passer barnet og rommet.","The strap has several steps with carabiners, so you can hang a sleeping bag or nest at exactly the height that suits your child and room."],
-["Tre moduser","Three modes"],
-["Ett trykk.","One press."],
-["Så roer det seg.","Then calm settles in."],
-["Bla gjennom modusene med én knapp. Lysringen viser hvilken som er aktiv. Når tiden er ute stopper Jon Blund rolig av seg selv.","Cycle through the modes with one button. The light ring shows which is active. When time is up, Jon Blund calmly stops on its own."],
-["Kort blund","Quick nap"],
-["For den raske døsingen før måltid eller trilletur.","For a quick doze before a meal or a stroll."],
-["Legge seg","Bedtime"],
-["Nok tid til å sovne dypt før den skrur seg av selv.","Enough time to fall deeply asleep before it switches itself off."],
-["Uendelig","Endless"],
-["Fortsetter til du slår av. For de lange, urolige nettene.","Keeps going until you switch it off. For the long, restless nights."],
-["Bygget for å","Built to"],
-["forsvinne","disappear"],
-["i bakgrunnen.","into the background."],
-["Strøm","Power"],
-["Oppladbart","Rechargeable"],
-["USB-C, innebygd litiumbatteri","USB-C, built-in lithium battery"],
-["Driftstid","Runtime"],
-["Inntil 40t","Up to 40h"],
-["Ca. 60 blunder per lading","About 60 naps per charge"],
-["Maks last","Max load"],
-["Sovepose, nest eller vugge","Sleeping bag, nest or cradle"],
-["Lydnivå","Noise level"],
-["Stillere enn en hvisking","Quieter than a whisper"],
-["Vekt","Weight"],
-["Motor, fjær, vaier og reim","Motor, spring, wire and strap"],
-["Sikkerhet","Safety"],
-["Låser reimen ved strømbrudd","Locks the strap on power loss"],
-["Oppheng","Mounting"],
-["Vaier","Wire"],
-["Karabinkroker til nagle, karm eller stativ","Carabiners for hooks, frames or stands"],
-["Styring","Control"],
-["Én knapp","One button"],
-["Tre moduser, lysring\u00adindikator","Three modes, light-ring indicator"],
-["Ren, hvit,","Clean, white,"],
-["nesten usynlig.","almost invisible."],
-["Ingen skjermer, ingen blinkende lys. Bare et mykt, rundt objekt i matt hvitt som passer inn hvor som helst i hjemmet.","No screens, no blinking lights. Just a soft, round object in matte white that fits in anywhere at home."],
-["Frontprofil i matt hvit","Front profile in matte white"],
-["USB-C, én kabel","USB-C, one cable"],
-["Montert over vugge","Mounted above a cradle"],
-["Sett sammen din Jon Blund","Build your Jon Blund"],
-["Velg farge, oppheng","Choose colour, mounting"],
-["og tilbehør.","and accessories."],
-["Bygg pakken som passer hjemmet ditt. Alt legges rett i handlekurven og går til sikker betaling.","Build the bundle that suits your home. Everything goes straight into the cart and on to secure checkout."],
-["Komplett sett","Complete kit"],
-["Motor, fjær, vaier med karabinkroker og flertrinns reim. Alt du trenger for å henge opp og gynge.","Motor, spring, wire with carabiners and multi-step strap. Everything you need to hang up and rock."],
-["Farge","Colour"],
-["Reimlengde","Strap length"],
-["Lang (+200 kr)","Long (+200 kr)"],
-["Legg til bordfeste","Add table mount"],
-["C-klemme i stål for feste rett på bordkant","Steel C-clamp for mounting straight onto a table edge"],
-["Din pris","Your price"],
-["Legg i handlekurv","Add to cart"],
-["Tilbehør","Accessory"],
-["Jon Blund Bordfeste","Jon Blund Table Mount"],
-["Et C-formet stålfeste som klemmes fast på en bordkant, så Jon Blund kan henge fra kun ett bord. Ingen boring, ingen takkrok. Perfekt på reise eller i leiligheten.","A C-shaped steel mount that clamps onto a table edge, so Jon Blund can hang from just a table. No drilling, no ceiling hook. Perfect for travel or apartments."],
-["Pris","Price"],
-["Jon Blund lanseres til høsten. Forhåndsbestill nå og få 20 % rabatt på første serie.","Jon Blund launches this autumn. Pre-order now and get 20% off the first series."],
-["Fri frakt i Norge · 60 dagers åpent kjøp · 2 års garanti","Free shipping in Norway · 60-day returns · 2-year warranty"],
-["Gi natten tilbake til hele familien. Motor, vaier og reim, resten bestemmer du.","Give the night back to the whole family. Motor, wire and strap, the rest is up to you."],
-["Produkt","Product"],
-["Selskap","Company"],
-["Om oss","About us"],
-["Bærekraft","Sustainability"],
-["Kontakt","Contact"],
-["Hjelp","Help"],
-["Garanti","Warranty"],
-["Vanlige spørsmål","FAQ"],
-["Personvern · Vilkår","Privacy · Terms"],
-["Gjør og","Do and"],
-["ikke gjør.","don't."],
-["Noen enkle regler gjør Jon Blund trygg for både barn og hjem.","A few simple rules keep Jon Blund safe for both child and home."],
-["Gjør","Do"],
-["Ikke gjør","Don't"],
-["Hold alltid lav høyde, heng sengen lavt over gulvet.","Always keep it low, hang the bed close to the floor."],
-["Fest i bjelker eller andre punkter du vet er stødige og solide.","Anchor into beams or other points you know are steady and solid."],
-["Plasser med god avstand til vegger og møbler, og unna trekk.","Place it well clear of walls and furniture, and away from draughts."],
-["Sjekk feste, fjær og reim jevnlig for slitasje.","Check the mount, spring and strap regularly for wear."],
-["Ikke heng opp høyt over gulvet.","Never hang it high above the floor."],
-["Ikke overskrid maks totalvekt på 25 kg.","Never exceed the max total weight of 25 kg."],
-["Ikke bruk uten tilsyn når barnet kan rulle eller sette seg opp.","Never use it unsupervised once your child can roll or sit up."],
-["Ikke plasser nær varmekilder eller åpen ild.","Never place it near heat sources or open flames."],
-["Gi natten","Give the night"],
-["tilbake","back"],
-["til hele familien.","to the whole family."]
-];
-const NO2EN=new Map(I18N), EN2NO=new Map(I18N.map(p=>[p[1],p[0]]));
-const heroH1=document.querySelector('.hero h1');
-const H1_NO=heroH1.innerHTML;
-const H1_EN='<span class="word" style="animation-delay:.1s">Give</span> <span class="word" style="animation-delay:.17s">the</span> <span class="word" style="animation-delay:.24s">night</span> <span class="word" style="animation-delay:.31s">back</span><br><span class="word" style="animation-delay:.38s">to</span> <span class="word" style="animation-delay:.45s"><em>the whole family.</em></span>';
-const TITLE_NO=document.title, TITLE_EN='Jon Blund \u2014 Give the night back to the whole family';
-function swapText(map){
-  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-  let n;
-  while(n=w.nextNode()){
-    const t=n.nodeValue.trim();
-    if(t && map.has(t)) n.nodeValue=n.nodeValue.replace(t,map.get(t));
-  }
-}
-let siteLang='no';
-const langBtn=document.getElementById('langToggle');
-langBtn.addEventListener('click',()=>{
-  if(siteLang==='no'){
-    swapText(NO2EN); heroH1.innerHTML=H1_EN; document.title=TITLE_EN;
-    document.documentElement.lang='en'; langBtn.textContent='NO'; siteLang='en';
-  }else{
-    swapText(EN2NO); heroH1.innerHTML=H1_NO; document.title=TITLE_NO;
-    document.documentElement.lang='no'; langBtn.textContent='EN'; siteLang='no';
-  }
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 3) * 70 + 'ms';
+  io.observe(el);
 });
-
-// reveal on scroll
-const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.14});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-// mode selector
-const items=document.querySelectorAll('.mode-item');
-const readout=document.getElementById('readout');
-const label=document.getElementById('modeLabel');
-const leds=document.querySelectorAll('#leds .led');
-items.forEach(item=>{
-  item.addEventListener('click',()=>{
-    items.forEach(i=>i.classList.remove('active'));
-    item.classList.add('active');
-    readout.innerHTML=item.dataset.readout;
-    label.textContent=item.querySelector('h4').textContent;
-    const n=parseInt(item.dataset.leds,10);
-    leds.forEach((l,i)=>l.classList.toggle('on',i<n));
-  });
-});
-
-/* ---- CONFIGURATOR (farge, reimlengde, tilbehør, live pris) ---- */
-const CFG = {
-  base: 1299,
-  color: 'Skyhvit',
-  len: 'Standard (opptil 2 m)',
-  lenAdd: 0,
-  mount: false,
-  mountPrice: 399
-};
-const shell = document.getElementById('cfg-shell');
-const totalEl = document.getElementById('totalPrice');
-
-function nok(n){ return n.toLocaleString('nb-NO') + ' kr'; }
-function updateTotal(){
-  const t = CFG.base + CFG.lenAdd + (CFG.mount ? CFG.mountPrice : 0);
-  totalEl.textContent = nok(t);
-}
-
-// color swatches
-const cfgVisual = shell ? shell.closest('.pcard-visual') : null;
-const VISUAL_BG = {
-  'Skyhvit':'radial-gradient(130% 120% at 68% 22%,#e4eaf3,#fafbfc 72%,#ffffff)',
-  'Beige':  'radial-gradient(130% 120% at 68% 22%,#eadfca,#f7f2e9 72%,#fdfbf6)',
-  'Tåkegrå':'radial-gradient(130% 120% at 68% 22%,#d8dde4,#f2f4f7 72%,#ffffff)',
-  'Nattblå':'radial-gradient(130% 120% at 68% 22%,#b7c9dd,#e4eaf3 72%,#f4f7fa)'
-};
-document.querySelectorAll('#swatches .swatch').forEach(sw=>{
-  sw.addEventListener('click',()=>{
-    document.querySelectorAll('#swatches .swatch').forEach(s=>s.classList.remove('sel'));
-    sw.classList.add('sel');
-    CFG.color = sw.dataset.color;
-    // tint render shell and visual background to match selected color
-    const c = sw.dataset.color;
-    if(shell){
-      if(c==='Nattblå') shell.setAttribute('fill','#8ba9c9');
-      else if(c==='Tåkegrå') shell.setAttribute('fill','#c4ccd6');
-      else if(c==='Beige') shell.setAttribute('fill','#e6d8bf');
-      else shell.setAttribute('fill','url(#cfg-body)');
-    }
-    if(cfgVisual && VISUAL_BG[c]) cfgVisual.style.background = VISUAL_BG[c];
-  });
-});
-
-// strap length segmented control
-document.querySelectorAll('#lenSeg button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('#lenSeg button').forEach(b=>b.classList.remove('sel'));
-    btn.classList.add('sel');
-    CFG.len = btn.dataset.len;
-    CFG.lenAdd = parseInt(btn.dataset.add,10);
-    updateTotal();
-  });
-});
-
-// tabletop mount add-on toggle
-const addonEl = document.getElementById('addonMount');
-addonEl.addEventListener('click',()=>{
-  CFG.mount = !CFG.mount;
-  addonEl.classList.toggle('sel',CFG.mount);
-  updateTotal();
-});
-
-updateTotal();
-
-/* =========================================================
-   SHOPIFY BUY BUTTON — KOBLE OPP BUTIKKEN DIN
-   ---------------------------------------------------------
-   Slik gjør du siden klar til salg via Shopify:
-
-   1. Logg inn på Shopify, gå til Innstillinger, deretter
-      Apper og salgskanaler, og legg til salgskanalen "Buy Button".
-   2. Opprett produktene i Shopify og noter PRODUKT-ID for hver
-      (tallet bak /products/ i admin-URL-en):
-        - "Jon Blund" (komplett sett) med varianter for Farge og
-          Reimlengde, slik at valgene på siden matcher.
-        - "Jon Blund Bordfeste" til 399 kr.
-   3. Under Apper, deretter Utvikle apper, lag en app og hent en
-      "Storefront API access token".
-   4. Fyll inn verdiene nedenfor. Da bytter knappene automatisk
-      til ekte Shopify-kjøpsknapper med felles handlekurv.
-   ========================================================= */
-const SHOPIFY_CONFIG = {
-  domain:          'DIN-BUTIKK.myshopify.com',   // f.eks. jonblund.myshopify.com
-  storefrontToken: 'DIN_STOREFRONT_API_TOKEN',
-  noomaProductId:  'NOOMA_PRODUKT_ID',           // komplett sett
-  mountProductId:  'BORDFESTE_PRODUKT_ID'        // Jon Blund Bordfeste, 399 kr
-};
-
-function isConfigured(c){
-  const bad = v => !v || /^(DIN|DITT|NOOMA_|BORDFESTE_)/.test(String(v)) || v==='DIN_STOREFRONT_API_TOKEN';
-  return !bad(c.domain) && !bad(c.storefrontToken) && !bad(c.noomaProductId) && !bad(c.mountProductId);
-}
-
-const btnStyle = {
-  'background-color':'#1a1d24','border-radius':'100px',
-  'font-family':'Manrope, sans-serif','font-weight':'600',
-  'padding':'15px 30px',':hover':{'background-color':'#6d8bab'}
-};
-const cartCfg = {
-  text:{ title:'Handlekurv', total:'Sum', button:'Til betaling', empty:'Handlekurven er tom' },
-  styles:{ button:btnStyle }
-};
-
-function loadShopify(){
-  if(!isConfigured(SHOPIFY_CONFIG)) return; // behold reserveknappene til alt er fylt inn
-  ['fallback-buy','buy-nooma-fallback','buy-mount-fallback']
-    .forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
-
-  const SDK='https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
-  const boot=()=>{
-    const client=ShopifyBuy.buildClient({
-      domain:SHOPIFY_CONFIG.domain,
-      storefrontAccessToken:SHOPIFY_CONFIG.storefrontToken
-    });
-    ShopifyBuy.UI.onReady(client).then(ui=>{
-      const money='kr%20%7B%7Bamount_no_decimals%7D%7D';
-      const productOpts = label => ({
-        product:{ iframe:false, contents:{img:false,title:false,price:false},
-          text:{ button:label }, styles:{ button:btnStyle } },
-        cart:cartCfg,
-        toggle:{ styles:{ toggle:{'background-color':'#1a1d24',':hover':{'background-color':'#6d8bab'}} } }
-      });
-
-      // Komplett sett (varianter Farge + Reimlengde styres i Shopify)
-      ui.createComponent('product',{ id:SHOPIFY_CONFIG.noomaProductId,
-        node:document.getElementById('buy-nooma'), moneyFormat:money, options:productOpts('Legg i handlekurv') });
-
-      // Bordfeste (eget produkt, 399 kr)
-      ui.createComponent('product',{ id:SHOPIFY_CONFIG.mountProductId,
-        node:document.getElementById('buy-mount'), moneyFormat:money, options:productOpts('Legg i handlekurv') });
-
-      // Forhåndsbestill-knappen nederst peker til samme sett
-      ui.createComponent('product',{ id:SHOPIFY_CONFIG.noomaProductId,
-        node:document.getElementById('shopify-buy-button'), moneyFormat:money, options:productOpts('Forhåndsbestill nå') });
-    });
-  };
-  if(window.ShopifyBuy && window.ShopifyBuy.UI){ boot(); }
-  else{ const s=document.createElement('script'); s.async=true; s.src=SDK; s.onload=boot; document.head.appendChild(s); }
-}
-loadShopify();
 </script>
 </body>
 </html>
