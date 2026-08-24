@@ -610,7 +610,7 @@ body.dim .nightmark{opacity:1}
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 3</div>
           <h3>What is the <em>baby&rsquo;s name?</em></h3>
-          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved in their contacts &mdash; which is what lets the call through Do Not Disturb.</p>
+          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved in their contacts. We recommend it, so the call always gets through.</p>
           <div class="field">
             <label for="obBaby">Baby&rsquo;s name</label>
             <input id="obBaby" type="text" placeholder="Emma" enterkeyhint="done">
@@ -790,7 +790,7 @@ const ABS_MIN_DB = -45;
 
 const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
 const CRY_MS       = 1200;  // dørsmell 150 ms, hoste 400 — dette er en baby
-const COOLDOWN_MS = 90000;
+const COOLDOWN_MS = 10000;
 const CALIBRATE_MS = 5000;
 const DIM_AFTER_MS = 30000;
 
@@ -1372,7 +1372,7 @@ function hiwGo(i){
     const c = selectedContact();
     $('obWhy').innerHTML = 'Jon Blund makes a link you send to <b>' +
       (c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
-      'contacts &mdash; which is what lets the call through Do Not Disturb.';
+      'contacts. We recommend it, so the call always gets through.';
   }
 }
 
@@ -1462,16 +1462,31 @@ $('obBaby').addEventListener('input', () => {
 });
 
 $('obSend').addEventListener('click', async () => {
-  const c = selectedContact();
   const baby = $('obBaby').value.trim() || 'the baby';
-  const url = $('obLink').textContent;
-  const text = 'Save this so Jon Blund can reach you when ' + baby + ' cries.';
+  const url  = $('obLink').textContent;
+  const text = 'Hi!\n\nSave this so Jon Blund can reach you when ' + baby +
+               ' cries\uD83D\uDC76\uD83C\uDFFC';
+
+  // Del selve kortet som fil. Da viser Meldinger det som et kontaktkort,
+  // slik iOS gjor det selv - i stedet for en lenke med et domenenavn under.
+  try {
+    const r = await fetch(url);
+    if (r.ok && navigator.canShare){
+      const file = new File([await r.blob()], baby + '.vcf', { type: 'text/vcard' });
+      if (navigator.canShare({ files: [file] })){
+        try { await navigator.share({ files: [file], text }); } catch(e){}
+        return;
+      }
+    }
+  } catch(e){ /* faller til lenke under */ }
+
   if (navigator.share){
-    try { await navigator.share({ title: 'Jon Blund', text, url }); } catch(e){}
-  } else {
-    try { await navigator.clipboard.writeText(url); notice('Link copied. Send it to ' + (c ? c.name : 'them') + '.'); }
-    catch(e){ notice('Copy the link above and send it on.', 6000); }
+    try { await navigator.share({ text, url }); } catch(e){}
+    return;
   }
+
+  try { await navigator.clipboard.writeText(url); notice('Link copied.'); }
+  catch(e){ notice('Copy the link above and send it on.', 6000); }
 });
 
 $('obCopy').addEventListener('click', async () => {
