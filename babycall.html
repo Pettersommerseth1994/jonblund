@@ -381,6 +381,20 @@ body.dim .nightmark{opacity:1}
   flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
 .hiw-num{font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:11px}
+
+/* skjemastegene: overskrift og forklaring midtstilt, felt og lenke venstre */
+.hiw-copy.wide p{margin:0 auto 20px}
+.hiw-copy.wide .field{text-align:left}
+.hiw-copy.wide .field label{text-align:left}
+.ob-link{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  color:var(--accent-deep);background:var(--cloud-1);
+  border:1px solid var(--line);border-radius:12px;
+  padding:11px 13px;margin:4px 0 12px;word-break:break-all;
+  line-height:1.5;text-align:left;
+}
+.ob-row{display:flex;gap:9px}
+.ob-share{margin-top:4px}
 .hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
 .hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
 .hiw-copy p{font-size:14.5px;color:var(--slate);max-width:288px;margin:0 auto}
@@ -536,8 +550,8 @@ body.dim .nightmark{opacity:1}
     <button class="btn-ghost" id="prLater">Not now</button>
   </div>
 </div>
-<div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="How Jon Blund works">
-  <div class="hiw-head"><span class="hiw-title">How it works</span></div>
+<div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
+  <div class="hiw-head"><span class="hiw-title">Get started</span></div>
   <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -555,124 +569,10 @@ body.dim .nightmark{opacity:1}
   <div class="hiw-view">
     <div class="hiw-track" id="hiwTrack">
 
-      <!-- 1 -->
+      <!-- 1 · hva det er -->
       <div class="hiw-step active">
         <div class="hiw-art">
-          <svg viewBox="0 0 300 168" role="img" aria-label="Picking a contact from a saved list">
-            <rect x="58" y="16" width="184" height="136" rx="20" fill="#fff" stroke="#e8ecf1" filter="url(#hiwSoft)"/>
-            <g>
-              <circle cx="88" cy="48" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
-              <rect x="108" y="41" width="58" height="6" rx="3" fill="#dde7f0"/>
-              <rect x="108" y="53" width="40" height="5" rx="2.5" fill="#eef2f8"/>
-              <circle cx="216" cy="48" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
-            </g>
-            <g>
-              <circle cx="88" cy="84" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
-              <rect x="108" y="77" width="48" height="6" rx="3" fill="#dde7f0"/>
-              <rect x="108" y="89" width="46" height="5" rx="2.5" fill="#eef2f8"/>
-              <circle cx="216" cy="84" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
-            </g>
-            <g>
-              <circle cx="88" cy="120" r="12" fill="url(#hiwBody)" stroke="#e8ecf1"/>
-              <rect x="108" y="113" width="54" height="6" rx="3" fill="#dde7f0"/>
-              <rect x="108" y="125" width="42" height="5" rx="2.5" fill="#eef2f8"/>
-              <circle cx="216" cy="120" r="7" fill="none" stroke="#e8ecf1" stroke-width="2"/>
-              <g class="pick">
-                <rect x="70" y="102" width="160" height="36" rx="13" fill="none" stroke="#8ba9c9" stroke-width="1.6"/>
-                <circle cx="216" cy="120" r="7" fill="#6d8bab"/>
-                <circle cx="216" cy="120" r="2.6" fill="#fff"/>
-              </g>
-            </g>
-          </svg>
-        </div>
-        <div class="hiw-copy">
-          <div class="hiw-num">Step 1</div>
-          <h3>Tell it <em>who to call.</em></h3>
-          <p>Add the number once. Jon Blund keeps it on this phone, so from then on it is a single tap.</p>
-        </div>
-      </div>
-
-      <!-- 2 -->
-      <div class="hiw-step">
-        <div class="hiw-art">
-          <svg viewBox="0 0 300 168" role="img" aria-label="A sleeping baby, with phone A beside the bed">
-            <ellipse cx="92" cy="152" rx="74" ry="7" fill="#6d8bab" opacity=".07"/>
-            <g class="bob">
-              <rect x="12" y="110" width="162" height="28" rx="14" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.3"/>
-              <ellipse cx="46" cy="108" rx="27" ry="11" fill="#eef2f8" stroke="#e3eaf3" stroke-width="1"/>
-              <path d="M70 100 H158 a16 16 0 0 1 16 16 v6 a8 8 0 0 1 -8 8 H70 z" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.3"/>
-              <path d="M72 113 H166" fill="none" stroke="#dde7f0" stroke-width="1.8" stroke-linecap="round"/>
-              <circle cx="48" cy="88" r="21" fill="url(#hiwBody)" stroke="#d5e0ec" stroke-width="1.3"/>
-              <path d="M49 67 q6 -8 12 -4" fill="none" stroke="#b5c4d6" stroke-width="2.4" stroke-linecap="round"/>
-              <path d="M38 89 q4 4 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
-              <path d="M52 89 q4 4 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
-              <path d="M45 99 q3.5 3 7 0" fill="none" stroke="#8ba9c9" stroke-width="1.8" stroke-linecap="round"/>
-              <circle cx="34" cy="95" r="3.6" fill="#8ba9c9" opacity=".26"/>
-              <text class="hz zdrift" x="80" y="70" font-size="19">z</text>
-              <text class="hz zdrift" x="96" y="76" font-size="13" style="animation-delay:1.6s">z</text>
-            </g>
-            <text class="tag" x="238" y="24">A</text>
-            <g filter="url(#hiwSoft)">
-              <rect x="206" y="32" width="64" height="112" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
-              <rect x="213" y="41" width="50" height="94" rx="9" fill="url(#hiwBody)"/>
-              <circle class="ringpulse" cx="238" cy="88" r="21" fill="none" stroke="#8ba9c9" stroke-width="1.5"/>
-              <circle cx="238" cy="88" r="14" fill="#fff" stroke="#e8ecf1"/>
-            </g>
-          </svg>
-        </div>
-        <div class="hiw-copy">
-          <div class="hiw-num">Step 2</div>
-          <h3>You need <em>two phones.</em></h3>
-          <p>This one stays by the crib and listens. The other stays with you, and is the one that rings. Turn the microphone on, set this one down, screen on and plugged in.</p>
-        </div>
-      </div>
-
-      <!-- 3 -->
-      <div class="hiw-step">
-        <div class="hiw-art">
-          <svg viewBox="0 0 300 168" role="img" aria-label="A crying baby, the sound reaching phone A">
-            <ellipse cx="82" cy="152" rx="70" ry="7" fill="#6d8bab" opacity=".07"/>
-            <rect x="8" y="110" width="150" height="28" rx="14" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.3"/>
-            <ellipse cx="40" cy="108" rx="25" ry="10" fill="#eef2f8" stroke="#e3eaf3" stroke-width="1"/>
-            <path d="M62 100 H142 a16 16 0 0 1 16 16 v6 a8 8 0 0 1 -8 8 H62 z" fill="url(#hiwNest)" stroke="#d5e0ec" stroke-width="1.3"/>
-            <path d="M64 113 H150" fill="none" stroke="#dde7f0" stroke-width="1.8" stroke-linecap="round"/>
-            <g class="shake">
-              <circle cx="42" cy="88" r="21" fill="url(#hiwBody)" stroke="#d5e0ec" stroke-width="1.3"/>
-              <path d="M43 67 q6 -8 12 -4" fill="none" stroke="#b5c4d6" stroke-width="2.4" stroke-linecap="round"/>
-              <path d="M31 87 q4 -4.5 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
-              <path d="M45 87 q4 -4.5 8 0" fill="none" stroke="#6d8bab" stroke-width="2" stroke-linecap="round"/>
-              <path d="M30 79 l9 3M54 79 l-9 3" fill="none" stroke="#9fb4cb" stroke-width="1.8" stroke-linecap="round"/>
-              <ellipse cx="42" cy="99" rx="5.4" ry="6.4" fill="#6d8bab"/>
-              <circle cx="27" cy="95" r="3.8" fill="#8ba9c9" opacity=".34"/>
-              <circle cx="57" cy="95" r="3.8" fill="#8ba9c9" opacity=".34"/>
-            </g>
-            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
-              <path class="wave" d="M168 98 a18 18 0 0 1 0 30"/>
-              <path class="wave" d="M178 90 a27 27 0 0 1 0 46" style="animation-delay:.4s"/>
-              <path class="wave" d="M188 84 a36 36 0 0 1 0 56" style="animation-delay:.8s"/>
-            </g>
-            <text class="tag" x="240" y="22">A</text>
-            <g filter="url(#hiwSoft)">
-              <rect x="208" y="30" width="64" height="112" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
-              <rect x="215" y="39" width="50" height="94" rx="9" fill="url(#hiwBody)"/>
-              <circle cx="240" cy="86" r="22" fill="none" stroke="#e8ecf1" stroke-width="2.6"/>
-              <circle class="fillring" cx="240" cy="86" r="22" fill="none" stroke="#6d8bab" stroke-width="2.6"
-                      stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 240 86)"/>
-              <circle cx="240" cy="86" r="14" fill="#fff" stroke="#e8ecf1"/>
-            </g>
-          </svg>
-        </div>
-        <div class="hiw-copy">
-          <div class="hiw-num">Step 3</div>
-          <h3>It listens for <em>crying.</em></h3>
-          <p>Not the fan, not the traffic outside. It counts real cries, so one slammed door is never enough.</p>
-        </div>
-      </div>
-
-      <!-- 4 -->
-      <div class="hiw-step">
-        <div class="hiw-art">
-          <svg viewBox="0 0 300 168" role="img" aria-label="Phone A calls phone B, which rings">
+          <svg viewBox="0 0 300 168" role="img" aria-label="One phone by the baby calls the other">
             <text class="tag" x="40" y="44">A</text>
             <g>
               <rect x="16" y="54" width="48" height="84" rx="11" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
@@ -698,18 +598,55 @@ body.dim .nightmark{opacity:1}
           </svg>
         </div>
         <div class="hiw-copy">
-          <div class="hiw-num">Step 4</div>
-          <h3>Then your phone <em>rings.</em></h3>
-          <p>A real call, so it cuts through silent mode. Answer it and you hear the room. Hang up, and Jon Blund goes straight back to listening.</p>
+          <div class="hiw-num">Step 1</div>
+          <h3>A baby monitor that <em>actually calls.</em></h3>
+          <p>Jon Blund works just like a baby monitor, except it really rings your phone. No app to install and nothing to buy — just two phones with coverage.</p>
         </div>
       </div>
 
+      <!-- 2 · hvem den skal ringe -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 2</div>
+          <h3>Which phone should it <em>ring?</em></h3>
+          <p>The one you keep with you. Saved here, so it is one tap from now on.</p>
+          <div class="field">
+            <label for="obName">Name</label>
+            <input id="obName" type="text" autocomplete="name" placeholder="Lone" enterkeyhint="next">
+          </div>
+          <div class="field">
+            <label for="obTel">Phone number</label>
+            <input id="obTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+47 123 45 678" enterkeyhint="done">
+          </div>
+          <div class="sheet-err" id="obErr"></div>
+        </div>
+      </div>
+
+      <!-- 3 · barnets navn og kontaktkortet -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 3</div>
+          <h3>What is the <em>baby&rsquo;s name?</em></h3>
+          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved in their contacts &mdash; which is what lets the call through Do Not Disturb.</p>
+          <div class="field">
+            <label for="obBaby">Baby&rsquo;s name</label>
+            <input id="obBaby" type="text" placeholder="Emma" enterkeyhint="done">
+          </div>
+          <div class="ob-share hidden" id="obShare">
+            <div class="ob-link" id="obLink"></div>
+            <div class="ob-row">
+              <button class="btn-soft" id="obSend">Send it</button>
+              <button class="btn-soft" id="obCopy">Copy link</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="hiw-foot">
     <div class="hiw-dots" id="hiwDots"></div>
-    <button class="btn-primary" id="hiwNext">Next</button>
+    <button class="btn-primary" id="hiwNext">Here&rsquo;s how to start</button>
   </div>
 </div>
 
@@ -1039,7 +976,6 @@ async function startMic(){
   lastFrame = performance.now();
   loop();
 
-  if (!contacts.length) setTimeout(() => { if (!contacts.length) openSheet(); }, 900);
 }
 
 function stopMic(){
@@ -1442,29 +1378,47 @@ renderContacts();
 setState('off');
 paint();
 
-/* ---------------- how it works ---------------- */
-const HIW_KEY = 'jonblund.seenIntro.v1';
+/* ---------------- onboarding ---------------- */
+const HIW_KEY  = 'jonblund.seenIntro.v1';
+const BABY_KEY = 'jonblund.baby.v1';
+const VCARD_BASE = 'https://jonblund-voice.vercel.app/api/vcard';
+
 const hiwSteps = [...document.querySelectorAll('.hiw-step')];
-let hiwIndex = 0, hiwWasOpen = false;
+let hiwIndex = 0, obLinkReady = false;
 
 $('hiwDots').innerHTML = hiwSteps.map((_, i) =>
   '<button class="hiw-dot" data-i="' + i + '" aria-label="Step ' + (i+1) + '"></button>').join('');
+
+function obNextLabel(){
+  if (hiwIndex === 0) return 'Here\u2019s how to start';
+  if (hiwIndex === 1) return 'Save and continue';
+  return obLinkReady ? 'Done' : 'Make the link';
+}
 
 function hiwGo(i){
   hiwIndex = Math.max(0, Math.min(hiwSteps.length - 1, i));
   $('hiwTrack').style.transform = 'translateX(' + (-100 * hiwIndex) + '%)';
   hiwSteps.forEach((s, n) => s.classList.toggle('active', n === hiwIndex));
   [...$('hiwDots').children].forEach((d, n) => d.classList.toggle('on', n === hiwIndex));
-  const last = hiwIndex === hiwSteps.length - 1;
-  $('hiwNext').textContent = last ? 'Got it' : 'Next';
+  $('hiwNext').textContent = obNextLabel();
+
+  // steg 3 vet hvem lenken skal til, sa den kan si det
+  if (hiwIndex === 2){
+    const c = selectedContact();
+    $('obWhy').innerHTML = 'Jon Blund makes a link you send to <b>' +
+      (c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
+      'contacts &mdash; which is what lets the call through Do Not Disturb.';
+  }
 }
+
 function hiwShow(){
-  hiwWasOpen = true;
   $('hiwScrim').classList.add('open');
   $('hiw').classList.add('open');
   document.body.style.overflow = 'hidden';
+  const c = selectedContact();
+  if (c){ $('obName').value = c.name; $('obTel').value = pretty(c.tel); }
+  $('obBaby').value = load(BABY_KEY, '') || '';
   hiwGo(0);
-  setTimeout(() => $('hiwNext').focus(), 420);
 }
 function hiwHide(){
   $('hiwScrim').classList.remove('open');
@@ -1473,36 +1427,76 @@ function hiwHide(){
   save(HIW_KEY, true);
 }
 
+/* steg 2: lagre mottakeren for vi slipper videre */
+function obSaveRecipient(){
+  const tel = $('obTel').value.trim();
+  if (tel.replace(/\D/g, '').length < 5){
+    $('obErr').textContent = 'That does not look like a phone number.';
+    $('obTel').focus();
+    return false;
+  }
+  $('obErr').textContent = '';
+  addContact($('obName').value, tel);
+  renderContacts();
+  return true;
+}
+
+/* steg 3: lag kontaktkort-lenken */
+function obMakeLink(){
+  const baby = $('obBaby').value.trim();
+  if (!baby){ $('obBaby').focus(); return false; }
+  save(BABY_KEY, baby);
+  const url = VCARD_BASE + '?name=' + encodeURIComponent(baby);
+  $('obLink').textContent = url;
+  $('obShare').classList.remove('hidden');
+  obLinkReady = true;
+  $('hiwNext').textContent = obNextLabel();
+  return true;
+}
+
 $('hiwOpen').addEventListener('click', hiwShow);
 $('hiwClose').addEventListener('click', hiwHide);
 $('hiwScrim').addEventListener('click', hiwHide);
+
 $('hiwNext').addEventListener('click', () => {
-  if (hiwIndex === hiwSteps.length - 1) hiwHide(); else hiwGo(hiwIndex + 1);
+  if (hiwIndex === 0) return hiwGo(1);
+  if (hiwIndex === 1) { if (obSaveRecipient()) hiwGo(2); return; }
+  if (!obLinkReady) { obMakeLink(); return; }
+  hiwHide();
 });
-$('hiwDots').addEventListener('click', e => {
-  const d = e.target.closest('.hiw-dot');
-  if (d) hiwGo(parseInt(d.dataset.i, 10));
+
+$('obName').addEventListener('keydown', e => { if (e.key === 'Enter') $('obTel').focus(); });
+$('obTel').addEventListener('keydown',  e => { if (e.key === 'Enter') $('hiwNext').click(); });
+$('obBaby').addEventListener('keydown', e => { if (e.key === 'Enter') $('hiwNext').click(); });
+$('obBaby').addEventListener('input', () => {
+  if (obLinkReady){ obLinkReady = false; $('obShare').classList.add('hidden'); $('hiwNext').textContent = obNextLabel(); }
 });
+
+$('obSend').addEventListener('click', async () => {
+  const c = selectedContact();
+  const baby = $('obBaby').value.trim() || 'the baby';
+  const url = $('obLink').textContent;
+  const text = 'Save this so Jon Blund can reach you when ' + baby + ' cries.';
+  if (navigator.share){
+    try { await navigator.share({ title: 'Jon Blund', text, url }); } catch(e){}
+  } else {
+    try { await navigator.clipboard.writeText(url); notice('Link copied. Send it to ' + (c ? c.name : 'them') + '.'); }
+    catch(e){ notice('Copy the link above and send it on.', 6000); }
+  }
+});
+
+$('obCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('obLink').textContent); notice('Link copied.'); }
+  catch(e){ notice('Could not copy \u2014 select the link above instead.', 6000); }
+});
+
 addEventListener('keydown', e => {
   if (!$('hiw').classList.contains('open')) return;
   if (e.key === 'Escape') hiwHide();
-  else if (e.key === 'ArrowRight') hiwGo(hiwIndex + 1);
-  else if (e.key === 'ArrowLeft') hiwGo(hiwIndex - 1);
 });
 
-// swipe between steps
-let swipeX = null, swipeY = null;
-$('hiwTrack').addEventListener('touchstart', e => {
-  swipeX = e.touches[0].clientX; swipeY = e.touches[0].clientY;
-}, { passive:true });
-$('hiwTrack').addEventListener('touchend', e => {
-  if (swipeX === null) return;
-  const dx = e.changedTouches[0].clientX - swipeX;
-  const dy = e.changedTouches[0].clientY - swipeY;
-  if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) hiwGo(hiwIndex + (dx < 0 ? 1 : -1));
-  swipeX = swipeY = null;
-}, { passive:true });
-
+// first visit only
+if (!load(HIW_KEY, false)) setTimeout(hiwShow, 650);
 /* ---------------- pricing ---------------- */
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
