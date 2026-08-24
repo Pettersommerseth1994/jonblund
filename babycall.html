@@ -706,6 +706,74 @@ body.dim .nightmark{opacity:1}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@2.18.3/dist/twilio.min.js"></script>
+<script>
+/* ==========================================================================
+   Twilio — fyller telefoni-festet.
+
+   Nøkkelen under ligger i offentlig kode og er derfor en fartsdump, ikke en
+   lås. Det som faktisk stopper misbruk er nummerlisten på serveren: Jon Blund
+   kan bare ringe numrene som står i JONBLUND_ALLOWED_NUMBERS. Nøkkelen byttes
+   ut med ekte innlogging når betaling kobles på.
+   ========================================================================== */
+(() => {
+  const API = 'https://jonblund-voice.vercel.app';
+  const KEY = '6eb77552b3056e8d06194b40cb17d87f8b8400821f09a3c4';
+
+  let device = null, refresh = null;
+
+  async function getToken(){
+    const r = await fetch(API + '/api/token', { headers: { 'X-Jonblund-Key': KEY } });
+    if (!r.ok) throw new Error('Token ' + r.status);
+    return (await r.json()).token;
+  }
+
+  window.JONBLUND_TELEPHONY = {
+
+    // Kjører når mikrofonen skrus på. Det trykket er den siste
+    // brukerhandlingen vi får, og iOS åpner bare en lydvei fra en slik.
+    async prepare(){
+      if (device) return;
+      if (!window.Twilio || !Twilio.Device.isSupported){
+        throw new Error('Denne nettleseren kan ikke ringe');
+      }
+      device = new Twilio.Device(await getToken(), { codecPreferences: ['opus', 'pcmu'] });
+      device.on('error', e => console.warn('[jonblund]', e.code, e.message));
+
+      clearInterval(refresh);
+      refresh = setInterval(async () => {
+        try { device && device.updateToken(await getToken()); } catch (e) {}
+      }, 45 * 60 * 1000);
+    },
+
+    release(){
+      clearInterval(refresh); refresh = null;
+      if (device){ try { device.destroy(); } catch (e) {} device = null; }
+    },
+
+    async call(contact, { onEnded }){
+      if (!device) await this.prepare();
+
+      const call = await device.connect({ params: { To: contact.tel } });
+      let weHungUp = false;
+
+      // answerOnBridge gjør at 'accept' betyr at B faktisk tok den.
+      await new Promise((resolve, reject) => {
+        call.once('accept', resolve);
+        call.once('disconnect', () => reject(new Error('Ingen svar')));
+        call.once('error', reject);
+      });
+
+      call.once('disconnect', () => { if (!weHungUp) onEnded(); });
+
+      return {
+        hangUp(){ weHungUp = true; try { call.disconnect(); } catch (e) {} }
+      };
+    }
+  };
+})();
+</script>
+
 <script>
 /* ==========================================================================
    jonblund — babycall
