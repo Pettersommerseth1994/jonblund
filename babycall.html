@@ -782,11 +782,7 @@ let selectedId = load(KEY.selected, null);
 /* ---------------- tuning ---------------- */
 /* Én fast innstilling. Jon Blund ringer så snart lyden har holdt seg
    over terskelen lenge nok til å være gråt og ikke et smell. */
-const GATE = { margin: 15, ratio: 0.14 };
-
-/* En baby som gråter en meter fra telefonen er høy, i absolutte tall.
-   Denne grensen dreper romsus som ligger over et lavt støygulv. */
-const ABS_MIN_DB = -45;
+const GATE = { margin: 9, ratio: 0.18 };
 
 const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
 const CRY_MS       = 1200;  // dørsmell 150 ms, hoste 400 — dette er en baby
@@ -800,6 +796,7 @@ let stream = null, actx = null, analyser = null, srcNode = null;
 let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
 let burstStart = 0, lastHit = 0, cryHeard = 0, lastDb = -99, lastRatio = 0;
+let peakDb = -99, peakRatio = 0, peakAt = 0;   // hoyeste sett siste 30 s
 let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
@@ -1021,11 +1018,14 @@ function loop(){
 
   if (state !== 'listening' && state !== 'detecting'){ paint(); return; }
 
-  const loud  = db > floorDb + GATE.margin && db > ABS_MIN_DB;
+  const loud  = db > floorDb + GATE.margin;
   const tonal = ratio > GATE.ratio;
   const hit   = loud && tonal;
 
   lastDb = db; lastRatio = ratio;
+  if (now - peakAt > 30000){ peakDb = -99; peakRatio = 0; peakAt = now; }
+  if (db > peakDb) peakDb = db;
+  if (ratio > peakRatio) peakRatio = ratio;
   trackFloor(db, loud);
 
   // Tell lyd, ikke veggur. Ellers utløser et enkelt rop fordi
@@ -1137,7 +1137,7 @@ const COPY = {
   detecting:   ['Crying',            'Getting ready to call.'],
   calling:     ['Calling',           ''],
   incall:      ['On the call',       'You are hearing the room live.'],
-  cooldown:    ['Paused',            'Settling for a moment before it can call again.'],
+  cooldown:    ['Paused',            'Not listening right now.'],
   error:       ['Microphone off',    'Something interrupted the microphone.']
 };
 
@@ -1153,7 +1153,7 @@ function setState(next){
   if (state === next) return;
   state = next;
   clearNotice();
-  document.body.classList.toggle('live',      ['calibrating','listening','detecting','cooldown'].includes(state));
+  document.body.classList.toggle('live',      ['calibrating','listening','detecting'].includes(state));
   document.body.classList.toggle('listening', state === 'listening');
   document.body.classList.toggle('detecting', state === 'detecting');
   document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
@@ -1172,7 +1172,7 @@ function paint(){
   if (state === 'listening')      subtitle = c ? ('Will call ' + c.name + ' the moment it hears crying.') : 'Pick who to call, below.';
   else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
   else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
-  else if (state === 'cooldown')  subtitle = 'Back to listening in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + 's.';
+  else if (state === 'cooldown')  subtitle = 'Not listening. Back on in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + ' seconds.';
   if (noticeText){
     if (performance.now() < noticeUntil) subtitle = noticeText;
     else clearNotice();
@@ -1208,7 +1208,10 @@ function paint(){
     const t = Math.floor((performance.now() - callStartedAt)/1000);
     face.innerHTML = '<div class="readout sm">' + String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0') + '</div>';
   }
-  else if (state === 'cooldown') face.innerHTML = ICONS.mic;
+  else if (state === 'cooldown'){
+    const left = Math.max(0, Math.ceil((cooldownUntil - performance.now()) / 1000));
+    face.innerHTML = '<div class="readout">' + left + '</div>';
+  }
 
   // buttons
   const power = $('powerBtn'), secondary = $('secondaryBtn');
@@ -1245,10 +1248,11 @@ function paint(){
     const wail = (cryHeard / 1000).toFixed(1);
     $('diag').innerHTML = live
       ? 'level ' + lastDb.toFixed(0) + ' &nbsp;floor ' + floorDb.toFixed(0) +
-        ' &nbsp;gate ' + Math.max(floorDb + GATE.margin, ABS_MIN_DB).toFixed(0) + ' dB ' +
-        (lastDb > Math.max(floorDb + GATE.margin, ABS_MIN_DB) ? '&check;' : '&times;') + '<br>' +
-        'tone ' + lastRatio.toFixed(3) + ' &nbsp;gate ' + GATE.ratio.toFixed(2) + ' ' +
+        ' &nbsp;needs ' + (floorDb + GATE.margin).toFixed(0) + ' ' +
+        (lastDb > floorDb + GATE.margin ? '&check;' : '&times;') + '<br>' +
+        'tone ' + lastRatio.toFixed(2) + ' &nbsp;needs ' + GATE.ratio.toFixed(2) + ' ' +
         (lastRatio > GATE.ratio ? '&check;' : '&times;') + '<br>' +
+        'peak 30s: ' + peakDb.toFixed(0) + ' dB &nbsp;tone ' + peakRatio.toFixed(2) + '<br>' +
         'cry ' + wail + 's / ' + (CRY_MS/1000) + 's'
       : 'microphone off';
   }
