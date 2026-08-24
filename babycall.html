@@ -1311,13 +1311,13 @@ const PRICE = {
   perCall:        0.49,
   includedMin:    2,
   perExtraMin:    0.49,
-  monthlyCap:     39.99,
+  monthlyLimit:   39.99,   // hard grense: tjenesten stopper, prisen fortsetter ikke
   firstCallFree:  true
 };
 
 const usd      = n => '$' + n.toFixed(2);
 const usdWhole = n => '$' + Math.round(n);
-const monthCost = calls => Math.min(PRICE.monthlyCap, PRICE.monthlyBase + calls * PRICE.perCall);
+const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
 function renderPricing(){
   $('prFree').textContent = PRICE.firstCallFree ? 'Your first call is free' : 'No fixed monthly fee';
@@ -1325,8 +1325,8 @@ function renderPricing(){
   $('prUnit').textContent = 'a month';
   $('prFine').innerHTML =
     'Plus ' + usd(PRICE.perCall) + ' a call, the first ' + PRICE.includedMin +
-    ' minutes included. <b>Never more than ' + usd(PRICE.monthlyCap) +
-    ' in a month</b>, however rough the nights get.';
+    ' minutes included. <b>Spending stops at ' + usd(PRICE.monthlyLimit) +
+    ' a month</b> — Jon Blund pauses rather than quietly running up a bill.';
 
   const months = [
     ['A quiet month',  4],
@@ -1335,7 +1335,7 @@ function renderPricing(){
   ];
   $('prTable').innerHTML = months.map(([label, calls]) => {
     const cost = monthCost(calls);
-    const capped = cost >= PRICE.monthlyCap;
+    const capped = cost >= PRICE.monthlyLimit;
     return '<div class="pr-row' + (capped ? ' cap' : '') + '">' +
              '<span class="rl">' + label + '</span>' +
              '<span class="rc">' + calls + ' calls</span>' +
@@ -1345,7 +1345,7 @@ function renderPricing(){
 
   $('prNote').textContent =
     'Calls running past ' + PRICE.includedMin + ' minutes add ' + usd(PRICE.perExtraMin) +
-    ' a minute. One card, one charge a month — the fee and your calls together.';
+    ' a minute. One card, one charge a month — and you can lift the limit any time.';
 }
 renderPricing();
 
