@@ -826,15 +826,21 @@ let sensitivity= load(KEY.sens, 'medium');
 let burstsNeeded = load(KEY.bursts, 3);
 
 /* ---------------- tuning ---------------- */
+/* Terskler over støygulvet. Strammere enn før, fordi utbruddstelling i seg
+   selv utløser lettere enn å kreve én lang sammenhengende lyd. */
 const SENS = {
-  low:    { margin: 12, ratio: 0.12 },
-  medium: { margin: 8,  ratio: 0.09 },
-  high:   { margin: 5,  ratio: 0.07 }
+  low:    { margin: 20, ratio: 0.17 },
+  medium: { margin: 15, ratio: 0.14 },
+  high:   { margin: 11, ratio: 0.11 }
 };
+
+/* En baby som gråter en meter fra telefonen er høy, i absolutte tall. Denne
+   grensen dreper romsus som tilfeldigvis ligger over et lavt støygulv. */
+const ABS_MIN_DB = -45;
 
 /* Gråt er ikke én lang lyd. Det er skrik, innpust, skrik. Så vi teller
    utbrudd i et vindu i stedet for å kreve én ubrutt strekning. */
-const BURST_MIN_MS = 250;    // kortere enn dette er et klikk, ikke et skrik
+const BURST_MIN_MS = 400;    // kortere enn dette er et klikk, ikke et skrik
 const BURST_GAP_MS = 350;    // stille så lenge avslutter et utbrudd
 const WINDOW_MS    = 15000;  // se så langt tilbake
 const LONG_WAIL_MS = 4000;   // ett ubrutt skrik så lenge holder alene
@@ -1071,7 +1077,7 @@ function loop(){
   if (state !== 'listening' && state !== 'detecting'){ paint(); return; }
 
   const cfg = SENS[sensitivity] || SENS.medium;
-  const loud  = db > floorDb + cfg.margin;
+  const loud  = db > floorDb + cfg.margin && db > ABS_MIN_DB;
   const tonal = ratio > cfg.ratio;
   const hit   = loud && tonal;
 
@@ -1101,7 +1107,7 @@ function trackFloor(db, loud){
   // classic min-tracker: drop quickly toward quiet, creep up very slowly,
   // and never let a screaming baby drag the floor up with it.
   if (db < floorDb) floorDb += (db - floorDb) * 0.06;
-  else if (!loud)   floorDb += 0.0012;
+  else if (!loud)   floorDb += 0.010;   // ~0,6 dB/s: rommet får bli travlere
 }
 
 /* ---------------- call flow ---------------- */
@@ -1297,10 +1303,12 @@ function paint(){
     const live = analyser !== null;
     const wail = burstStart ? ((performance.now() - burstStart) / 1000).toFixed(1) : '0.0';
     $('diag').innerHTML = live
-      ? 'level ' + lastDb.toFixed(0) + ' dB &nbsp;floor ' + floorDb.toFixed(0) +
-        ' &nbsp;needs &gt; ' + (floorDb + cfg.margin).toFixed(0) + '<br>' +
-        'tone ' + lastRatio.toFixed(3) + ' &nbsp;needs &gt; ' + cfg.ratio.toFixed(2) + '<br>' +
-        'cries ' + bursts.length + '/' + burstsNeeded + ' &nbsp;wail ' + wail + 's / ' +
+      ? 'level ' + lastDb.toFixed(0) + ' &nbsp;floor ' + floorDb.toFixed(0) +
+        ' &nbsp;gate ' + Math.max(floorDb + cfg.margin, ABS_MIN_DB).toFixed(0) + ' dB ' +
+        (lastDb > Math.max(floorDb + cfg.margin, ABS_MIN_DB) ? '&check;' : '&times;') + '<br>' +
+        'tone ' + lastRatio.toFixed(3) + ' &nbsp;gate ' + cfg.ratio.toFixed(2) + ' ' +
+        (lastRatio > cfg.ratio ? '&check;' : '&times;') + '<br>' +
+        'cries ' + bursts.length + '/' + burstsNeeded + ' &nbsp;wail ' + wail + 's/' +
         (LONG_WAIL_MS/1000) + 's'
       : 'microphone off';
   }
