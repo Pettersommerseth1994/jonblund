@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Jon Blund">
+  <title>Jon Blund</title>
+  <defs>
+    <linearGradient id="jb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8ba9c9"/>
+      <stop offset="1" stop-color="#6d8bab"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="11" fill="url(#jb)"/>
+
+  <!-- j, in the ink of "jon" -->
+  <circle cx="15.5" cy="13.5" r="3" fill="#1a1d24"/>
+  <path d="M15.5 20.5 V32 a5 5 0 0 1 -5 5" fill="none" stroke="#1a1d24"
+        stroke-width="5.1" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- b, in the white of "blund" -->
+  <g fill="none" stroke="#fff" stroke-width="5.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27.5 10.5 V34.5"/>
+    <path d="M27.5 21.5 h4 a6.5 6.5 0 0 1 0 13 H27.5"/>
+  </g>
+</svg>

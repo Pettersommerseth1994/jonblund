@@ -1,8 +1,12 @@
 # Jon Blund
 
-A baby monitor that rings a real phone. Phone A lies by the crib and listens
-in the browser; when it hears crying it places an actual phone call to phone B
+A baby call that rings a real phone. Device A lies by the crib and listens in
+the browser; when it hears crying it places an actual phone call to phone B
 over Twilio. No app, no hardware.
+
+**Call it a baby call, never a baby monitor** — in copy and in comments. A is
+any device with internet and a microphone (an iPad is tested and good at it);
+B must be a phone with coverage, because that is the leg Twilio dials.
 
 **Petter is not a developer.** Give click paths, not assumptions. Norwegian in
 conversation, English in the product. Never push without being asked — he says
@@ -37,9 +41,19 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   a sleeping baby and must never make noise. This is not optional.
 - **The contact card** (`/api/vcard`) is what lets the call through Do Not Disturb.
   It is a feature, not a nicety.
-- **Pricing**: $2.99/month + $0.49/call, first week free, spending *stops* at
-  $39.99 — the service pauses, it is not a discounted cap. Lives in one `PRICE`
-  constant in `babycall.html`, and separately in the marketing copy.
+- **Pricing**: $2.99/month + $0.20/call, first 2 minutes of a call included
+  then $0.39/min, first month free, spending *stops* at $35 — the service
+  pauses, it is not a discounted cap. Lives in one `PRICE` constant in
+  `babycall.html`, and separately in the marketing copy.
+- **The year figure** ($181.88: the fee for 12 months plus two cries a night
+  for 365 nights) is modelled, not measured. It has a deliberate seam —
+  `monthlyBill()` in both files — to be replaced by the real average monthly
+  bill once there are enough customers to average over.
+- **Favicon** is a `jb` monogram, hand-drawn as strokes rather than set in
+  Fraunces: the real wordmark is a hairline high-contrast serif that
+  disintegrates at 16px. It keeps the wordmark's two-tone, `j` in ink and
+  `b` in white. `favicon.svg` is the source; `favicon-32.png` and
+  `apple-touch-icon.png` are rendered from it with `qlmanage -t`.
 
 ## Gotchas that cost real time
 
@@ -55,6 +69,9 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   heights beat negotiated ones.
 - Contact Picker API is Chrome-on-Android only. Build the button at runtime so
   iPhone never sees a dead control.
+- **The onboarding steps do not scroll** (`.hiw-view` is `overflow:hidden` with
+  a definite height). Step 1's copy has ~18px of slack on a 375×667 phone, so
+  measure the paragraph there before lengthening it, or the last line vanishes.
 
 ## Not safe for real customers yet
 

@@ -6,7 +6,10 @@
 <meta name="theme-color" content="#eef2f8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>jonblund — a baby call that actually calls you</title>
+<title>jonblund, a baby call that actually calls you</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -320,6 +323,20 @@ body.dim .nightmark{opacity:1}
   min-width:62px;text-align:right;font-variant-numeric:tabular-nums;
 }
 .pr-row.cap .rv{color:var(--accent-deep)}
+.pr-year{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:18px;padding:14px 16px;border-radius:14px;
+  background:var(--cloud-1);font-size:14px;text-align:left;
+}
+.pr-year .yl{display:block;color:var(--ink)}
+.pr-year .ym{
+  display:block;font-size:12px;color:var(--slate-light);
+  font-variant-numeric:tabular-nums;margin-top:2px;
+}
+.pr-year b{
+  font-family:var(--display);font-size:19px;font-weight:400;color:var(--accent-deep);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
 .pr-note{font-size:13px;color:var(--slate-light);margin-top:13px}
 
 /* ---------- HOW IT WORKS ---------- */
@@ -504,7 +521,7 @@ body.dim .nightmark{opacity:1}
         <circle class="meter-track" cx="120" cy="120" r="104"/>
         <circle class="meter-fill" id="meterFill" cx="120" cy="120" r="104"/>
       </svg>
-      <div class="orb" id="orb" role="button" tabindex="0" aria-label="Monitoring status">
+      <div class="orb" id="orb" role="button" tabindex="0" aria-label="Listening status">
         <div class="orb-face" id="orbFace"></div>
         <svg class="zzz" viewBox="0 0 190 190" aria-hidden="true">
           <text class="zz z1" x="112" y="76">z</text>
@@ -547,7 +564,12 @@ body.dim .nightmark{opacity:1}
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
-    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
+    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening, and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it. Just don't lock the device or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
+  </div>
+
+  <div class="note note-info" id="placeNote">
+    <span class="ic">!</span>
+    <span><b>Always test one call in a new place.</b> A hotel room, a cabin, the grandparents' spare room. Internet and coverage behave differently everywhere, so make Jon Blund ring you once before you trust it with a night.</span>
   </div>
 
   <div class="foot-actions">
@@ -570,6 +592,7 @@ body.dim .nightmark{opacity:1}
       <div class="pr-amount" id="prAmount"></div>
       <div class="pr-unit" id="prUnit">a month</div>
       <p class="pr-fine" id="prFine"></p>
+      <div class="pr-year" id="prYear"></div>
       <div class="pr-table" id="prTable"></div>
       <p class="pr-note" id="prNote"></p>
     </div>
@@ -632,8 +655,8 @@ body.dim .nightmark{opacity:1}
         </div>
         <div class="hiw-copy">
           <div class="hiw-num">Step 1</div>
-          <h3>A baby monitor that <em>actually calls.</em></h3>
-          <p><b>You need two phones.</b> Lay one down side by side with your baby. Jon Blund works just like a baby monitor, except it really rings your phone. No app to install and no equipment to buy — just two phones with coverage.</p>
+          <h3>A baby call that <em>really calls.</em></h3>
+          <p><b>You need two devices.</b> This one listens by your baby, so it needs only internet and a microphone, an old phone or an iPad. The other must be a phone with coverage, the one it rings. Nothing to install or buy.</p>
         </div>
       </div>
 
@@ -698,7 +721,7 @@ body.dim .nightmark{opacity:1}
           <h3>The first month is <em>on us.</em></h3>
           <p>The monthly fee is waived, and you can stop before it ends. Calls are charged as normal from the first one.</p>
           <div class="ob-price" id="obPrice"></div>
-          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill. That holds during the free month too.</p>
+          <p class="ob-fine">Spending stops at the monthly limit, so Jon Blund pauses rather than quietly running up a bill. That holds during the free month too.</p>
         </div>
       </div>
     </div>
@@ -1166,7 +1189,7 @@ async function triggerCall(){
   acc = 0; burstStart = 0; cryHeard = 0;
   if (!c){
     setState('listening');
-    notice('Heard crying — but nobody is picked to call.', 6000);
+    notice('Heard crying, but nobody is picked to call.', 6000);
     return;
   }
   setState('calling');
@@ -1243,7 +1266,7 @@ const ICONS = {
 const COPY = {
   off:         ['Microphone off',    'Tap below and Jon Blund starts listening.'],
   starting:    ['Waking up',         'Allow the microphone when your browser asks.'],
-  calibrating: ['Learning the room', 'Hold still — measuring how quiet it is in here.'],
+  calibrating: ['Learning the room', 'Hold still, measuring how quiet it is in here.'],
   listening:   ['Listening',         ''],
   detecting:   ['Crying',            'Getting ready to call.'],
   calling:     ['Calling',           ''],
@@ -1346,7 +1369,7 @@ function paint(){
     power.disabled = false;
     if (state === 'detecting'){
       secondary.classList.remove('hidden');
-      secondary.textContent = 'Not a cry — hold on';
+      secondary.textContent = 'Not a cry, hold on';
     } else if (c){
       secondary.classList.remove('hidden');
       secondary.textContent = 'Test the call now';
@@ -1667,7 +1690,7 @@ if (!load(HIW_KEY, false)) setTimeout(() => hiwShow(true), 650);
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
   monthlyBase:    2.99,
-  perCall:        0.39,
+  perCall:        0.20,
   includedMin:    2,
   perExtraMin:    0.39,
   monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
@@ -1678,6 +1701,16 @@ const usd      = n => '$' + (n % 1 === 0 ? n : n.toFixed(2));
 const usdWhole = n => '$' + Math.round(n);
 const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
+/* Et år med to gråt per natt, hver natt: det øvre hjørnet av hva en nyfødt
+   ber om. Når det er nok kunder å snitte over, bytt monthlyBill() med det
+   faktiske gjennomsnittet per måned, og resten følger av seg selv. */
+const YEAR = { criesPerDay: 2, days: 365, months: 12 };
+const yearCost = () => Math.min(
+  PRICE.monthlyLimit * YEAR.months,
+  PRICE.monthlyBase * YEAR.months + YEAR.days * YEAR.criesPerDay * PRICE.perCall
+);
+const monthlyBill = () => yearCost() / YEAR.months;
+
 function renderPricing(){
   $('prFree').textContent = 'First month free';
   $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
@@ -1685,12 +1718,13 @@ function renderPricing(){
   $('prFine').innerHTML =
     'Plus ' + usd(PRICE.perCall) + ' a call from the very first one, the first ' +
     PRICE.includedMin + ' minutes included. <b>Spending stops at ' + usd(PRICE.monthlyLimit) +
-    ' a month</b> — Jon Blund pauses rather than quietly running up a bill.';
+    ' a month</b>, so Jon Blund pauses rather than quietly running up a bill.';
 
   const months = [
-    ['A quiet month',  4],
-    ['A normal month', 12],
-    ['A rough month',  26]
+    ['A quiet month',    15],
+    ['A newborn month',  60],
+    ['A rough month',   120],
+    ['Worse than that', 220]
   ];
   $('prTable').innerHTML = months.map(([label, calls]) => {
     const cost = monthCost(calls);
@@ -1702,9 +1736,14 @@ function renderPricing(){
            '</div>';
   }).join('');
 
+  $('prYear').innerHTML =
+    '<div><span class="yl">A whole newborn year</span><span class="ym">' +
+      YEAR.days + ' nights \u00d7 ' + YEAR.criesPerDay + ' cries, plus the fee' +
+    '</span></div><b>' + usd(yearCost()) + '</b>';
+
   $('prNote').textContent =
     'Calls running past ' + PRICE.includedMin + ' minutes add ' + usd(PRICE.perExtraMin) +
-    ' a minute. One card, one charge a month — and you can lift the limit any time.';
+    ' a minute. One card, one charge a month, and you can lift the limit any time.';
 }
 renderPricing();
 
@@ -1735,7 +1774,7 @@ $('prCard').addEventListener('click', async () => {
     catch(e){ notice('That card could not be saved. Nothing was charged.', 6000); }
   } else {
     prHide();
-    notice('Card payments are not switched on yet — calls are free for now.', 6000);
+    notice('Card payments are not switched on yet, so calls are free for now.', 6000);
   }
 });
 
