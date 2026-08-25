@@ -353,6 +353,16 @@ body.dim .nightmark{opacity:1}
   background:var(--white);position:relative;z-index:2;flex:none;
 }
 .hiw-title{font-family:var(--display);font-weight:400;font-size:19.5px;letter-spacing:-.012em}
+.hiw-back{
+  position:absolute;top:14px;left:14px;z-index:3;
+  border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
+  width:30px;height:30px;border-radius:50%;
+  color:var(--slate);cursor:pointer;padding:0;
+  display:grid;place-items:center;transition:color .25s,background .25s,opacity .25s;
+}
+.hiw-back svg{width:16px;height:16px}
+.hiw-back:hover{color:var(--ink);background:var(--white)}
+.hiw-back[hidden]{display:none}
 .hiw-close{
   position:absolute;top:14px;right:14px;z-index:3;
   border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
@@ -572,6 +582,9 @@ body.dim .nightmark{opacity:1}
 </div>
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
   <div class="hiw-head"><span class="hiw-title">Get started</span></div>
+  <button class="hiw-back" id="hiwBack" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
   <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1470,6 +1483,9 @@ function obNextLabel(){
 function obSyncNext(){
   $('hiwNext').textContent = obNextLabel();
   $('hiwNext').disabled = (hiwIndex === 2 && !$('obBaby').value.trim());
+  // tilbake finnes overalt unntatt pa forste steg, ogsa nar flyten er last:
+  // a ga tilbake er navigasjon, ikke en vei ut
+  $('hiwBack').hidden = hiwIndex === 0;
 }
 
 function hiwGo(i){
@@ -1555,6 +1571,7 @@ function obBuildCard(){
 
 $('hiwOpen').addEventListener('click', () => hiwShow(false));
 $('hiwClose').addEventListener('click', () => hiwHide());
+$('hiwBack').addEventListener('click', () => hiwGo(hiwIndex - 1));
 $('hiwScrim').addEventListener('click', () => hiwHide());
 
 $('hiwNext').addEventListener('click', async () => {
