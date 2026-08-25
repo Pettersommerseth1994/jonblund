@@ -228,13 +228,7 @@ body.managing .contact .mark{display:none}
   font-size:12.5px;font-weight:600;color:var(--accent-deep);
   font-variant-numeric:tabular-nums;
 }
-.check-cost{
-  font-size:12.5px;line-height:1.5;color:var(--slate-light);
-  margin:13px 0 0;min-height:1px;
-}
-.check-cost b{color:var(--slate);font-weight:600}
-.check-cost.warn{color:var(--warm)}
-.check-cost.warn b{color:var(--warm)}
+
 
 /* ---------- NOTES ---------- */
 .note{
@@ -582,16 +576,15 @@ body.dim .nightmark{opacity:1}
       <span class="opt-label">Check-in calls</span>
       <span class="check-next" id="checkNext"></span>
     </div>
-    <p class="check-why">Jon Blund rings you on a timer even when the room is quiet, so you can hear for yourself that the line still works. Answer to listen in, or let it ring.</p>
+    <p class="check-why">Jon Blund calls you on a timer even when the room is quiet. It is for parents who want to check in once in a while.</p>
     <span class="check-unit">Minutes between calls</span>
     <div class="seg seg-wide" id="checkSeg">
       <button data-v="0">Off</button>
-      <button data-v="10">10</button>
       <button data-v="15">15</button>
-      <button data-v="20">20</button>
       <button data-v="30">30</button>
+      <button data-v="45">45</button>
+      <button data-v="60">60</button>
     </div>
-    <p class="check-cost" id="checkCost"></p>
   </section>
 
 
@@ -933,11 +926,11 @@ let selectedId = load(KEY.selected, null);
    for at linja lever selv når rommet er stille: telefonen ringer, og svarer
    man hører man stillheten selv.
 
-   Av som standard, og det er et bevisst valg. Hver innsjekk er et anrop, og
-   selv tretti minutter tømmer månedstaket på ti netter. Regnestykket står
-   på skjermen under velgeren så valget blir tatt med åpne øyne. */
-const CHECK_MINUTES = [0, 10, 15, 20, 30];   // 0 = av
-const NIGHT_HOURS   = 8;                     // en natt, for kostnadsanslaget
+   Av som standard, og det er et bevisst valg: hver innsjekk er et anrop.
+   Selv en time mellom hvert tømmer månedstaket på tjue netter, og et kvarter
+   gjør det på fem. Tallene stod en stund under velgeren, men ble tatt bort
+   etter ønske — de hører hjemme i prisarket, ikke som rød skrift her. */
+const CHECK_MINUTES = [0, 15, 30, 45, 60];   // 0 = av
 
 let checkEvery  = load(KEY.checkEvery, 0);
 let nextCheckAt = Infinity;
@@ -1494,34 +1487,12 @@ function paint(){
 }
 
 /* ---------------- check-in panel ---------------- */
-/* Kostnaden er hele grunnen til at dette er en avgjørelse og ikke en bryter.
-   Tallene kommer fra PRICE, så de kan ikke bli utdaterte. */
-function checkInCost(minutes){
-  const perNight = (NIGHT_HOURS * 60) / minutes;
-  const cost     = perNight * PRICE.perCall;
-  const nights   = (PRICE.monthlyLimit - PRICE.monthlyBase) / cost;
-  return { perNight, cost, nights };
-}
-
 function renderCheck(){
-  const next = $('checkNext'), cost = $('checkCost');
-
-  if (!checkEvery){
+  const next = $('checkNext');
+  if (!checkEvery || (state !== 'listening' && state !== 'detecting')){
     next.textContent = '';
-    cost.classList.remove('warn');
-    cost.textContent = 'Off. Jon Blund only calls when it hears crying.';
     return;
   }
-
-  const { perNight, cost: nightly, nights } = checkInCost(checkEvery);
-  cost.classList.toggle('warn', nights < 7);   // under en uke: du mister tjenesten midt i uka
-  cost.innerHTML =
-    '<b>' + Math.round(perNight) + ' calls a night.</b> About <b>' + usd(nightly) +
-    '</b> if you answer them all, and the ' + usd(PRICE.monthlyLimit) +
-    ' limit pauses Jon Blund after roughly ' + Math.round(nights) +
-    ' nights. Let one ring out and it costs nothing.';
-
-  if (state !== 'listening' && state !== 'detecting'){ next.textContent = ''; return; }
   const left = Math.max(0, nextCheckAt - performance.now());
   next.textContent = left >= 60000
     ? 'next in ' + Math.ceil(left / 60000) + ' min'
