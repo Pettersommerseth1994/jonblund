@@ -1452,7 +1452,7 @@ const BABY_KEY = 'jonblund.baby.v1';
 const VCARD_BASE = 'https://jonblund-voice.vercel.app/api/vcard';
 
 const hiwSteps = [...document.querySelectorAll('.hiw-step')];
-let hiwIndex = 0, obSent = false;
+let hiwIndex = 0, obSent = false, obLocked = false;
 
 $('hiwDots').innerHTML = hiwSteps.map((_, i) =>
   '<button class="hiw-dot" data-i="' + i + '" aria-label="Step ' + (i+1) + '"></button>').join('');
@@ -1504,7 +1504,12 @@ function obRenderPrice(){
     '<div class="ob-price-row"><span>Never more than</span><b>' + usd(PRICE.monthlyLimit) + ' a month</b></div>';
 }
 
-function hiwShow(){
+/* Forstegangsflyten er last: man skal gjennom alle stegene. Apner man den
+   igjen senere fra "How it works", er krysset tilbake - da er man en som
+   sjekker noe, ikke en som setter opp. */
+function hiwShow(locked){
+  obLocked = !!locked;
+  $('hiwClose').style.display = obLocked ? 'none' : '';
   $('hiwScrim').classList.add('open');
   $('hiw').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1513,7 +1518,8 @@ function hiwShow(){
   $('obBaby').value = load(BABY_KEY, '') || '';
   hiwGo(0);
 }
-function hiwHide(){
+function hiwHide(force){
+  if (obLocked && !force) return;
   $('hiwScrim').classList.remove('open');
   $('hiw').classList.remove('open');
   document.body.style.overflow = '';
@@ -1547,9 +1553,9 @@ function obBuildCard(){
   return true;
 }
 
-$('hiwOpen').addEventListener('click', hiwShow);
-$('hiwClose').addEventListener('click', hiwHide);
-$('hiwScrim').addEventListener('click', hiwHide);
+$('hiwOpen').addEventListener('click', () => hiwShow(false));
+$('hiwClose').addEventListener('click', () => hiwHide());
+$('hiwScrim').addEventListener('click', () => hiwHide());
 
 $('hiwNext').addEventListener('click', async () => {
   if (hiwIndex === 0) return hiwGo(1);
@@ -1571,7 +1577,7 @@ $('hiwNext').addEventListener('click', async () => {
     catch(e){ notice('Could not start the free week. Nothing was charged.', 7000); }
     return;
   }
-  hiwHide();
+  hiwHide(true);
   notice('Payments are not switched on yet \u2014 everything is free for now.', 7000);
 });
 
@@ -1635,11 +1641,11 @@ async function obShareCard(){
 
 addEventListener('keydown', e => {
   if (!$('hiw').classList.contains('open')) return;
-  if (e.key === 'Escape') hiwHide();
+  if (e.key === 'Escape') hiwHide();     // hiwHide nekter selv nar den er last
 });
 
 // first visit only
-if (!load(HIW_KEY, false)) setTimeout(hiwShow, 650);
+if (!load(HIW_KEY, false)) setTimeout(() => hiwShow(true), 650);
 /* ---------------- pricing ---------------- */
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
@@ -1716,8 +1722,6 @@ $('prCard').addEventListener('click', async () => {
   }
 });
 
-// first visit only
-if (!load(HIW_KEY, false)) setTimeout(hiwShow, 650);
 </script>
 </body>
 </html>
