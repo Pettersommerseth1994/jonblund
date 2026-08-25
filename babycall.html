@@ -695,10 +695,10 @@ body.dim .nightmark{opacity:1}
       <div class="hiw-step">
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 5</div>
-          <h3>The monthly fee is <em>on us.</em></h3>
-          <p>Free for a week, and you can stop before it ends. Calls are charged as normal from the first one.</p>
+          <h3>The first month is <em>on us.</em></h3>
+          <p>The monthly fee is waived, and you can stop before it ends. Calls are charged as normal from the first one.</p>
           <div class="ob-price" id="obPrice"></div>
-          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill. That holds during the free week too.</p>
+          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill. That holds during the free month too.</p>
         </div>
       </div>
     </div>
@@ -1475,7 +1475,7 @@ function obNextLabel(){
   if (hiwIndex === 1) return 'Save and continue';
   if (hiwIndex === 2) return 'Next';
   if (hiwIndex === 3) return obSent ? 'Next' : 'Send contact card';
-  return 'Start free week';
+  return 'Start free month';
 }
 
 /* Steg 3 slipper ingen videre for barnet har et navn - kortet er
@@ -1513,7 +1513,7 @@ function hiwGo(i){
 
 function obRenderPrice(){
   $('obPrice').innerHTML =
-    '<div class="ob-price-row free"><span>Monthly fee, first ' + PRICE.trialDays + ' days</span>' +
+    '<div class="ob-price-row free"><span>Monthly fee, first month</span>' +
       '<b><s>' + usd(PRICE.monthlyBase) + '</s> free</b></div>' +
     '<div class="ob-price-row"><span>Then, each month</span><b>' + usd(PRICE.monthlyBase) + '</b></div>' +
     '<div class="ob-price-row"><span>Each call, from day one</span><b>' + usd(PRICE.perCall) + '</b></div>' +
@@ -1591,7 +1591,7 @@ $('hiwNext').addEventListener('click', async () => {
   const billing = window.JONBLUND_BILLING;
   if (billing && typeof billing.startTrial === 'function'){
     try { await billing.startTrial(); }
-    catch(e){ notice('Could not start the free week. Nothing was charged.', 7000); }
+    catch(e){ notice('Could not start the free month. Nothing was charged.', 7000); }
     return;
   }
   hiwHide(true);
@@ -1667,19 +1667,19 @@ if (!load(HIW_KEY, false)) setTimeout(() => hiwShow(true), 650);
 /* One place to change what Jon Blund costs. Amounts are NOK. */
 const PRICE = {
   monthlyBase:    2.99,
-  perCall:        0.49,
+  perCall:        0.39,
   includedMin:    2,
-  perExtraMin:    0.49,
-  monthlyLimit:   39.99,   // hard grense: tjenesten stopper, prisen fortsetter ikke
-  trialDays:      7
+  perExtraMin:    0.39,
+  monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
+  trialFree:      'the first month'
 };
 
-const usd      = n => '$' + n.toFixed(2);
+const usd      = n => '$' + (n % 1 === 0 ? n : n.toFixed(2));
 const usdWhole = n => '$' + Math.round(n);
 const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
 function renderPricing(){
-  $('prFree').textContent = 'No monthly fee for ' + PRICE.trialDays + ' days';
+  $('prFree').textContent = 'First month free';
   $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
   $('prUnit').textContent = 'a month';
   $('prFine').innerHTML =
