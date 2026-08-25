@@ -188,6 +188,8 @@ section{position:relative}
 }
 .price-big{font-family:var(--display);font-weight:300;font-size:64px;letter-spacing:-.035em;line-height:1}
 .price-big sup{font-size:28px;vertical-align:.42em;margin-right:3px;letter-spacing:-.02em}
+.price-big s{color:var(--slate-light);text-decoration-thickness:2px}
+.price-now{color:var(--accent-deep);margin-left:10px}
 .price-unit{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);margin-top:12px}
 .price-rows{border:1px solid var(--line);border-radius:18px;margin:30px 0 26px;text-align:left}
 .price-row{display:flex;justify-content:space-between;gap:14px;padding:14px 18px;font-size:14.5px}
@@ -282,7 +284,7 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
 <header class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow">Free for a week</span>
+      <span class="eyebrow">No monthly fee for a week</span>
       <h1>A baby monitor that <em>actually calls you.</em></h1>
       <p class="lead">Jon Blund listens by the crib and rings your phone the moment your baby cries. Not a notification you might miss — a real call, on the mobile network.</p>
       <div class="hero-actions">
@@ -560,19 +562,20 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
     </div>
 
     <div class="price-card reveal">
-      <span class="price-free">First week free</span>
-      <div class="price-big"><sup>$</sup>2.99</div>
-      <div class="price-unit">a month</div>
+      <span class="price-free">First week, no monthly fee</span>
+      <div class="price-big"><s><sup>$</sup>2.99</s> <span class="price-now">$0</span></div>
+      <div class="price-unit">a month, for the first week</div>
 
       <div class="price-rows">
-        <div class="price-row"><span>Every call it makes</span><b>$0.49</b></div>
+        <div class="price-row"><span>After the first week</span><b>$2.99 a month</b></div>
+        <div class="price-row"><span>Every call, from the first one</span><b>$0.49</b></div>
         <div class="price-row"><span>First two minutes of each call</span><b>included</b></div>
         <div class="price-row"><span>After that</span><b>$0.49 / min</b></div>
         <div class="price-row price-cap"><span>Spending stops at</span><b>$39.99 a month</b></div>
       </div>
 
       <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Start the free week</a>
-      <p class="price-fine">Cancel any time. The week runs before anything is charged.</p>
+      <p class="price-fine">Cancel any time. The free week covers the monthly fee — calls are charged as normal, so the limit protects you from the first day.</p>
     </div>
   </div>
 </section>
@@ -608,10 +611,10 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
 
 <!-- ================= CTA ================= -->
 <section class="cta">
-  <h2>Try it today. <em>It is free for a week.</em></h2>
+  <h2>Try it today. <em>No monthly fee for a week.</em></h2>
   <p>Open it on the phone that will sit by the crib. Two minutes and it is listening.</p>
   <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Get started</a>
-  <p class="cta-note">No card for the first week. No app. No hardware.</p>
+  <p class="cta-note">No app. No hardware. Stop whenever you like.</p>
 </section>
 
 <footer>

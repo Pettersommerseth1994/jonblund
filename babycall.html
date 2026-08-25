@@ -431,6 +431,7 @@ body.dim .nightmark{opacity:1}
 .ob-price-row b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ob-price-row.free{background:var(--cloud-1)}
 .ob-price-row.free b{color:var(--accent-deep)}
+.ob-price-row s{color:var(--slate-light);font-weight:400;margin-right:6px;text-decoration-thickness:1.5px}
 .ob-fine{font-size:12.5px;color:var(--slate-light);margin:0}
 .hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
 .hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
@@ -681,10 +682,10 @@ body.dim .nightmark{opacity:1}
       <div class="hiw-step">
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 5</div>
-          <h3>Your first week is <em>free.</em></h3>
-          <p>Nothing is charged until it is over, and you can stop before it is.</p>
+          <h3>The monthly fee is <em>on us.</em></h3>
+          <p>Free for a week, and you can stop before it ends. Calls are charged as normal from the first one.</p>
           <div class="ob-price" id="obPrice"></div>
-          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill.</p>
+          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill. That holds during the free week too.</p>
         </div>
       </div>
     </div>
@@ -1496,9 +1497,10 @@ function hiwGo(i){
 
 function obRenderPrice(){
   $('obPrice').innerHTML =
-    '<div class="ob-price-row free"><span>First ' + PRICE.trialDays + ' days</span><b>free</b></div>' +
+    '<div class="ob-price-row free"><span>Monthly fee, first ' + PRICE.trialDays + ' days</span>' +
+      '<b><s>' + usd(PRICE.monthlyBase) + '</s> free</b></div>' +
     '<div class="ob-price-row"><span>Then, each month</span><b>' + usd(PRICE.monthlyBase) + '</b></div>' +
-    '<div class="ob-price-row"><span>Each call it makes</span><b>' + usd(PRICE.perCall) + '</b></div>' +
+    '<div class="ob-price-row"><span>Each call, from day one</span><b>' + usd(PRICE.perCall) + '</b></div>' +
     '<div class="ob-price-row"><span>Never more than</span><b>' + usd(PRICE.monthlyLimit) + ' a month</b></div>';
 }
 
@@ -1654,12 +1656,12 @@ const usdWhole = n => '$' + Math.round(n);
 const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
 function renderPricing(){
-  $('prFree').textContent = 'Your first ' + PRICE.trialDays + ' days are free';
+  $('prFree').textContent = 'No monthly fee for ' + PRICE.trialDays + ' days';
   $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
   $('prUnit').textContent = 'a month';
   $('prFine').innerHTML =
-    'Plus ' + usd(PRICE.perCall) + ' a call, the first ' + PRICE.includedMin +
-    ' minutes included. <b>Spending stops at ' + usd(PRICE.monthlyLimit) +
+    'Plus ' + usd(PRICE.perCall) + ' a call from the very first one, the first ' +
+    PRICE.includedMin + ' minutes included. <b>Spending stops at ' + usd(PRICE.monthlyLimit) +
     ' a month</b> — Jon Blund pauses rather than quietly running up a bill.';
 
   const months = [
