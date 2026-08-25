@@ -424,6 +424,14 @@ body.dim .nightmark{opacity:1}
 .vc-row b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .btn-primary:disabled{opacity:.35;pointer-events:none}
 .ob-share{margin-top:4px}
+.ob-price{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:4px 0 12px}
+.ob-price-row{display:flex;justify-content:space-between;gap:12px;padding:12px 15px;font-size:14px}
+.ob-price-row+.ob-price-row{border-top:1px solid var(--line)}
+.ob-price-row span{color:var(--slate)}
+.ob-price-row b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ob-price-row.free{background:var(--cloud-1)}
+.ob-price-row.free b{color:var(--accent-deep)}
+.ob-fine{font-size:12.5px;color:var(--slate-light);margin:0}
 .hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
 .hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
 .hiw-copy p{font-size:14.5px;color:var(--slate);max-width:none;margin:0 auto}
@@ -528,7 +536,7 @@ body.dim .nightmark{opacity:1}
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
-    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so it is not a lamp by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
+    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening — and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it. Just don't lock the phone or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
   </div>
 
   <div class="foot-actions">
@@ -651,7 +659,7 @@ body.dim .nightmark{opacity:1}
       <div class="hiw-step">
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 4</div>
-          <h3>Send the <em>contact card.</em></h3>
+          <h3 id="obSendTitle">Send the contact card.</h3>
           <p>This is what lands in their phone.</p>
           <div class="vcard">
             <div class="vc-avatar" id="vcInitial">S</div>
@@ -666,6 +674,17 @@ body.dim .nightmark{opacity:1}
             <div class="vc-row"><span>mobile</span><b>+1 (240) 232-6663</b></div>
           </div>
           <div class="ob-link hidden" id="obLink"></div>
+        </div>
+      </div>
+
+      <!-- 5 · gratisuken -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 5</div>
+          <h3>Your first week is <em>free.</em></h3>
+          <p>Nothing is charged until it is over, and you can stop before it is.</p>
+          <div class="ob-price" id="obPrice"></div>
+          <p class="ob-fine">Spending stops at the monthly limit &mdash; Jon Blund pauses rather than quietly running up a bill.</p>
         </div>
       </div>
     </div>
@@ -1185,7 +1204,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* ---------------- night dim ---------------- */
+/* ---------------- screen dim ---------------- */
 function scheduleDim(){
   clearTimeout(dimTimer);
   if (state === 'listening' || state === 'cooldown'){
@@ -1441,7 +1460,8 @@ function obNextLabel(){
   if (hiwIndex === 0) return 'Here\u2019s how to start';
   if (hiwIndex === 1) return 'Save and continue';
   if (hiwIndex === 2) return 'Next';
-  return obSent ? 'Done' : 'Send contact card';
+  if (hiwIndex === 3) return obSent ? 'Next' : 'Send contact card';
+  return 'Start free week';
 }
 
 /* Steg 3 slipper ingen videre for barnet har et navn - kortet er
@@ -1458,6 +1478,13 @@ function hiwGo(i){
   [...$('hiwDots').children].forEach((d, n) => d.classList.toggle('on', n === hiwIndex));
   obSyncNext();
 
+  if (hiwIndex === 3){
+    const c = selectedContact();
+    $('obSendTitle').innerHTML = 'Send the contact card to <em>' +
+      (c ? c.name : 'them') + '.</em>';
+  }
+  if (hiwIndex === 4) obRenderPrice();
+
   // steg 3 vet hvem lenken skal til, sa den kan si det
   if (hiwIndex === 2){
     const c = selectedContact();
@@ -1465,6 +1492,14 @@ function hiwGo(i){
       (c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
       'contacts. We recommend it, so the call always gets through.';
   }
+}
+
+function obRenderPrice(){
+  $('obPrice').innerHTML =
+    '<div class="ob-price-row free"><span>First ' + PRICE.trialDays + ' days</span><b>free</b></div>' +
+    '<div class="ob-price-row"><span>Then, each month</span><b>' + usd(PRICE.monthlyBase) + '</b></div>' +
+    '<div class="ob-price-row"><span>Each call it makes</span><b>' + usd(PRICE.perCall) + '</b></div>' +
+    '<div class="ob-price-row"><span>Never more than</span><b>' + usd(PRICE.monthlyLimit) + ' a month</b></div>';
 }
 
 function hiwShow(){
@@ -1518,10 +1553,24 @@ $('hiwNext').addEventListener('click', async () => {
   if (hiwIndex === 0) return hiwGo(1);
   if (hiwIndex === 1) { if (obSaveRecipient()) hiwGo(2); return; }
   if (hiwIndex === 2) { if (obBuildCard()) hiwGo(3); return; }
-  if (obSent) { hiwHide(); return; }
-  await obShareCard();
-  obSent = true;                 // tilbake fra delearket
-  obSyncNext();
+
+  if (hiwIndex === 3){
+    if (obSent) return hiwGo(4);
+    await obShareCard();
+    obSent = true;               // tilbake fra delearket
+    obSyncNext();
+    return;
+  }
+
+  // siste steg: start gratisuken
+  const billing = window.JONBLUND_BILLING;
+  if (billing && typeof billing.startTrial === 'function'){
+    try { await billing.startTrial(); }
+    catch(e){ notice('Could not start the free week. Nothing was charged.', 7000); }
+    return;
+  }
+  hiwHide();
+  notice('Payments are not switched on yet \u2014 everything is free for now.', 7000);
 });
 
 /* Contact Picker finnes bare i Chrome pa Android. Der den finnes,
@@ -1597,7 +1646,7 @@ const PRICE = {
   includedMin:    2,
   perExtraMin:    0.49,
   monthlyLimit:   39.99,   // hard grense: tjenesten stopper, prisen fortsetter ikke
-  firstCallFree:  true
+  trialDays:      7
 };
 
 const usd      = n => '$' + n.toFixed(2);
@@ -1605,7 +1654,7 @@ const usdWhole = n => '$' + Math.round(n);
 const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
 function renderPricing(){
-  $('prFree').textContent = PRICE.firstCallFree ? 'Your first call is free' : 'No fixed monthly fee';
+  $('prFree').textContent = 'Your first ' + PRICE.trialDays + ' days are free';
   $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
   $('prUnit').textContent = 'a month';
   $('prFine').innerHTML =
