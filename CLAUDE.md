@@ -45,6 +45,33 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   then $0.39/min, first month free, spending *stops* at $35 — the service
   pauses, it is not a discounted cap. Lives in one `PRICE` constant in
   `babycall.html`, and separately in the marketing copy.
+- **Check-in calls** ring on a timer even when the room is quiet, so a parent
+  gets proof the line still works. Off by default, then 10/15/20/30 minutes,
+  in `checkEvery` (persisted) with `maybeCheckIn()` as the decision.
+  - It runs off the **500 ms heartbeat, not the rAF loop**: rAF stops the
+    moment the page is hidden, and this is the feature that must not be the
+    first to die. It needs the clock, not an audio frame.
+  - It never dials while `burstStart` is set, so a check-in cannot cut off a
+    cry that is on its way in. It also re-arms *before* dialling, so a failure
+    or a missing recipient cannot turn into a loop.
+  - Any finished call re-arms the clock. You just had a call, so the line is
+    proven and the timer starts over.
+  - **The cost is the reason this is a decision and not a switch.** Every
+    check-in is a call. Over an eight-hour night: 30 min = 16 calls = $3.20,
+    10 min = 48 calls = $9.60. The $35 ceiling stops the service after 3 to 10
+    nights depending on the interval, so the arithmetic is printed under the
+    picker, computed from `PRICE`.
+  - **Open decision**: `answerOnBridge: true` means Twilio only bills once B
+    answers, so a check-in the parent lets ring costs *Twilio* nothing. Whether
+    Jon Blund still charges its own $0.20 for a ring that was never answered is
+    unsettled — the UI currently says "let one ring out and it costs nothing".
+    Settle it when billing goes in, in `/api/voice` and this copy together.
+  - On the receiving phone a check-in is indistinguishable from a real cry;
+    both come from the one Twilio number. Verifying means answering and
+    hearing the quiet. A second number would separate them, but that is
+    server work nobody has asked for.
+- **`PRICE`, `usd` and `usdWhole` sit at the top of the app script**, not in the
+  pricing section, because the check-in panel prices itself during start-up.
 - **Coverage vs signal**: a *network* has coverage over an area, a *handset*
   has a signal. "A phone with coverage" is unidiomatic — native usage reserves
   "coverage" for a carrier's geographic reach. So: "a phone with a signal",

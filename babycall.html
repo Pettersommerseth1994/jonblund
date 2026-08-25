@@ -219,6 +219,22 @@ body.managing .contact .mark{display:none}
   padding:7px 14px;border-radius:100px;transition:background .25s,color .25s;
 }
 .seg button.sel{background:var(--ink);color:var(--white)}
+.seg-wide{width:100%}
+.seg-wide button{flex:1;padding:9px 4px;font-size:13px}
+
+.check-why{font-size:13.5px;color:var(--slate);margin:0 0 15px}
+.check-unit{display:block;font-size:12.5px;color:var(--slate);margin-bottom:9px}
+.check-next{
+  font-size:12.5px;font-weight:600;color:var(--accent-deep);
+  font-variant-numeric:tabular-nums;
+}
+.check-cost{
+  font-size:12.5px;line-height:1.5;color:var(--slate-light);
+  margin:13px 0 0;min-height:1px;
+}
+.check-cost b{color:var(--slate);font-weight:600}
+.check-cost.warn{color:var(--warm)}
+.check-cost.warn b{color:var(--warm)}
 
 /* ---------- NOTES ---------- */
 .note{
@@ -561,6 +577,23 @@ body.dim .nightmark{opacity:1}
     </div>
   </section>
 
+  <section class="panel">
+    <div class="panel-head">
+      <span class="opt-label">Check-in calls</span>
+      <span class="check-next" id="checkNext"></span>
+    </div>
+    <p class="check-why">Jon Blund rings you on a timer even when the room is quiet, so you can hear for yourself that the line still works. Answer to listen in, or let it ring.</p>
+    <span class="check-unit">Minutes between calls</span>
+    <div class="seg seg-wide" id="checkSeg">
+      <button data-v="0">Off</button>
+      <button data-v="10">10</button>
+      <button data-v="15">15</button>
+      <button data-v="20">20</button>
+      <button data-v="30">30</button>
+    </div>
+    <p class="check-cost" id="checkCost"></p>
+  </section>
+
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
@@ -884,15 +917,68 @@ const $ = (id) => document.getElementById(id);
 
 /* ---------------- storage ---------------- */
 const KEY = {
-  contacts: 'jonblund.contacts.v1',
-  selected: 'jonblund.selected.v1',
-  baby:     'jonblund.baby.v1'
+  contacts:   'jonblund.contacts.v1',
+  selected:   'jonblund.selected.v1',
+  baby:       'jonblund.baby.v1',
+  checkEvery: 'jonblund.checkEvery.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 
 let contacts   = load(KEY.contacts, []);
 let selectedId = load(KEY.selected, null);
+
+/* ---------------- check-in calls ----------------
+   Et anrop på klokka, ikke på lyd. Poenget er at forelderen skal få bevis
+   for at linja lever selv når rommet er stille: telefonen ringer, og svarer
+   man hører man stillheten selv.
+
+   Av som standard, og det er et bevisst valg. Hver innsjekk er et anrop, og
+   selv tretti minutter tømmer månedstaket på ti netter. Regnestykket står
+   på skjermen under velgeren så valget blir tatt med åpne øyne. */
+const CHECK_MINUTES = [0, 10, 15, 20, 30];   // 0 = av
+const NIGHT_HOURS   = 8;                     // en natt, for kostnadsanslaget
+
+let checkEvery  = load(KEY.checkEvery, 0);
+let nextCheckAt = Infinity;
+let callReason  = 'cry';                     // cry · check · test
+
+if (!CHECK_MINUTES.includes(checkEvery)) checkEvery = 0;
+
+/* Alltid målt fra nå. Kalles når mikrofonen begynner å lytte, når en samtale
+   er over, og når intervallet endres, slik at man aldri får en innsjekk rett
+   etter at man nettopp snakket med barnet. */
+function armCheckIn(){
+  nextCheckAt = checkEvery ? performance.now() + checkEvery * 60000 : Infinity;
+}
+
+/* Kjøres fra hjerteslaget på 500 ms, ikke fra rAF-løkka. rAF står stille så
+   snart siden ikke er synlig, og en trygghetsfunksjon skal ikke være det
+   første som slutter å virke. Denne trenger ingen lydramme, bare klokka.
+
+   burstStart er satt i det mikrofonen hører noe som kan bli gråt, så en
+   innsjekk kapper aldri en gråt på vei inn: den venter til rommet er stille. */
+function maybeCheckIn(){
+  if (!checkEvery) return;
+  if (state !== 'listening') return;
+  if (burstStart) return;
+  if (performance.now() < nextCheckAt) return;
+  armCheckIn();                 // re-arm før vi ringer: en feil skal ikke løkke
+  triggerCall('check');
+}
+
+/* One place to change what Jon Blund costs. Amounts are NOK. */
+const PRICE = {
+  monthlyBase:    2.99,
+  perCall:        0.20,
+  includedMin:    2,
+  perExtraMin:    0.39,
+  monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
+  trialFree:      'the first month'
+};
+
+const usd      = n => '$' + (n % 1 === 0 ? n : n.toFixed(2));
+const usdWhole = n => '$' + Math.round(n);
 
 /* ---------------- tuning ---------------- */
 /* Én fast innstilling. Jon Blund ringer så snart lyden har holdt seg
@@ -1074,6 +1160,7 @@ function stopMic(){
   if (actx) { try { actx.close(); } catch(e){} actx = null; }
   analyser = srcNode = null;
   acc = 0; level = 0; smoothLevel = 0;
+  nextCheckAt = Infinity;
   releaseWakeLock();
   const tel = window.JONBLUND_TELEPHONY;
   if (tel && typeof tel.release === 'function'){ try { tel.release(); } catch(e){} }
@@ -1124,6 +1211,7 @@ function loop(){
     if (now - calibrateStartedAt >= CALIBRATE_MS){
       calSamples.sort((a,b) => a - b);
       floorDb = calSamples[Math.floor(calSamples.length * 0.25)] || -70;
+      armCheckIn();
       setState('listening');
     }
     paint();
@@ -1169,7 +1257,7 @@ function loop(){
   // for fort til at noen rekker a lese den
   if (why !== gateWhy && now - gateWhyAt > 2500){ gateWhy = why; gateWhyAt = now; }
 
-  if (cryHeard >= CRY_MS){ triggerCall(); return; }
+  if (cryHeard >= CRY_MS){ triggerCall('cry'); return; }
 
   acc = cryHeard / CRY_MS;
   setState(cryHeard > 250 ? 'detecting' : 'listening');
@@ -1184,12 +1272,15 @@ function trackFloor(db, loud){
 }
 
 /* ---------------- call flow ---------------- */
-async function triggerCall(){
+async function triggerCall(reason){
   const c = selectedContact();
+  callReason = reason || 'cry';
   acc = 0; burstStart = 0; cryHeard = 0;
   if (!c){
     setState('listening');
-    notice('Heard crying, but nobody is picked to call.', 6000);
+    notice(callReason === 'cry'
+      ? 'Heard crying, but nobody is picked to call.'
+      : 'Nobody is picked to call.', 6000);
     return;
   }
   setState('calling');
@@ -1222,6 +1313,7 @@ function endCall(){
   if (c){ try { c.hangUp(); } catch(e){} }
   acc = 0; burstStart = 0; cryHeard = 0;
   cooldownUntil = performance.now() + COOLDOWN_MS;
+  armCheckIn();          // du har nettopp hatt et anrop, så klokka går fra nå
   setState('cooldown');
 }
 
@@ -1300,13 +1392,19 @@ function paint(){
   const c = selectedContact();
   const [title, sub] = COPY[state] || COPY.off;
 
-  $('status').textContent = title;
+  $('status').textContent =
+    (callReason === 'check' && (state === 'calling' || state === 'incall'))
+      ? 'Check-in call' : title;
 
   let subtitle = sub;
   if (state === 'listening')      subtitle = !c ? 'Pick who to call, below.'
                                     : (gateWhy || 'Will call ' + c.name + ' the moment it hears crying.');
-  else if (state === 'calling')   subtitle = c ? ('Ringing ' + c.name + ' now…') : 'Ringing…';
-  else if (state === 'incall')    subtitle = c ? (c.name + ' can hear the room. Hang up to resume.') : 'Hang up to resume.';
+  else if (state === 'calling')   subtitle = callReason === 'check'
+                                    ? (c ? 'Ringing ' + c.name + '. Nothing is wrong, this is the timer.' : 'Ringing on the timer…')
+                                    : (c ? 'Ringing ' + c.name + ' now…' : 'Ringing…');
+  else if (state === 'incall')    subtitle = callReason === 'check'
+                                    ? (c ? c.name + ' can hear the room. Quiet means everything works.' : 'Hang up to resume.')
+                                    : (c ? c.name + ' can hear the room. Hang up to resume.' : 'Hang up to resume.');
   else if (state === 'cooldown')  subtitle = 'Not listening. Back on in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + ' seconds.';
   if (noticeText){
     if (performance.now() < noticeUntil) subtitle = noticeText;
@@ -1378,6 +1476,8 @@ function paint(){
 
   $('nmText').textContent = state === 'cooldown' ? 'Paused' : 'Listening';
 
+  renderCheck();
+
   if (document.body.classList.contains('diagnostics')){
     const live = analyser !== null;
     const wail = (cryHeard / 1000).toFixed(1);
@@ -1393,6 +1493,51 @@ function paint(){
   }
 }
 
+/* ---------------- check-in panel ---------------- */
+/* Kostnaden er hele grunnen til at dette er en avgjørelse og ikke en bryter.
+   Tallene kommer fra PRICE, så de kan ikke bli utdaterte. */
+function checkInCost(minutes){
+  const perNight = (NIGHT_HOURS * 60) / minutes;
+  const cost     = perNight * PRICE.perCall;
+  const nights   = (PRICE.monthlyLimit - PRICE.monthlyBase) / cost;
+  return { perNight, cost, nights };
+}
+
+function renderCheck(){
+  const next = $('checkNext'), cost = $('checkCost');
+
+  if (!checkEvery){
+    next.textContent = '';
+    cost.classList.remove('warn');
+    cost.textContent = 'Off. Jon Blund only calls when it hears crying.';
+    return;
+  }
+
+  const { perNight, cost: nightly, nights } = checkInCost(checkEvery);
+  cost.classList.toggle('warn', nights < 7);   // under en uke: du mister tjenesten midt i uka
+  cost.innerHTML =
+    '<b>' + Math.round(perNight) + ' calls a night.</b> About <b>' + usd(nightly) +
+    '</b> if you answer them all, and the ' + usd(PRICE.monthlyLimit) +
+    ' limit pauses Jon Blund after roughly ' + Math.round(nights) +
+    ' nights. Let one ring out and it costs nothing.';
+
+  if (state !== 'listening' && state !== 'detecting'){ next.textContent = ''; return; }
+  const left = Math.max(0, nextCheckAt - performance.now());
+  next.textContent = left >= 60000
+    ? 'next in ' + Math.ceil(left / 60000) + ' min'
+    : 'next in ' + Math.ceil(left / 1000) + ' s';
+}
+
+wireSeg($('checkSeg'), checkEvery, v => {
+  checkEvery = Number(v);
+  save(KEY.checkEvery, checkEvery);
+  armCheckIn();
+  renderCheck();
+  notice(checkEvery
+    ? 'Check-in calls every ' + checkEvery + ' minutes.'
+    : 'Check-in calls off.', 3500);
+});
+
 /* ---------------- wiring ---------------- */
 $('powerBtn').addEventListener('click', () => {
   if (state === 'off' || state === 'error') startMic();
@@ -1401,7 +1546,7 @@ $('powerBtn').addEventListener('click', () => {
 });
 $('secondaryBtn').addEventListener('click', () => {
   if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
-  else triggerCall();
+  else triggerCall('test');
 });
 $('orb').addEventListener('click', () => { if (state === 'off' || state === 'error') startMic(); });
 $('status').addEventListener('click', () => { document.body.classList.toggle('diagnostics'); paint(); });
@@ -1476,9 +1621,14 @@ function wireSeg(el, value, onPick){
 window.jonblundNotice = notice;
 
 /* idle timers keep the countdowns honest even between audio frames */
-setInterval(() => { if (state === 'cooldown' || state === 'incall' || state === 'off') paint(); }, 500);
+setInterval(() => {
+  maybeCheckIn();
+  if (state === 'cooldown' || state === 'incall' || state === 'off') paint();
+  else if (checkEvery) renderCheck();      // hold nedtellingen i gang
+}, 500);
 
 renderContacts();
+renderCheck();
 setState('off');
 paint();
 
@@ -1687,18 +1837,8 @@ addEventListener('keydown', e => {
 // first visit only
 if (!load(HIW_KEY, false)) setTimeout(() => hiwShow(true), 650);
 /* ---------------- pricing ---------------- */
-/* One place to change what Jon Blund costs. Amounts are NOK. */
-const PRICE = {
-  monthlyBase:    2.99,
-  perCall:        0.20,
-  includedMin:    2,
-  perExtraMin:    0.39,
-  monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
-  trialFree:      'the first month'
-};
-
-const usd      = n => '$' + (n % 1 === 0 ? n : n.toFixed(2));
-const usdWhole = n => '$' + Math.round(n);
+/* PRICE, usd and usdWhole live at the top of the script: the check-in panel
+   prices itself while the app is starting, before this point is reached. */
 const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
 
 /* Et år med to gråt per natt, hver natt: det øvre hjørnet av hva en nyfødt
