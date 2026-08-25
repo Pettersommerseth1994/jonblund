@@ -49,11 +49,14 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   for 365 nights) is modelled, not measured. It has a deliberate seam —
   `monthlyBill()` in both files — to be replaced by the real average monthly
   bill once there are enough customers to average over.
-- **Favicon** is a `jb` monogram, hand-drawn as strokes rather than set in
-  Fraunces: the real wordmark is a hairline high-contrast serif that
-  disintegrates at 16px. It keeps the wordmark's two-tone, `j` in ink and
-  `b` in white. `favicon.svg` is the source; `favicon-32.png` and
-  `apple-touch-icon.png` are rendered from it with `qlmanage -t`.
+- **Favicon** is Petter's own `jb` in Fraunces, `j` in ink and `b` in accent,
+  on the cloud gradient. `favicon.png` is his file as delivered, kept as the
+  source. The served sizes are cropped in from it: his artwork puts the mark
+  at only 43% of the canvas width, which turns to mush at 16px, so the empty
+  margin is trimmed to a 514px square (mark at ~78% of the height) before
+  resizing to `favicon-16.png`, `favicon-32.png` and `apple-touch-icon.png`.
+  Redo that crop step if the source is ever replaced; do not resize his file
+  directly. No SVG: Fraunces' hairlines cannot be traced faithfully by hand.
 
 ## Gotchas that cost real time
 
