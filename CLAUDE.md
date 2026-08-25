@@ -45,6 +45,11 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   then $0.39/min, first month free, spending *stops* at $35 — the service
   pauses, it is not a discounted cap. Lives in one `PRICE` constant in
   `babycall.html`, and separately in the marketing copy.
+- **Coverage vs signal**: a *network* has coverage over an area, a *handset*
+  has a signal. "A phone with coverage" is unidiomatic — native usage reserves
+  "coverage" for a carrier's geographic reach. So: "a phone with a signal",
+  but "internet and coverage behave differently everywhere". Checked against
+  EC English, WordReference and Telstra's own network docs.
 - **The year figure** ($181.88: the fee for 12 months plus two cries a night
   for 365 nights) is modelled, not measured. It has a deliberate seam —
   `monthlyBill()` in both files — to be replaced by the real average monthly
@@ -72,6 +77,8 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   heights beat negotiated ones.
 - Contact Picker API is Chrome-on-Android only. Build the button at runtime so
   iPhone never sees a dead control.
+- **`.cta p` sets `margin:0 auto 36px`**, which outranks a bare `.cta-note`
+  and silently zeroed its `margin-top`. Needs `.cta p.cta-note` to win.
 - **The onboarding steps do not scroll** (`.hiw-view` is `overflow:hidden` with
   a definite height). Step 1's copy has ~18px of slack on a 375×667 phone, so
   measure the paragraph there before lengthening it, or the last line vanishes.

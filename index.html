@@ -210,6 +210,11 @@ section{position:relative}
   max-width:520px;margin:26px auto 0;background:var(--white);
   border:1px solid var(--line);border-radius:30px;padding:34px 40px 30px;
 }
+.year-tag{
+  display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.005em;
+  color:var(--accent-deep);background:var(--cloud-1);
+  border-radius:100px;padding:5px 14px;margin-bottom:15px;
+}
 .year-title{
   font-family:var(--display);font-weight:300;font-size:27px;
   letter-spacing:-.022em;line-height:1.14;margin-bottom:9px;
@@ -240,10 +245,8 @@ section{position:relative}
 /* ---------- HONEST ---------- */
 .honest-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:56px}
 .honest{border:1px solid var(--line);border-radius:24px;padding:30px 30px 26px;background:var(--white)}
-.honest h4{font-size:17px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:11px}
-.honest h4::before{
-  content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;
-}
+.honest svg{display:block;width:24px;height:24px;color:var(--accent-deep);margin-bottom:16px}
+.honest h4{font-size:17px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
 .honest p{font-size:14.5px;color:var(--slate)}
 .honest-grid>.honest:last-child:nth-child(odd){grid-column:1 / -1}
 @media(max-width:820px){ .honest-grid{grid-template-columns:1fr} }
@@ -259,7 +262,7 @@ section{position:relative}
 }
 .cta h2 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
 .cta p{font-size:18px;color:var(--slate);max-width:44ch;margin:0 auto 36px}
-.cta-note{font-size:13px;color:var(--slate-light);margin-top:20px}
+.cta p.cta-note{font-size:13px;color:var(--slate-light);margin-top:38px}
 
 /* ---------- FOOTER ---------- */
 footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--white)}
@@ -272,6 +275,16 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
   max-width:1140px;margin:40px auto 0;padding-top:24px;border-top:1px solid var(--line);
   display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   font-size:13px;color:var(--slate-light);
+}
+
+@media(max-width:640px){
+  footer{padding:44px 24px 34px}
+  .foot{flex-direction:column;gap:26px}
+  .foot p{max-width:none;margin-top:10px}
+  .foot-links{flex-direction:column;gap:0}
+  .foot-links a{padding:13px 2px;border-bottom:1px solid var(--line)}
+  .foot-links a:first-child{border-top:1px solid var(--line)}
+  .foot-bottom{flex-direction:column;gap:9px;margin-top:28px;padding-top:22px}
 }
 
 /* ---------- ART ---------- */
@@ -433,7 +446,7 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
           <text x="322" y="140" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#6d8bab" text-anchor="middle">ringing</text>
         </svg>
         <h3>Range you already pay for</h3>
-        <p>The call goes over the mobile network, the same one that reaches you in the basement, the garden or three floors up. If your phone has coverage, Jon Blund reaches you.</p>
+        <p>The call goes over the mobile network, the same one that reaches you in the basement, the garden or three floors up. If your phone has a signal, Jon Blund reaches you.</p>
       </div>
     </div>
   </div>
@@ -616,8 +629,9 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
     </div>
 
     <div class="year reveal">
+      <span class="year-tag">an upper estimate</span>
       <h3 class="year-title">A whole year of a <em>brand new baby.</em></h3>
-      <p class="year-intro">Two cries a night, every single night, for a year. No quiet weeks, no growing out of it. This is the top of what a newborn asks of Jon Blund.</p>
+      <p class="year-intro">Counted pessimistically on purpose: two cries a night, every single night, for a year, with no quiet weeks and no growing out of it. Hardly anyone will actually pay this much.</p>
 
       <div class="year-sum">
         <div class="year-line">
@@ -634,7 +648,7 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
         </div>
       </div>
 
-      <p class="year-fine">Comfortably under the <b>$35 a month</b> ceiling, so the limit never has to step in. And there is nothing to buy on top of it.</p>
+      <p class="year-fine">Most families land well below it. One cry a night instead of two comes to <b id="yCalm">$108.88</b> for the year, and every night your baby sleeps through costs you nothing at all.</p>
     </div>
   </div>
 </section>
@@ -649,22 +663,27 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
     </div>
     <div class="honest-grid">
       <div class="honest reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="11" height="15" rx="2"/><rect x="15" y="8" width="7" height="13" rx="2"/><path d="M17.4 18.6h2.2"/></svg>
         <h4>Two devices, and one has to be a phone</h4>
-        <p>By the crib, anything with internet and a microphone will do. A spare iPad is lovely for it. The one you carry has to be a phone with coverage, because that is the one Jon Blund rings.</p>
+        <p>By the crib, anything with internet and a microphone will do. A spare iPad is lovely for it. The one you carry has to be a phone with a signal, because that is the one Jon Blund rings.</p>
       </div>
       <div class="honest reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.6v2.2M12 19.2v2.2M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6"/></svg>
         <h4>The listening device stays awake</h4>
         <p>Browsers stop the microphone when a screen locks, so that device keeps its screen on and stays plugged in. Jon Blund dims itself so the screen is not glaring beside the cot.</p>
       </div>
       <div class="honest reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><circle cx="8.5" cy="11" r="2"/><path d="M5.4 15.8a3.4 3.4 0 0 1 6.2 0"/><path d="M14.5 10.5h4M14.5 13.5h4"/></svg>
         <h4>Save the number it calls from</h4>
         <p>Jon Blund sends you a contact card to pass on. Saved in the other phone, the call gets through even when everything else is silenced.</p>
       </div>
       <div class="honest reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.7-7.5-10.1A4.4 4.4 0 0 1 12 7.1 4.4 4.4 0 0 1 19.5 9.9C19.5 15.3 12 20 12 20z"/><path d="M4.6 4.6 19.4 19.4"/></svg>
         <h4>It is not a medical device</h4>
         <p>Jon Blund listens for crying. It does not track breathing, movement or anything else, and it never replaces someone checking on the baby.</p>
       </div>
       <div class="honest reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5s-6.8-6.1-6.8-10.7a6.8 6.8 0 1 1 13.6 0c0 4.6-6.8 10.7-6.8 10.7z"/><path d="M9.3 10.6l2 2 3.5-3.7"/></svg>
         <h4>Always test one call in a new place</h4>
         <p>A hotel room, a cabin, the grandparents&rsquo; spare room. Internet and coverage behave differently everywhere, so make Jon Blund ring you once before you trust it with a night.</p>
       </div>
@@ -726,6 +745,7 @@ const feeTotal    = YEAR.monthlyBase * YEAR.months;
 const callCount   = YEAR.days * YEAR.criesPerDay;
 const callTotal   = callCount * YEAR.perCall;
 const yearTotal   = feeTotal + callTotal;
+const calmTotal   = feeTotal + YEAR.days * YEAR.perCall;   // one cry a night, not two
 const monthlyBill = () => yearTotal / YEAR.months;
 
 const put = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
@@ -735,6 +755,7 @@ put('yCallSum', YEAR.days + ' days \u00d7 ' + YEAR.criesPerDay + ' cries \u00d7 
 put('yCalls',   usd(callTotal));
 put('yMonthly', usd(monthlyBill()) + ' a month');
 put('yTotal',   usd(yearTotal));
+put('yCalm',    usd(calmTotal));
 </script>
 </body>
 </html>
