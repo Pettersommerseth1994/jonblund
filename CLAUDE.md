@@ -90,12 +90,24 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   - The message goes out `NAP_LEAD_MS` (15 min) before the window ends, once
     per nap, guarded by `sleep.msgDone`. Off by default; turning it on costs
     `PRICE.perMessage` and therefore gets a modal.
-  - **It needs SMS that does not exist yet.** The Twilio number is US and
-    voice-only. `api/sms.js` is written but inert until
-    `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_MESSAGING_FROM`) is set — for
-    Norway an alphanumeric sender ID is the right choice. Until then the app
-    says so instead of pretending it sent something. **`api/sms.js` has never
-    been run against Twilio.**
+  - **It needs SMS that does not exist yet.** `api/sms.js` is written but inert
+    until `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_MESSAGING_FROM`) is set.
+    Until then the app says so instead of pretending it sent something.
+    **`api/sms.js` has never been run against Twilio.**
+  - **Norwegian numbers are not purchasable in Twilio**, with voice or SMS
+    (checked 2026-08-26). So the calling number stays US, and per-market
+    senders are unavoidable when Europe and the US come.
+  - **The text does not need to come from the calling number.** Piercing Do Not
+    Disturb is what the *call* needs; a "she will be tired soon" text must not
+    wake anyone. Two senders is correct here, not a compromise.
+  - Worth weighing, and it is a design call: sent from the calling number the
+    text arrives *as the saved contact*, "Sonja ♥️", which matches a message
+    written in the baby's voice and signed "– Sonja 😴". From an alphanumeric
+    sender it reads as from the service. The trade is deliverability: a US long
+    code to a Norwegian mobile may be filtered. One test message answers it.
+  - A **Messaging Service is needed either way** — not for the sender, but
+    because scheduled sending requires it, and scheduling is what makes the
+    text arrive with the page closed.
   - Scheduling matters more than sending: `schedule()` hands the send-at time
     to Twilio so the text arrives even with the page closed. Twilio requires
     send-at ≥15 min ahead, so `sms.js` falls back to sending immediately when
