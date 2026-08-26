@@ -76,6 +76,30 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
     server work nobody has asked for.
 - **`PRICE`, `usd` and `usdWhole` sit at the top of the app script**, not in the
   pricing section, because the check-in panel prices itself during start-up.
+- **Nap clock.** Birth date in onboarding step 3, awake windows by age in
+  `WAKE_WINDOWS`, and a message when the window is nearly out.
+  - The session is the microphone: on means she went down, off means she woke.
+    The start time is an *assumption* and the slider moves it ±90 min, because
+    the assumption is usually a few minutes wrong. The wake time is not
+    editable — the message hangs off it, and that was the spec.
+  - **Sex is deliberately not in the table.** Infant awake windows track age,
+    not sex, so a sex field would promise precision that does not exist.
+  - Ranges come from Cleveland Clinic, Huckleberry and Taking Cara Babies,
+    which agree. We use the midpoint and write "around", never a precise
+    minute. Verified bucket by bucket against the sources.
+  - The message goes out `NAP_LEAD_MS` (15 min) before the window ends, once
+    per nap, guarded by `sleep.msgDone`. Off by default; turning it on costs
+    `PRICE.perMessage` and therefore gets a modal.
+  - **It needs SMS that does not exist yet.** The Twilio number is US and
+    voice-only. `api/sms.js` is written but inert until
+    `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_MESSAGING_FROM`) is set — for
+    Norway an alphanumeric sender ID is the right choice. Until then the app
+    says so instead of pretending it sent something. **`api/sms.js` has never
+    been run against Twilio.**
+  - Scheduling matters more than sending: `schedule()` hands the send-at time
+    to Twilio so the text arrives even with the page closed. Twilio requires
+    send-at ≥15 min ahead, so `sms.js` falls back to sending immediately when
+    it is nearer than that.
 - **Coverage vs signal**: a *network* has coverage over an area, a *handset*
   has a signal. "A phone with coverage" is unidiomatic — native usage reserves
   "coverage" for a carrier's geographic reach. So: "a phone with a signal",
@@ -110,9 +134,12 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   iPhone never sees a dead control.
 - **`.cta p` sets `margin:0 auto 36px`**, which outranks a bare `.cta-note`
   and silently zeroed its `margin-top`. Needs `.cta p.cta-note` to win.
-- **The onboarding steps do not scroll** (`.hiw-view` is `overflow:hidden` with
-  a definite height). Step 1's copy has ~18px of slack on a 375×667 phone, so
-  measure the paragraph there before lengthening it, or the last line vanishes.
+- **`.hiw-copy` scrolls, `.hiw-view` clips.** The copy block is
+  `overflow-y:auto`, so overflowing content is reachable, not lost — measured,
+  not assumed. Steps 2 to 5 all overflow slightly at 375×667 and that is fine
+  for reading. It is *not* fine for a control: anything the user must tap or
+  see (the Mum/Dad row, an error) belongs above the fold, which is why the role
+  row sits before the name and phone fields.
 
 ## Security
 

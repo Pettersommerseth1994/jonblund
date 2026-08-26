@@ -228,6 +228,73 @@ body.managing .contact .mark{display:none}
 
 .check-why{font-size:13.5px;color:var(--slate);margin:0 0 15px}
 .check-unit{display:block;font-size:12.5px;color:var(--slate);margin-bottom:9px}
+.role-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin:0 0 10px;
+}
+.role-row .rl{font-size:13.5px;color:var(--slate)}
+.role-row .seg button{padding:7px 16px}
+
+/* ---------- NAP CLOCK ---------- */
+.nap-badge{
+  font-size:12.5px;font-weight:600;color:var(--accent-deep);
+  font-variant-numeric:tabular-nums;
+}
+.nap-face{
+  font-family:var(--display);font-weight:300;font-size:42px;
+  letter-spacing:-.03em;line-height:1;text-align:center;
+  margin:6px 0 0;font-variant-numeric:tabular-nums;
+}
+.nap-line{
+  font-size:13.5px;color:var(--slate);text-align:center;
+  margin:11px auto 0;max-width:31ch;
+}
+.nap-line b{color:var(--ink);font-weight:600}
+
+.nap-adjust{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.nap-adj-l{display:block;font-size:13px;color:var(--slate);margin-bottom:9px}
+.nap-adj-l b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.nap-adj-ends{
+  display:flex;justify-content:space-between;
+  font-size:11.5px;color:var(--slate-light);margin-top:5px;
+}
+#napSlider{
+  -webkit-appearance:none;appearance:none;width:100%;height:26px;
+  background:none;cursor:pointer;display:block;
+}
+#napSlider::-webkit-slider-runnable-track{
+  height:5px;border-radius:100px;background:var(--cloud-2);
+}
+#napSlider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:26px;height:26px;margin-top:-10.5px;
+  border-radius:50%;background:#fff;border:1px solid var(--line);
+  box-shadow:0 2px 8px rgba(26,29,36,.18);
+}
+#napSlider::-moz-range-track{height:5px;border-radius:100px;background:var(--cloud-2)}
+#napSlider::-moz-range-thumb{
+  width:24px;height:24px;border-radius:50%;background:#fff;
+  border:1px solid var(--line);box-shadow:0 2px 8px rgba(26,29,36,.18);
+}
+
+.nap-sw-row{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+}
+.nap-sw-txt{min-width:0}
+.nap-sw-t{display:block;font-size:14px;color:var(--ink)}
+.nap-sw-s{display:block;font-size:12.5px;color:var(--slate-light);margin-top:2px}
+.switch{
+  position:relative;flex:none;width:50px;height:30px;padding:0;border:none;
+  border-radius:100px;background:var(--cloud-3);cursor:pointer;
+  transition:background .25s;
+}
+.switch>span{
+  position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 6px rgba(26,29,36,.22);
+  transition:transform .25s;
+}
+.switch[aria-checked="true"]{background:var(--accent-deep)}
+.switch[aria-checked="true"]>span{transform:translateX(20px)}
 .check-next{
   font-size:12.5px;font-weight:600;color:var(--accent-deep);
   font-variant-numeric:tabular-nums;
@@ -591,6 +658,33 @@ body.dim .nightmark{opacity:1}
     </div>
   </section>
 
+  <section class="panel">
+    <div class="panel-head">
+      <span class="opt-label">Nap clock</span>
+      <span class="nap-badge" id="napBadge"></span>
+    </div>
+
+    <div class="nap-face" id="napFace">&ndash;</div>
+    <p class="nap-line" id="napLine"></p>
+
+    <div class="nap-adjust hidden" id="napAdjust">
+      <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
+      <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
+             aria-label="Adjust when she fell asleep">
+      <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
+    </div>
+
+    <div class="nap-sw-row">
+      <div class="nap-sw-txt">
+        <span class="nap-sw-t">Text me when she is getting tired</span>
+        <span class="nap-sw-s" id="napSwSub"></span>
+      </div>
+      <button class="switch" id="napSwitch" role="switch" aria-checked="false">
+        <span></span>
+      </button>
+    </div>
+  </section>
+
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
@@ -633,6 +727,21 @@ body.dim .nightmark{opacity:1}
     <button class="btn-ghost" id="prLater">Not now</button>
   </div>
 </div>
+<div class="hiw" id="napOk" role="dialog" aria-modal="true" aria-label="Turn on tired messages">
+  <div class="hiw-head"><span class="hiw-title">Before you turn it on</span></div>
+  <div class="hiw-view">
+    <div class="pr-body">
+      <div class="pr-amount" id="napOkAmount"></div>
+      <div class="pr-unit">a message</div>
+      <p class="pr-fine" id="napOkFine"></p>
+    </div>
+  </div>
+  <div class="hiw-foot">
+    <button class="btn-primary" id="napOkYes">Turn it on</button>
+    <button class="btn-ghost" id="napOkNo">Not now</button>
+  </div>
+</div>
+
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
   <div class="hiw-head"><span class="hiw-title">Get started</span></div>
   <button class="hiw-back" id="hiwBack" aria-label="Back">
@@ -695,8 +804,15 @@ body.dim .nightmark{opacity:1}
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 2</div>
           <h3>Which phone should it <em>ring?</em></h3>
-          <p>The one you keep with you. Saved here, so it is one tap from now on.</p>
+          <p>The one you keep with you, saved for next time.</p>
           <div id="obPick"></div>
+          <div class="role-row">
+            <span class="rl">Who is this?</span>
+            <div class="seg" id="obRoleSeg">
+              <button data-v="mum">Mum</button>
+              <button data-v="dad">Dad</button>
+            </div>
+          </div>
           <div class="field">
             <label for="obName">Name</label>
             <input id="obName" type="text" autocomplete="name" placeholder="Lone" enterkeyhint="next">
@@ -714,10 +830,15 @@ body.dim .nightmark{opacity:1}
         <div class="hiw-copy wide">
           <div class="hiw-num">Step 3</div>
           <h3>What is the <em>baby&rsquo;s name?</em></h3>
-          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved in their contacts. We recommend it, so the call always gets through.</p>
+          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved, so the call always gets through.</p>
           <div class="field">
             <label for="obBaby">Baby&rsquo;s name</label>
             <input id="obBaby" type="text" placeholder="Emma" enterkeyhint="done">
+          </div>
+          <div class="field">
+            <label for="obBirth">Date of birth</label>
+            <input id="obBirth" type="date" enterkeyhint="done">
+            <div class="hint">Used to guess when she will be tired again. Nothing else.</div>
           </div>
         </div>
       </div>
@@ -777,6 +898,13 @@ body.dim .nightmark{opacity:1}
     <input id="telInput" type="tel" autocomplete="tel" inputmode="tel" placeholder="+47 123 45 678" enterkeyhint="done">
     <div class="hint">Norwegian 8-digit numbers get +47 automatically.</div>
   </div>
+  <div class="role-row">
+    <span class="rl">Who is this?</span>
+    <div class="seg" id="sheetRoleSeg">
+      <button data-v="mum">Mum</button>
+      <button data-v="dad">Dad</button>
+    </div>
+  </div>
   <div class="sheet-err" id="sheetErr"></div>
   <button class="btn-primary" id="saveBtn">Save</button>
   <button class="btn-ghost" id="cancelBtn" style="width:100%;margin-top:6px">Cancel</button>
@@ -817,6 +945,35 @@ body.dim .nightmark{opacity:1}
     if (!r.ok) throw new Error('Token ' + r.status);
     return (await r.json()).token;
   }
+
+  /* Meldingssoemmen. Samme form som telefonien under: appen bryr seg ikke om
+     hvem som leverer. schedule() er den som betyr noe — den lar Twilio levere
+     til avtalt tid, saa meldingen kommer selv om denne siden er lukket.
+     Serveren svarer 501 med en forklaring til den er satt opp, og appen viser
+     den forklaringen i stedet for aa paastaa at noe ble sendt. */
+  async function postMessage(to, text, sendAt){
+    let r;
+    // En raa "Failed to fetch" skal ikke vises til noen som staar ved en
+    // barneseng. Serverens egen forklaring slipper gjennom; nettverksfeil
+    // oversettes.
+    try {
+      r = await fetch(API + '/api/sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Jonblund-Key': KEY },
+        body: JSON.stringify({ to, text, sendAt: sendAt || 0 })
+      });
+    } catch (e) {
+      throw new Error('No connection just now, so no message was sent.');
+    }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'The message could not be sent.');
+    return data;
+  }
+
+  window.JONBLUND_MESSAGING = {
+    send:     (contact, text)     => postMessage(contact.tel, text, 0),
+    schedule: (contact, text, at) => postMessage(contact.tel, text, at)
+  };
 
   window.JONBLUND_TELEPHONY = {
 
@@ -930,7 +1087,10 @@ const KEY = {
   contacts:   'jonblund.contacts.v1',
   selected:   'jonblund.selected.v1',
   baby:       'jonblund.baby.v1',
-  checkEvery: 'jonblund.checkEvery.v1'
+  checkEvery: 'jonblund.checkEvery.v1',
+  birth:      'jonblund.birth.v1',       // ISO-dato, sa alderen holder seg riktig
+  napMsg:     'jonblund.napMessage.v1',
+  sleep:      'jonblund.sleep.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
@@ -983,6 +1143,7 @@ const PRICE = {
   perCall:        0.20,
   includedMin:    2,
   perExtraMin:    0.39,
+  perMessage:     0.10,    // en tekstmelding om at vakenvinduet lopper ut
   monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
   trialFree:      'the first month'
 };
@@ -1021,6 +1182,131 @@ let dimTimer = null;
 
 const CIRC = 653.45;
 
+/* ---------------- nap clock ----------------
+   Vaakenvinduer etter alder, i minutter. Spennene er brede med vilje: dette
+   er populasjonsgjennomsnitt, ikke ditt barn. Cleveland Clinic, Huckleberry
+   og Taking Cara Babies ligger alle innenfor de samme tallene. Vi regner med
+   midtpunktet og skriver "around" i teksten, aldri et presist klokkeslett.
+
+   Kjonn staar med vilje ikke i tabellen. Vaakenvinduer hos spedbarn foelger
+   alder, ikke kjonn, og et kjonnsfelt ville lovet en presisjon som ikke finnes. */
+const WAKE_WINDOWS = [
+  { toMonths:   1, min:  30, max:  60 },
+  { toMonths:   3, min:  60, max:  90 },
+  { toMonths:   4, min:  75, max: 120 },
+  { toMonths:   6, min:  90, max: 150 },
+  { toMonths:   9, min: 120, max: 210 },
+  { toMonths:  12, min: 150, max: 240 },
+  { toMonths:  15, min: 150, max: 270 },
+  { toMonths:  18, min: 270, max: 330 },
+  { toMonths: 999, min: 240, max: 360 }
+];
+
+/* Meldingen skal komme foer hun er overtredt, ikke i det hun er det. */
+const NAP_LEAD_MS = 15 * 60000;
+
+let birthDate = load(KEY.birth, '') || '';
+let napMsgOn  = load(KEY.napMsg, false);
+/* { startedAt, adjustMin, wokeAt, msgDone } — epoch ms, saa den taaler at
+   siden lastes paa nytt midt i en natt. */
+let sleep     = load(KEY.sleep, null);
+
+const roleWord = (r) => r === 'dad' ? 'Dad' : 'Mum';
+
+function ageMonths(){
+  if (!birthDate) return null;
+  const b = new Date(birthDate + 'T00:00:00');
+  if (isNaN(b.getTime())) return null;
+  const now = new Date();
+  let m = (now.getFullYear() - b.getFullYear()) * 12 + (now.getMonth() - b.getMonth());
+  if (now.getDate() < b.getDate()) m--;
+  return Math.max(0, m);
+}
+
+function wakeWindow(){
+  const m = ageMonths();
+  if (m === null) return null;
+  const w = WAKE_WINDOWS.find(x => m < x.toMonths) || WAKE_WINDOWS[WAKE_WINDOWS.length - 1];
+  return { min: w.min, max: w.max, mid: Math.round((w.min + w.max) / 2) };
+}
+
+const clockTime = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const spanText  = (ms) => {
+  const t = Math.max(0, Math.round(ms / 60000));
+  return t < 60 ? t + ' min' : Math.floor(t / 60) + 'h ' + String(t % 60).padStart(2, '0') + 'm';
+};
+
+/* Naar hun sovnet. Antatt fra da mikrofonen ble slaatt paa, og flyttbar,
+   fordi antagelsen ofte er noen minutter feil. */
+const sleepStart = () => sleep ? sleep.startedAt + (sleep.adjustMin || 0) * 60000 : null;
+
+/* Vaakenvinduet loper fra da mikrofonen ble slaatt av. */
+const tiredAt = () => {
+  const w = wakeWindow();
+  return (sleep && sleep.wokeAt && w) ? sleep.wokeAt + w.mid * 60000 : null;
+};
+const napDueAt = () => { const t = tiredAt(); return t === null ? null : t - NAP_LEAD_MS; };
+
+function napStart(){
+  sleep = { startedAt: Date.now(), adjustMin: 0, wokeAt: null, msgDone: false };
+  save(KEY.sleep, sleep);
+  const sl = $('napSlider'); if (sl) sl.value = '0';
+  renderNap();
+}
+
+function napWake(){
+  if (!sleep || sleep.wokeAt) return;
+  sleep.wokeAt = Date.now();
+  save(KEY.sleep, sleep);
+  scheduleNapMessage();
+  renderNap();
+}
+
+function napMessageText(){
+  const c    = selectedContact();
+  const baby = (load(KEY.baby, '') || '').trim() || 'Your baby';
+  return 'Hi ' + roleWord(c && c.role) + ',\n\n' +
+         'I am probably getting tired now, and I will want another nap soon.\n\n' +
+         '\u2013 ' + baby + ' \uD83D\uDE34';
+}
+
+/* Samme soem som telefonien: en leverandoer settes inn her.
+   window.JONBLUND_MESSAGING = { send, schedule }
+   schedule() er den som betyr noe — den lar Twilio levere til avtalt tid,
+   saa meldingen kommer selv om denne siden er lukket. */
+function scheduleNapMessage(){
+  const due = napDueAt();
+  const api = window.JONBLUND_MESSAGING;
+  if (!napMsgOn || due === null || !sleep || sleep.msgDone) return;
+  if (api && typeof api.schedule === 'function'){
+    Promise.resolve(api.schedule(selectedContact(), napMessageText(), due))
+      .then(() => { sleep.msgDone = true; save(KEY.sleep, sleep); renderNap(); })
+      .catch(() => {});          // faller tilbake paa klient-timeren under
+  }
+}
+
+async function sendNapMessage(){
+  if (!sleep || sleep.msgDone) return;
+  sleep.msgDone = true; save(KEY.sleep, sleep);
+  const c = selectedContact();
+  const api = window.JONBLUND_MESSAGING;
+  if (api && typeof api.send === 'function'){
+    try { await api.send(c, napMessageText()); notice('Message sent to ' + c.name + '.', 5000); }
+    catch(e){ notice((e && e.message) || 'The message could not be sent.', 8000); }
+  } else {
+    notice('Messages are not switched on for this number yet. Nothing was sent or charged.', 8000);
+  }
+  renderNap();
+}
+
+/* Fra hjerteslaget, som innsjekk-anropene: den trenger klokka, ikke en lydramme. */
+function maybeNapMessage(){
+  if (!napMsgOn || !sleep || sleep.msgDone) return;
+  const due = napDueAt();
+  if (due === null || Date.now() < due) return;
+  sendNapMessage();
+}
+
 /* ---------------- contacts ---------------- */
 function normalise(raw){
   let s = String(raw||'').replace(/[^\d+]/g,'');
@@ -1051,11 +1337,15 @@ function persistContacts(){
   save(KEY.contacts, contacts);
   save(KEY.selected, selectedId);
 }
-function addContact(name, tel){
+function addContact(name, tel, role){
   const t = normalise(tel);
   const existing = contacts.find(c => c.tel === t);
-  if (existing){ selectedId = existing.id; persistContacts(); return existing; }
-  const c = { id: 'c' + Math.random().toString(36).slice(2,9), name: (name||'').trim() || pretty(t), tel: t };
+  if (existing){
+    if (role) { existing.role = role; }
+    selectedId = existing.id; persistContacts(); return existing;
+  }
+  const c = { id: 'c' + Math.random().toString(36).slice(2,9), name: (name||'').trim() || pretty(t), tel: t,
+              role: role || 'mum' };
   contacts.push(c);
   selectedId = c.id;
   persistContacts();
@@ -1084,7 +1374,7 @@ function renderContacts(){
       '<div class="mark"></div>' +
       '<button class="del" aria-label="Remove">&times;</button>';
     row.querySelector('.n').textContent = c.name;
-    row.querySelector('.t').textContent = pretty(c.tel);
+    row.querySelector('.t').textContent = pretty(c.tel) + (c.role ? ' \u00b7 ' + roleWord(c.role) : '');
     row.addEventListener('click', (e) => {
       if (e.target.closest('.del')) { removeContact(c.id); return; }
       selectedId = c.id; persistContacts(); renderContacts(); paint();
@@ -1099,6 +1389,8 @@ let sheetOpen = false;
 function openSheet(){
   sheetOpen = true;
   $('sheetErr').textContent = '';
+  sheetRole = 'mum';
+  segSet($('sheetRoleSeg'), sheetRole);
   $('scrim').classList.add('open');
   $('sheet').classList.add('open');
   setTimeout(() => $('nameInput').focus(), 380);
@@ -1155,6 +1447,8 @@ async function startMic(){
       notice('Could not reach the phone line. Detection still works.', 6000));
   }
 
+  napStart();          // hun ble lagt ned da mikrofonen ble slaatt paa
+
   floorDb = -70;
   calSamples = [];
   calibrateStartedAt = performance.now();
@@ -1171,6 +1465,7 @@ function stopMic(){
   analyser = srcNode = null;
   acc = 0; level = 0; smoothLevel = 0;
   nextCheckAt = Infinity;
+  napWake();           // mikrofonen av betyr at hun er vaaken
   releaseWakeLock();
   const tel = window.JONBLUND_TELEPHONY;
   if (tel && typeof tel.release === 'function'){ try { tel.release(); } catch(e){} }
@@ -1503,6 +1798,129 @@ function paint(){
   }
 }
 
+/* ---------------- who is on the other end ---------------- */
+/* Mum og Dad er de to valgene som ble bedt om. Trenger en familie et tredje
+   ord — to moedre, en bestemor, en barnevakt — er det en knapp og ett ord i
+   roleWord() unna. */
+let sheetRole = 'mum', obRole = 'mum';
+const segSet = (el, v) => el.querySelectorAll('button')
+  .forEach(b => b.classList.toggle('sel', b.dataset.v === String(v)));
+
+wireSeg($('sheetRoleSeg'), sheetRole, v => { sheetRole = v; });
+wireSeg($('obRoleSeg'),    obRole,    v => { obRole = v; });
+
+$('obBirth').value = birthDate;
+$('obBirth').addEventListener('change', () => {
+  birthDate = $('obBirth').value || '';
+  save(KEY.birth, birthDate);
+  renderNap();
+});
+
+/* ---------------- nap clock panel ---------------- */
+function renderNap(){
+  const face = $('napFace'), line = $('napLine'), badge = $('napBadge');
+  const adj  = $('napAdjust'), sub = $('napSwSub');
+  const w    = wakeWindow();
+  const baby = (load(KEY.baby, '') || '').trim();
+  const her  = baby || 'she';
+
+  $('napSwitch').setAttribute('aria-checked', String(!!napMsgOn));
+  sub.textContent = napMsgOn ? usd(PRICE.perMessage) + ' each, only when one is sent'
+                             : usd(PRICE.perMessage) + ' a message';
+
+  if (!birthDate){
+    face.textContent = '\u2013';
+    line.innerHTML = 'Add the baby\u2019s date of birth in <b>How it works</b> and Jon Blund can '
+                   + 'work out when the next nap is due.';
+    adj.classList.add('hidden');
+    badge.textContent = '';
+    return;
+  }
+
+  const asleep = sleep && !sleep.wokeAt;
+  adj.classList.toggle('hidden', !asleep);
+  badge.textContent = w ? 'awake window ' + spanText(w.min * 60000) + '\u2013' + spanText(w.max * 60000) : '';
+
+  if (asleep){
+    const start = sleepStart();
+    face.textContent = spanText(Date.now() - start);
+    line.innerHTML = 'Asleep since <b>' + clockTime(start) + '</b>. Drag below if that is not '
+                   + 'when ' + (baby || 'she') + ' actually dropped off.';
+    $('napStartAt').textContent = clockTime(start);
+    return;
+  }
+
+  if (sleep && sleep.wokeAt){
+    const tired = tiredAt();
+    const due   = napDueAt();
+    const slept = spanText(sleep.wokeAt - sleepStart());
+    const up    = spanText(Date.now() - sleep.wokeAt);
+    const late  = Date.now() > tired;
+
+    // Et klokkeslett som alt har vaert er verre enn ingenting, saa naar
+    // vinduet er ute sier den det i stedet for aa vise fortiden.
+    face.textContent = late ? 'Now' : clockTime(tired);
+
+    let txt = late
+      ? 'Past the usual awake window. Up <b>' + up + '</b> now, after sleeping <b>' + slept + '</b>.'
+      : 'Ready for another nap around this time. Slept <b>' + slept + '</b>, up <b>' + up + '</b> so far.';
+
+    if (napMsgOn && due !== null){
+      txt += sleep.msgDone
+        ? (Date.now() >= due ? ' The text has gone out.' : ' A text is set for <b>' + clockTime(due) + '</b>.')
+        : ' A text goes out at <b>' + clockTime(due) + '</b>.';
+    }
+    line.innerHTML = txt;
+    return;
+  }
+
+  face.textContent = '\u2013';
+  line.innerHTML = 'Turn the microphone on when you put ' + her + ' down. Jon Blund times the nap '
+                 + 'from there, and works out when the next one is due.';
+}
+
+$('napSlider').addEventListener('input', () => {
+  if (!sleep) return;
+  sleep.adjustMin = Number($('napSlider').value) || 0;
+  save(KEY.sleep, sleep);
+  renderNap();
+});
+
+/* Aa godta en kostnad er en avgjoerelse, saa den faar en modal. Av er standard. */
+function napOkShow(){
+  $('napOkAmount').innerHTML = '<span>$</span>' + PRICE.perMessage.toFixed(2);
+  $('napOkFine').innerHTML =
+    'Jon Blund texts you once per nap, about ' + spanText(NAP_LEAD_MS) + ' before the awake '
+    + 'window runs out. <b>' + usd(PRICE.perMessage) + ' for each one that is sent</b>, and nothing '
+    + 'when there is no nap to report. You can switch it off again whenever you like.';
+  $('hiwScrim').classList.add('open');
+  $('napOk').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function napOkHide(){
+  $('hiwScrim').classList.remove('open');
+  $('napOk').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function napSwitchTo(on){
+  napMsgOn = !!on;
+  save(KEY.napMsg, napMsgOn);
+  if (napMsgOn) scheduleNapMessage();
+  renderNap();
+}
+$('napSwitch').addEventListener('click', () => {
+  if (napMsgOn){ napSwitchTo(false); notice('Tired messages off.', 3000); return; }
+  napOkShow();
+});
+$('napOkYes').addEventListener('click', () => {
+  napOkHide(); napSwitchTo(true);
+  notice('Tired messages on, ' + usd(PRICE.perMessage) + ' each.', 4000);
+});
+$('napOkNo').addEventListener('click', napOkHide);
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('napOk').classList.contains('open')) napOkHide();
+});
+
 /* ---------------- check-in panel ---------------- */
 function renderCheck(){
   const next = $('checkNext');
@@ -1587,7 +2005,7 @@ $('telInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('saveB
 $('saveBtn').addEventListener('click', () => {
   const tel = $('telInput').value.trim();
   if (tel.replace(/\D/g,'').length < 5){ $('sheetErr').textContent = 'That does not look like a phone number.'; return; }
-  addContact($('nameInput').value, tel);
+  addContact($('nameInput').value, tel, sheetRole);
   closeSheet();
   renderContacts();
   notice('Saved. Jon Blund will remember.');
@@ -1632,12 +2050,15 @@ window.jonblundNotice = notice;
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => {
   maybeCheckIn();
+  maybeNapMessage();
+  renderNap();
   if (state === 'cooldown' || state === 'incall' || state === 'off') paint();
   else if (checkEvery) renderCheck();      // hold nedtellingen i gang
 }, 500);
 
 renderContacts();
 renderCheck();
+renderNap();
 setState('off');
 paint();
 
@@ -1688,8 +2109,8 @@ function hiwGo(i){
   if (hiwIndex === 2){
     const c = selectedContact();
     $('obWhy').innerHTML = 'Jon Blund makes a link you send to <b>' +
-      esc(c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
-      'contacts. We recommend it, so the call always gets through.';
+      esc(c ? c.name : 'them') + '</b>. One tap and the number is saved, ' +
+      'so the call always gets through.';
   }
 }
 
@@ -1713,7 +2134,10 @@ function hiwShow(locked){
   document.body.style.overflow = 'hidden';
   const c = selectedContact();
   if (c){ $('obName').value = c.name; $('obTel').value = pretty(c.tel); }
-  $('obBaby').value = load(BABY_KEY, '') || '';
+  $('obBaby').value  = load(BABY_KEY, '') || '';
+  $('obBirth').value = birthDate;
+  obRole = (c && c.role) || 'mum';
+  segSet($('obRoleSeg'), obRole);
   hiwGo(0);
 }
 function hiwHide(force){
@@ -1730,10 +2154,11 @@ function obSaveRecipient(){
   if (tel.replace(/\D/g, '').length < 5){
     $('obErr').textContent = 'That does not look like a phone number.';
     $('obTel').focus();
+    $('obErr').scrollIntoView({ block: 'nearest' });
     return false;
   }
   $('obErr').textContent = '';
-  addContact($('obName').value, tel);
+  addContact($('obName').value, tel, obRole);
   renderContacts();
   return true;
 }
