@@ -164,6 +164,11 @@ The decisions that are settled, so nobody relitigates them:
   for reading. It is *not* fine for a control: anything the user must tap or
   see (the Mum/Dad row, an error) belongs above the fold, which is why the role
   row sits before the name and phone fields.
+- **`input[type="date"]` on iOS carries an intrinsic min-width** from the
+  locale's date format, and `width:100%` will not shrink it below that, so it
+  pushed out of the onboarding card. `min-width:0` plus
+  `-webkit-appearance:none` holds it in. A desktop browser does not reproduce
+  this, so check date fields on a real iPhone.
 
 ## Security
 

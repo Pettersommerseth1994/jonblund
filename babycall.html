@@ -233,7 +233,7 @@ body.managing .contact .mark{display:none}
   gap:12px;margin:0 0 10px;
 }
 .role-row .rl{font-size:13.5px;color:var(--slate)}
-.role-row .seg button{padding:7px 16px}
+.role-row .seg button{padding:7px 13px}
 
 /* ---------- NAP CLOCK ---------- */
 .nap-badge{
@@ -330,6 +330,10 @@ footer a{color:var(--slate-light)}
   background:var(--paper);transition:border-color .25s,background .25s;
 }
 .field input:focus{outline:none;border-color:var(--accent);background:var(--white)}
+.field input[type="date"]{
+  -webkit-appearance:none;appearance:none;
+  min-width:0;max-width:100%;text-align:left;
+}
 .field .hint{font-size:12.5px;color:var(--slate-light);margin-top:7px}
 .sheet .btn-primary{max-width:none;margin-top:8px}
 .sheet-err{font-size:13px;color:var(--warm);margin-top:10px;min-height:18px}
@@ -767,6 +771,7 @@ body.dim .nightmark{opacity:1}
             <div class="seg" id="obRoleSeg">
               <button data-v="mum">Mum</button>
               <button data-v="dad">Dad</button>
+              <button data-v="other">Other</button>
             </div>
           </div>
           <div class="field">
@@ -794,7 +799,7 @@ body.dim .nightmark{opacity:1}
           <div class="field">
             <label for="obBirth">Date of birth</label>
             <input id="obBirth" type="date" enterkeyhint="done">
-            <div class="hint">Used to guess when she will be tired again. Nothing else.</div>
+            <div class="hint">Used to guess when she will be tired again.</div>
           </div>
         </div>
       </div>
@@ -859,6 +864,7 @@ body.dim .nightmark{opacity:1}
     <div class="seg" id="sheetRoleSeg">
       <button data-v="mum">Mum</button>
       <button data-v="dad">Dad</button>
+      <button data-v="other">Other</button>
     </div>
   </div>
   <div class="sheet-err" id="sheetErr"></div>
@@ -1132,7 +1138,9 @@ let birthDate = load(KEY.birth, '') || '';
    paa nytt midt i en natt. */
 let sleep     = load(KEY.sleep, null);
 
-const roleWord = (r) => r === 'dad' ? 'Dad' : 'Mum';
+/* Til visning i kontaktlista. Naar meldingen kommer tilbake trenger hilsenen
+   sin egen tabell: "Hi Mum," og "Hi Dad," men "Hi there," for other. */
+const roleWord = (r) => r === 'dad' ? 'Dad' : r === 'other' ? 'Other' : 'Mum';
 
 function ageMonths(){
   if (!birthDate) return null;
