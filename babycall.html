@@ -128,6 +128,10 @@ body.diagnostics .diag{display:block}
 
 /* ---------- BUTTONS ---------- */
 .actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:24px;width:100%}
+/* Naar pause er skjult tar knappen hele bredden som foer. Er den framme,
+   deler de paa den. */
+.act-row{display:flex;gap:10px;justify-content:center;width:100%;max-width:300px}
+.act-row .btn-primary{flex:1;max-width:none;padding:16px 18px}
 .btn-primary{
   background:var(--ink);color:var(--white);border:none;
   padding:16px 34px;border-radius:100px;font-family:var(--body);
@@ -602,7 +606,10 @@ body.dim .nightmark{opacity:1}
     <div class="diag" id="diag"></div>
 
     <div class="actions">
-      <button class="btn-primary" id="powerBtn">Turn on microphone</button>
+      <div class="act-row">
+        <button class="btn-primary" id="powerBtn">Turn on microphone</button>
+        <button class="btn-primary quiet hidden" id="pauseBtn">Pause</button>
+      </div>
       <button class="btn-ghost hidden" id="secondaryBtn"></button>
     </div>
   </main>
@@ -1096,10 +1103,15 @@ const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
 const CRY_MS       = 2000;  // to sekunder faktisk lyd. Den sterkeste barrieren.
 const COOLDOWN_MS = 20000;   // tid til a komme inn til barnet for den kan ringe igjen
 const CALIBRATE_MS = 5000;
+/* En ekte mikrofon leser aldri saa lavt. En doed lydvei leser rundt -180, saa
+   dette er et maalbart skille og ikke en gjetning. Samtalen tar mikrofonen paa
+   iOS, og noen ganger gir den den ikke tilbake av seg selv. */
+const DEAD_DB      = -150;
+const DEAD_AFTER_MS = 3000;
 const DIM_AFTER_MS = 30000;
 
 /* ---------------- state ---------------- */
-let state = 'off';           // off · starting · calibrating · listening · detecting · calling · incall · cooldown · error
+let state = 'off';           // off · starting · calibrating · listening · detecting · calling · incall · cooldown · paused · error
 let stream = null, actx = null, analyser = null, srcNode = null;
 let timeBuf = null, freqBuf = null;
 let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
@@ -1110,6 +1122,7 @@ let level = 0, smoothLevel = 0;
 let wakeLock = null, activeCall = null;
 let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
 let dimTimer = null;
+let silentSince = 0, reviving = false;
 
 const CIRC = 653.45;
 
@@ -1304,19 +1317,7 @@ async function startMic(){
     return;
   }
 
-  actx = new (window.AudioContext || window.webkitAudioContext)();
-  if (actx.state === 'suspended') await actx.resume();
-  srcNode  = actx.createMediaStreamSource(stream);
-  analyser = actx.createAnalyser();
-  analyser.fftSize = 2048;
-  analyser.smoothingTimeConstant = 0.55;
-  srcNode.connect(analyser);
-  timeBuf = new Float32Array(analyser.fftSize);
-  freqBuf = new Float32Array(analyser.frequencyBinCount);
-
-  stream.getAudioTracks()[0].addEventListener('ended', () => {
-    if (state !== 'off') { stopMic(); setState('error'); notice('The microphone was cut off. Tap to start listening again.', Infinity); }
-  });
+  await wireAudio();
 
   await requestWakeLock();
 
@@ -1329,7 +1330,9 @@ async function startMic(){
       notice('Could not reach the phone line. Detection still works.', 6000));
   }
 
-  napStart();          // hun ble lagt ned da mikrofonen ble slaatt paa
+  // Bare en ny oekt hvis det ikke alt loeper en. Ellers ville det aa fortsette
+  // etter pause, eller aa laste siden paa nytt, nullstilt soevnen.
+  if (!sleep || sleep.wokeAt) napStart();
 
   floorDb = -70;
   calSamples = [];
@@ -1338,6 +1341,79 @@ async function startMic(){
   lastFrame = performance.now();
   loop();
 
+}
+
+/* Bygger analysekjeden fra stream-en. Kalles ved oppstart og naar lydveien
+   maa reddes etter en samtale. */
+async function wireAudio(){
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') await actx.resume();
+  srcNode  = actx.createMediaStreamSource(stream);
+  analyser = actx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.55;
+  srcNode.connect(analyser);
+  timeBuf = new Float32Array(analyser.fftSize);
+  freqBuf = new Float32Array(analyser.frequencyBinCount);
+  stream.getAudioTracks()[0].addEventListener('ended', onTrackEnded);
+}
+
+function onTrackEnded(){
+  if (state !== 'off' && !reviving){
+    stopMic(); setState('error');
+    notice('The microphone was cut off. Tap to start listening again.', Infinity);
+  }
+}
+
+/* Etter en samtale kan iOS ha lagt lydkonteksten i dvale, eller gitt oss
+   tilbake et spor som lever men er stumt. Ingen av dem fyrer noen hendelse,
+   saa ingenting kommer av seg selv. Vi vekker det som kan vekkes, og bygger
+   resten paa nytt. Mikrofontillatelsen er alt gitt, saa det trengs ingen ny
+   handling fra den som sover ved sengen. */
+async function reviveMic(){
+  if (reviving || state === 'off' || state === 'error' || state === 'paused') return;
+  reviving = true;
+  try {
+    if (actx && actx.state === 'suspended'){ try { await actx.resume(); } catch(e){} }
+
+    const track = stream && stream.getAudioTracks()[0];
+    const alive = track && track.readyState === 'live' && !track.muted;
+
+    if (!alive || !actx || actx.state !== 'running'){
+      try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch(e){}
+      try { if (actx) await actx.close(); } catch(e){}
+      stream = null; actx = null; analyser = srcNode = null;
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation:false, noiseSuppression:false,
+                 autoGainControl:false, channelCount:1 }
+      });
+      await wireAudio();
+      floorDb = -70;                 // nytt rom for gulvet, det gamle er ikke lenger sant
+      notice('Microphone picked back up after the call.', 4000);
+    }
+  } catch(e){
+    setState('error');
+    notice('The microphone did not come back after the call. Tap to start listening again.', Infinity);
+  } finally {
+    silentSince = 0;
+    reviving = false;
+  }
+}
+
+/* Pause tar ned mikrofonen, men lar soevnoekten staa. Den som trykker denne
+   er inne i rommet et oeyeblikk, ikke ferdig for natta. Telefonilinja
+   beholdes varm, saa det aa fortsette ikke trenger en ny brukerhandling. */
+function pauseMic(){
+  if (rafId) cancelAnimationFrame(rafId), rafId = null;
+  if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
+  if (actx) { try { actx.close(); } catch(e){} actx = null; }
+  analyser = srcNode = null;
+  acc = 0; level = 0; smoothLevel = 0; silentSince = 0;
+  nextCheckAt = Infinity;
+  releaseWakeLock();
+  setState('paused');
+  notice('Paused. The nap clock is still running.', 4000);
 }
 
 function stopMic(){
@@ -1407,7 +1483,13 @@ function loop(){
 
   if (state === 'cooldown'){
     trackFloor(db, false);
-    if (now >= cooldownUntil) setState('listening');
+    if (now >= cooldownUntil){
+      // Etter en samtale kan konteksten ligge i dvale. Billig aa vekke, dyrt
+      // aa ikke gjoere: uten dette lytter den videre til stillhet for alltid.
+      if (actx && actx.state === 'suspended'){ try { actx.resume(); } catch(e){} }
+      silentSince = 0;
+      setState('listening');
+    }
     paint();
     return;
   }
@@ -1419,6 +1501,13 @@ function loop(){
   const hit   = loud && tonal;
 
   lastDb = db; lastRatio = ratio;
+
+  // Doed lydvei: bygg den opp igjen. Dette fanger ogsaa aarsaker jeg ikke
+  // har tenkt paa, fordi det maaler resultatet og ikke en mistanke.
+  if (db < DEAD_DB){
+    if (!silentSince) silentSince = now;
+    else if (now - silentSince > DEAD_AFTER_MS) reviveMic();
+  } else silentSince = 0;
   if (now - peakAt > 30000){ peakDb = -99; peakRatio = 0; peakAt = now; }
   if (db > peakDb) peakDb = db;
   if (ratio > peakRatio) peakRatio = ratio;
@@ -1523,9 +1612,9 @@ document.addEventListener('visibilitychange', () => {
 /* ---------------- screen dim ---------------- */
 function scheduleDim(){
   clearTimeout(dimTimer);
-  if (state === 'listening' || state === 'cooldown'){
+  if (state === 'listening' || state === 'cooldown' || state === 'paused'){
     dimTimer = setTimeout(() => {
-      if (state === 'listening' || state === 'cooldown') document.body.classList.add('dim');
+      if (state === 'listening' || state === 'cooldown' || state === 'paused') document.body.classList.add('dim');
     }, DIM_AFTER_MS);
   }
 }
@@ -1550,7 +1639,8 @@ const COPY = {
   detecting:   ['Crying',            'Getting ready to call.'],
   calling:     ['Calling',           ''],
   incall:      ['On the call',       'You are hearing the room live.'],
-  cooldown:    ['Paused',            'Not listening right now.'],
+  cooldown:    ['Just called',       'Not listening right now.'],
+  paused:      ['Paused',            'Microphone off. The nap clock is still running.'],
   error:       ['Microphone off',    'Something interrupted the microphone.']
 };
 
@@ -1570,7 +1660,7 @@ function setState(next){
   document.body.classList.toggle('listening', state === 'listening');
   document.body.classList.toggle('detecting', state === 'detecting');
   document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
-  if (state !== 'listening' && state !== 'cooldown') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
+  if (state !== 'listening' && state !== 'cooldown' && state !== 'paused') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
   else scheduleDim();
   paint();
 }
@@ -1593,6 +1683,9 @@ function paint(){
                                     ? (c ? c.name + ' can hear the room. Quiet means everything works.' : 'Hang up to resume.')
                                     : (c ? c.name + ' can hear the room. Hang up to resume.' : 'Hang up to resume.');
   else if (state === 'cooldown')  subtitle = 'Not listening. Back on in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + ' seconds.';
+  else if (state === 'paused')    subtitle = (sleep && !sleep.wokeAt)
+                                    ? 'Microphone off. The nap clock is still running.'
+                                    : 'Microphone off. Tap resume when you are ready.';
   if (noticeText){
     if (performance.now() < noticeUntil) subtitle = noticeText;
     else clearNotice();
@@ -1613,7 +1706,7 @@ function paint(){
 
   // orb face
   const face = $('orbFace');
-  if (state === 'off' || state === 'error') face.innerHTML = ICONS.micOff;
+  if (state === 'off' || state === 'error' || state === 'paused') face.innerHTML = ICONS.micOff;
   else if (state === 'starting') face.innerHTML = ICONS.mic;
   else if (state === 'calibrating'){
     const left = Math.max(1, Math.ceil((CALIBRATE_MS - (performance.now() - calibrateStartedAt))/1000));
@@ -1634,12 +1727,16 @@ function paint(){
   }
 
   // buttons
-  const power = $('powerBtn'), secondary = $('secondaryBtn');
+  const power = $('powerBtn'), secondary = $('secondaryBtn'), pause = $('pauseBtn');
   power.classList.remove('warm','quiet');
   secondary.classList.add('hidden');
+  pause.classList.add('hidden');
 
   if (state === 'off' || state === 'error'){
     power.textContent = 'Turn on microphone';
+    power.disabled = false;
+  } else if (state === 'paused'){
+    power.textContent = 'Resume listening';
     power.disabled = false;
   } else if (state === 'starting'){
     power.textContent = 'Waiting for permission…';
@@ -1649,9 +1746,11 @@ function paint(){
     power.classList.add('warm');
     power.disabled = false;
   } else {
-    power.textContent = 'Stop listening';
+    // Kort tekst her: to knapper deler tre hundre piksler.
+    power.textContent = 'Stop';
     power.classList.add('quiet');
     power.disabled = false;
+    pause.classList.remove('hidden');
     if (state === 'detecting'){
       secondary.classList.remove('hidden');
       secondary.textContent = 'Not a cry, hold on';
@@ -1661,7 +1760,9 @@ function paint(){
     }
   }
 
-  $('nmText').textContent = state === 'cooldown' ? 'Paused' : 'Listening';
+  $('nmText').textContent = state === 'paused'   ? 'Paused'
+                          : state === 'cooldown' ? 'Just called'
+                          : 'Listening';
 
   renderCheck();
 
@@ -1789,15 +1890,16 @@ wireSeg($('checkSeg'), checkEvery, v => {
 
 /* ---------------- wiring ---------------- */
 $('powerBtn').addEventListener('click', () => {
-  if (state === 'off' || state === 'error') startMic();
+  if (state === 'off' || state === 'error' || state === 'paused') startMic();
   else if (state === 'calling' || state === 'incall') endCall();
   else stopMic();
 });
+$('pauseBtn').addEventListener('click', pauseMic);
 $('secondaryBtn').addEventListener('click', () => {
   if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
   else triggerCall('test');
 });
-$('orb').addEventListener('click', () => { if (state === 'off' || state === 'error') startMic(); });
+$('orb').addEventListener('click', () => { if (state === 'off' || state === 'error' || state === 'paused') startMic(); });
 $('status').addEventListener('click', () => { document.body.classList.toggle('diagnostics'); paint(); });
 $('addBtn').addEventListener('click', openSheet);
 /* ---------------- import from the phone's own contacts ---------------- */

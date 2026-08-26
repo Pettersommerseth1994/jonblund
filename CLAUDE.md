@@ -144,6 +144,22 @@ The decisions that are settled, so nobody relitigates them:
 
 ## Gotchas that cost real time
 
+- **The call takes the microphone and does not always give it back.** After a
+  Twilio call, iOS can leave the AudioContext suspended or hand back a track
+  that is live but muted. Neither fires an event, so nothing recovers on its
+  own and the app listens to silence forever — which is what it did until
+  2026-08-26. The fix measures rather than guesses: a dead path reads about
+  **-180 dB** and a real microphone never does, so `DEAD_DB = -150` is a safe
+  line. Three seconds under it and `reviveMic()` resumes the context or
+  rebuilds the chain from a fresh `getUserMedia`. It fails loudly into `error`
+  rather than quietly. The successful rebuild cannot be tested without a real
+  microphone, so verify it by making a call and watching the level ring come
+  back.
+- **Pause is not Stop.** `pauseMic()` takes the microphone down and leaves the
+  sleep session running; `stopMic()` calls `napWake()` and ends it. `startMic()`
+  only starts a new session when there is not one in progress, which is what
+  makes resume continue rather than reset — and also stops a page reload from
+  wiping the nap.
 - **Measure before tuning thresholds.** Three rounds were burned guessing at
   detection numbers. Use `OfflineAudioContext` to score synthetic signals, or
   read the on-screen diagnostics (tap the status label).
