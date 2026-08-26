@@ -87,27 +87,39 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   - Ranges come from Cleveland Clinic, Huckleberry and Taking Cara Babies,
     which agree. We use the midpoint and write "around", never a precise
     minute. Verified bucket by bucket against the sources.
-  - The message goes out `NAP_LEAD_MS` (15 min) before the window ends, once
-    per nap, guarded by `sleep.msgDone`. Off by default; turning it on costs
-    `PRICE.perMessage` and therefore gets a modal.
-  - **It needs SMS that does not exist yet.** `api/sms.js` is written but inert
-    until `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_MESSAGING_FROM`) is set.
-    Until then the app says so instead of pretending it sent something.
-    **`api/sms.js` has never been run against Twilio.**
-  - **Norwegian numbers are not purchasable in Twilio**, with voice or SMS
-    (checked 2026-08-26). So the calling number stays US, and per-market
-    senders are unavoidable when Europe and the US come.
-  - **The text does not need to come from the calling number.** Piercing Do Not
-    Disturb is what the *call* needs; a "she will be tired soon" text must not
-    wake anyone. Two senders is correct here, not a compromise.
-  - Worth weighing, and it is a design call: sent from the calling number the
-    text arrives *as the saved contact*, "Sonja ♥️", which matches a message
-    written in the baby's voice and signed "– Sonja 😴". From an alphanumeric
-    sender it reads as from the service. The trade is deliverability: a US long
-    code to a Norwegian mobile may be filtered. One test message answers it.
-  - A **Messaging Service is needed either way** — not for the sender, but
-    because scheduled sending requires it, and scheduling is what makes the
-    text arrive with the page closed.
+  - The slider is clamped so she cannot have fallen asleep in the future, and
+    the clamp is rounded to the slider's own five-minute step — otherwise the
+    control shows one number and the value holds another.
+
+### The tired message, removed for now
+
+Built, then taken out again on 2026-08-26 while A2P registration is pending.
+The clock stayed. To bring it back, revive from commit **5decc2c** (client) and
+**af071e4** (`api/sms.js`, still local and unpushed) — do not rewrite it.
+
+Why it went: Twilio will not offer an unregistered US 10DLC number as an SMS
+sender at all, so the "From" list in the console is empty. Not Norway's doing,
+US registration's.
+
+The decisions that are settled, so nobody relitigates them:
+
+- **One sender, and it is the calling number.** The message must arrive as the
+  saved contact, "Sonja ♥️", because that is the one number a customer relates
+  to. An alphanumeric sender would work today and was rejected for this reason.
+- **Norwegian numbers are not purchasable in Twilio**, voice or SMS (checked).
+  So per-market senders are unavoidable when Europe and the US come, and
+  alphanumeric cannot reach the US at all.
+- **A Messaging Service is needed** — not for the sender, but because scheduled
+  sending requires one, and scheduling is what makes the text arrive with the
+  page closed. Twilio wants send-at *more than* 15 minutes out, so `sms.js`
+  floors at 16 and falls back to sending immediately rather than losing it.
+- The sample message will need a brand and an opt-out line to clear US campaign
+  review; the signature can stay "– Sonja 😴".
+- Norwegian operators block SMS containing URLs unless allowlisted. Keep links
+  out of it.
+- `api/sms.js` inherits the shared-key problem from §Security: once configured,
+  anyone holding the public key can send on the account. Fix it with the same
+  auth work, before it goes live.
   - Scheduling matters more than sending: `schedule()` hands the send-at time
     to Twilio so the text arrives even with the page closed. Twilio requires
     send-at ≥15 min ahead, so `sms.js` falls back to sending immediately when

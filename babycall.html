@@ -276,25 +276,6 @@ body.managing .contact .mark{display:none}
   border:1px solid var(--line);box-shadow:0 2px 8px rgba(26,29,36,.18);
 }
 
-.nap-sw-row{
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
-}
-.nap-sw-txt{min-width:0}
-.nap-sw-t{display:block;font-size:14px;color:var(--ink)}
-.nap-sw-s{display:block;font-size:12.5px;color:var(--slate-light);margin-top:2px}
-.switch{
-  position:relative;flex:none;width:50px;height:30px;padding:0;border:none;
-  border-radius:100px;background:var(--cloud-3);cursor:pointer;
-  transition:background .25s;
-}
-.switch>span{
-  position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
-  background:#fff;box-shadow:0 2px 6px rgba(26,29,36,.22);
-  transition:transform .25s;
-}
-.switch[aria-checked="true"]{background:var(--accent-deep)}
-.switch[aria-checked="true"]>span{transform:translateX(20px)}
 .check-next{
   font-size:12.5px;font-weight:600;color:var(--accent-deep);
   font-variant-numeric:tabular-nums;
@@ -673,16 +654,6 @@ body.dim .nightmark{opacity:1}
              aria-label="Adjust when she fell asleep">
       <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
     </div>
-
-    <div class="nap-sw-row">
-      <div class="nap-sw-txt">
-        <span class="nap-sw-t">Text me when she is getting tired</span>
-        <span class="nap-sw-s" id="napSwSub"></span>
-      </div>
-      <button class="switch" id="napSwitch" role="switch" aria-checked="false">
-        <span></span>
-      </button>
-    </div>
   </section>
 
 
@@ -727,21 +698,6 @@ body.dim .nightmark{opacity:1}
     <button class="btn-ghost" id="prLater">Not now</button>
   </div>
 </div>
-<div class="hiw" id="napOk" role="dialog" aria-modal="true" aria-label="Turn on tired messages">
-  <div class="hiw-head"><span class="hiw-title">Before you turn it on</span></div>
-  <div class="hiw-view">
-    <div class="pr-body">
-      <div class="pr-amount" id="napOkAmount"></div>
-      <div class="pr-unit">a message</div>
-      <p class="pr-fine" id="napOkFine"></p>
-    </div>
-  </div>
-  <div class="hiw-foot">
-    <button class="btn-primary" id="napOkYes">Turn it on</button>
-    <button class="btn-ghost" id="napOkNo">Not now</button>
-  </div>
-</div>
-
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
   <div class="hiw-head"><span class="hiw-title">Get started</span></div>
   <button class="hiw-back" id="hiwBack" aria-label="Back">
@@ -946,35 +902,6 @@ body.dim .nightmark{opacity:1}
     return (await r.json()).token;
   }
 
-  /* Meldingssoemmen. Samme form som telefonien under: appen bryr seg ikke om
-     hvem som leverer. schedule() er den som betyr noe — den lar Twilio levere
-     til avtalt tid, saa meldingen kommer selv om denne siden er lukket.
-     Serveren svarer 501 med en forklaring til den er satt opp, og appen viser
-     den forklaringen i stedet for aa paastaa at noe ble sendt. */
-  async function postMessage(to, text, sendAt){
-    let r;
-    // En raa "Failed to fetch" skal ikke vises til noen som staar ved en
-    // barneseng. Serverens egen forklaring slipper gjennom; nettverksfeil
-    // oversettes.
-    try {
-      r = await fetch(API + '/api/sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Jonblund-Key': KEY },
-        body: JSON.stringify({ to, text, sendAt: sendAt || 0 })
-      });
-    } catch (e) {
-      throw new Error('No connection just now, so no message was sent.');
-    }
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || 'The message could not be sent.');
-    return data;
-  }
-
-  window.JONBLUND_MESSAGING = {
-    send:     (contact, text)     => postMessage(contact.tel, text, 0),
-    schedule: (contact, text, at) => postMessage(contact.tel, text, at)
-  };
-
   window.JONBLUND_TELEPHONY = {
 
     // Kjører når mikrofonen skrus på. Det trykket er den siste
@@ -1089,7 +1016,6 @@ const KEY = {
   baby:       'jonblund.baby.v1',
   checkEvery: 'jonblund.checkEvery.v1',
   birth:      'jonblund.birth.v1',       // ISO-dato, sa alderen holder seg riktig
-  napMsg:     'jonblund.napMessage.v1',
   sleep:      'jonblund.sleep.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
@@ -1143,7 +1069,6 @@ const PRICE = {
   perCall:        0.20,
   includedMin:    2,
   perExtraMin:    0.39,
-  perMessage:     0.10,    // en tekstmelding om at vakenvinduet lopper ut
   monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
   trialFree:      'the first month'
 };
@@ -1202,13 +1127,9 @@ const WAKE_WINDOWS = [
   { toMonths: 999, min: 240, max: 360 }
 ];
 
-/* Meldingen skal komme foer hun er overtredt, ikke i det hun er det. */
-const NAP_LEAD_MS = 15 * 60000;
-
 let birthDate = load(KEY.birth, '') || '';
-let napMsgOn  = load(KEY.napMsg, false);
-/* { startedAt, adjustMin, wokeAt, msgDone } — epoch ms, saa den taaler at
-   siden lastes paa nytt midt i en natt. */
+/* { startedAt, adjustMin, wokeAt } — epoch ms, saa den taaler at siden lastes
+   paa nytt midt i en natt. */
 let sleep     = load(KEY.sleep, null);
 
 const roleWord = (r) => r === 'dad' ? 'Dad' : 'Mum';
@@ -1245,10 +1166,8 @@ const tiredAt = () => {
   const w = wakeWindow();
   return (sleep && sleep.wokeAt && w) ? sleep.wokeAt + w.mid * 60000 : null;
 };
-const napDueAt = () => { const t = tiredAt(); return t === null ? null : t - NAP_LEAD_MS; };
-
 function napStart(){
-  sleep = { startedAt: Date.now(), adjustMin: 0, wokeAt: null, msgDone: false };
+  sleep = { startedAt: Date.now(), adjustMin: 0, wokeAt: null };
   save(KEY.sleep, sleep);
   const sl = $('napSlider'); if (sl) sl.value = '0';
   renderNap();
@@ -1258,54 +1177,9 @@ function napWake(){
   if (!sleep || sleep.wokeAt) return;
   sleep.wokeAt = Date.now();
   save(KEY.sleep, sleep);
-  scheduleNapMessage();
   renderNap();
 }
 
-function napMessageText(){
-  const c    = selectedContact();
-  const baby = (load(KEY.baby, '') || '').trim() || 'Your baby';
-  return 'Hi ' + roleWord(c && c.role) + ',\n\n' +
-         'I am probably getting tired now, and I will want another nap soon.\n\n' +
-         '\u2013 ' + baby + ' \uD83D\uDE34';
-}
-
-/* Samme soem som telefonien: en leverandoer settes inn her.
-   window.JONBLUND_MESSAGING = { send, schedule }
-   schedule() er den som betyr noe — den lar Twilio levere til avtalt tid,
-   saa meldingen kommer selv om denne siden er lukket. */
-function scheduleNapMessage(){
-  const due = napDueAt();
-  const api = window.JONBLUND_MESSAGING;
-  if (!napMsgOn || due === null || !sleep || sleep.msgDone) return;
-  if (api && typeof api.schedule === 'function'){
-    Promise.resolve(api.schedule(selectedContact(), napMessageText(), due))
-      .then(() => { sleep.msgDone = true; save(KEY.sleep, sleep); renderNap(); })
-      .catch(() => {});          // faller tilbake paa klient-timeren under
-  }
-}
-
-async function sendNapMessage(){
-  if (!sleep || sleep.msgDone) return;
-  sleep.msgDone = true; save(KEY.sleep, sleep);
-  const c = selectedContact();
-  const api = window.JONBLUND_MESSAGING;
-  if (api && typeof api.send === 'function'){
-    try { await api.send(c, napMessageText()); notice('Message sent to ' + c.name + '.', 5000); }
-    catch(e){ notice((e && e.message) || 'The message could not be sent.', 8000); }
-  } else {
-    notice('Messages are not switched on for this number yet. Nothing was sent or charged.', 8000);
-  }
-  renderNap();
-}
-
-/* Fra hjerteslaget, som innsjekk-anropene: den trenger klokka, ikke en lydramme. */
-function maybeNapMessage(){
-  if (!napMsgOn || !sleep || sleep.msgDone) return;
-  const due = napDueAt();
-  if (due === null || Date.now() < due) return;
-  sendNapMessage();
-}
 
 /* ---------------- contacts ---------------- */
 function normalise(raw){
@@ -1819,14 +1693,10 @@ $('obBirth').addEventListener('change', () => {
 /* ---------------- nap clock panel ---------------- */
 function renderNap(){
   const face = $('napFace'), line = $('napLine'), badge = $('napBadge');
-  const adj  = $('napAdjust'), sub = $('napSwSub');
+  const adj  = $('napAdjust');
   const w    = wakeWindow();
   const baby = (load(KEY.baby, '') || '').trim();
   const her  = baby || 'she';
-
-  $('napSwitch').setAttribute('aria-checked', String(!!napMsgOn));
-  sub.textContent = napMsgOn ? usd(PRICE.perMessage) + ' each, only when one is sent'
-                             : usd(PRICE.perMessage) + ' a message';
 
   if (!birthDate){
     face.textContent = '\u2013';
@@ -1852,7 +1722,6 @@ function renderNap(){
 
   if (sleep && sleep.wokeAt){
     const tired = tiredAt();
-    const due   = napDueAt();
     const slept = spanText(sleep.wokeAt - sleepStart());
     const up    = spanText(Date.now() - sleep.wokeAt);
     const late  = Date.now() > tired;
@@ -1861,16 +1730,9 @@ function renderNap(){
     // vinduet er ute sier den det i stedet for aa vise fortiden.
     face.textContent = late ? 'Now' : clockTime(tired);
 
-    let txt = late
+    line.innerHTML = late
       ? 'Past the usual awake window. Up <b>' + up + '</b> now, after sleeping <b>' + slept + '</b>.'
       : 'Ready for another nap around this time. Slept <b>' + slept + '</b>, up <b>' + up + '</b> so far.';
-
-    if (napMsgOn && due !== null){
-      txt += sleep.msgDone
-        ? (Date.now() >= due ? ' The text has gone out.' : ' A text is set for <b>' + clockTime(due) + '</b>.')
-        : ' A text goes out at <b>' + clockTime(due) + '</b>.';
-    }
-    line.innerHTML = txt;
     return;
   }
 
@@ -1881,45 +1743,18 @@ function renderNap(){
 
 $('napSlider').addEventListener('input', () => {
   if (!sleep) return;
-  sleep.adjustMin = Number($('napSlider').value) || 0;
+  // Hun kan ikke ha sovnet i framtiden. Uten dette kunne en lang dytt framover
+  // paa en kort lur gi negativ soevn, som viste seg som "slept 0 min".
+  // Rundet ned til samme femminutterssteg som slideren, ellers viser kontrollen
+  // ett tall og verdien et annet.
+  const ceiling = Math.max(0, Math.floor((Date.now() - sleep.startedAt) / 300000) * 5);
+  const want    = Number($('napSlider').value) || 0;
+  sleep.adjustMin = Math.min(want, ceiling);
+  if (sleep.adjustMin !== want) $('napSlider').value = String(sleep.adjustMin);
   save(KEY.sleep, sleep);
   renderNap();
 });
 
-/* Aa godta en kostnad er en avgjoerelse, saa den faar en modal. Av er standard. */
-function napOkShow(){
-  $('napOkAmount').innerHTML = '<span>$</span>' + PRICE.perMessage.toFixed(2);
-  $('napOkFine').innerHTML =
-    'Jon Blund texts you once per nap, about ' + spanText(NAP_LEAD_MS) + ' before the awake '
-    + 'window runs out. <b>' + usd(PRICE.perMessage) + ' for each one that is sent</b>, and nothing '
-    + 'when there is no nap to report. You can switch it off again whenever you like.';
-  $('hiwScrim').classList.add('open');
-  $('napOk').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function napOkHide(){
-  $('hiwScrim').classList.remove('open');
-  $('napOk').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function napSwitchTo(on){
-  napMsgOn = !!on;
-  save(KEY.napMsg, napMsgOn);
-  if (napMsgOn) scheduleNapMessage();
-  renderNap();
-}
-$('napSwitch').addEventListener('click', () => {
-  if (napMsgOn){ napSwitchTo(false); notice('Tired messages off.', 3000); return; }
-  napOkShow();
-});
-$('napOkYes').addEventListener('click', () => {
-  napOkHide(); napSwitchTo(true);
-  notice('Tired messages on, ' + usd(PRICE.perMessage) + ' each.', 4000);
-});
-$('napOkNo').addEventListener('click', napOkHide);
-addEventListener('keydown', e => {
-  if (e.key === 'Escape' && $('napOk').classList.contains('open')) napOkHide();
-});
 
 /* ---------------- check-in panel ---------------- */
 function renderCheck(){
@@ -2050,7 +1885,6 @@ window.jonblundNotice = notice;
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => {
   maybeCheckIn();
-  maybeNapMessage();
   renderNap();
   if (state === 'cooldown' || state === 'incall' || state === 'off') paint();
   else if (checkEvery) renderCheck();      // hold nedtellingen i gang
