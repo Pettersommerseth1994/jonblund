@@ -141,8 +141,22 @@ anyone (verified from curl, no browser), one shared `identity: 'crib'`, no rate
 limit, and **the spending ceiling exists only in the client** — so it is a
 display, not a limit. Check-in calls make that last one urgent.
 
+**`JONBLUND_ALLOWED_NUMBERS` stays `*` on purpose** while two testers are trying
+the app (decided 2026-08-26). Closing it mid-test risks a tester's call silently
+failing on a number typed a little differently, which reads as "the app is
+broken". Petter's call, and a defensible one *only because* the three things that
+bound the damage are confirmed in place: geo permissions Norway-only,
+auto-recharge off, `timeLimit` 600. Residual worst case is a drained Twilio
+balance, not an unbounded bill.
+
+**Revisit the moment any one of those three changes**, and before the first
+paying customer. `+47*` prefix support in `voice.js` would be the middle ground
+that cannot break a Norwegian tester; not built, because the decision was to
+leave the variable alone.
+
 **Do not open Twilio geo permissions beyond Norway until auth lands.** Norway-only
-is what currently keeps toll fraud near worthless.
+is what currently keeps toll fraud near worthless, and it is now load-bearing
+rather than incidental.
 
 ## Not safe for real customers yet
 
