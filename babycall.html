@@ -10,6 +10,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Only what <meta> honours. frame-ancestors and sandbox are header-only and
+     GitHub Pages cannot set headers, so framing is not covered here. A real
+     script-src needs the inline <script> broken out into a file first. -->
+<meta http-equiv="Content-Security-Policy" content="base-uri 'none'; object-src 'none'">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -787,7 +791,12 @@ body.dim .nightmark{opacity:1}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@2.18.3/dist/twilio.min.js"></script>
+<!-- Hash verified against three separate fetches of the immutable @2.18.3 path.
+     Bump it together with the version, never separately: a wrong hash means the
+     SDK refuses to load and Jon Blund cannot ring at all. -->
+<script src="https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@2.18.3/dist/twilio.min.js"
+        integrity="sha384-11P5HWF8oWyRF2MfktRrB2yWoVU12FUbjAVUwpwXhB7ziNEkkm/M/YcLs0boQLgS"
+        crossorigin="anonymous"></script>
 <script>
 /* ==========================================================================
    Twilio — fyller telefoni-festet.
@@ -907,6 +916,14 @@ body.dim .nightmark{opacity:1}
    ========================================================================== */
 
 const $ = (id) => document.getElementById(id);
+
+/* Navn er ikke våre. De skrives av brukeren, og de kan komme rett fra
+   telefonens adressebok gjennom Contact Picker — altså fra et vCard noen
+   andre har sendt. Alt som skal inn i innerHTML må gjennom denne.
+   Foretrekk textContent der du kan; bruk denne når du må ha markup rundt. */
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 /* ---------------- storage ---------------- */
 const KEY = {
@@ -1062,7 +1079,7 @@ function renderContacts(){
     const row = document.createElement('div');
     row.className = 'contact' + (c.id === selectedId ? ' sel' : '');
     row.innerHTML =
-      '<div class="avatar">' + initials(c.name) + '</div>' +
+      '<div class="avatar">' + esc(initials(c.name)) + '</div>' +
       '<div class="who"><div class="n"></div><div class="t"></div></div>' +
       '<div class="mark"></div>' +
       '<button class="del" aria-label="Remove">&times;</button>';
@@ -1591,6 +1608,27 @@ function wireSeg(el, value, onPick){
    instead of only in a console nobody opens on a phone */
 window.jonblundNotice = notice;
 
+/* Adapteren er en rein telefoni-søm og rører ingen tilstand med vilje. Det
+   betyr at noe som kaller call() direkte ville plassert et ekte anrop mens
+   skjermen fortsatt sa «Listening» — dempet, fordi A ligger ved en sovende
+   baby, og nedtonet etter tretti sekunder. Tre riktige valg som til sammen
+   skjuler et innbrudd perfekt.
+   Denne pakker sømmen slik at ethvert anrop tenner skjermen. Den erstatter
+   ikke esc() over; en angriper med kjørende script kan pakke den ut igjen.
+   Den gjør bare at et misbruk ikke er usynlig. */
+(() => {
+  const tel = window.JONBLUND_TELEPHONY;
+  if (!tel || typeof tel.call !== 'function') return;
+  const dial = tel.call.bind(tel);
+  tel.call = (contact, hooks) => {
+    if (state !== 'calling' && state !== 'incall'){
+      setState('calling');
+      undim();
+    }
+    return dial(contact, hooks);
+  };
+})();
+
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => {
   maybeCheckIn();
@@ -1642,7 +1680,7 @@ function hiwGo(i){
   if (hiwIndex === 3){
     const c = selectedContact();
     $('obSendTitle').innerHTML = 'Send the contact card to <em>' +
-      (c ? c.name : 'them') + '.</em>';
+      esc(c ? c.name : 'them') + '.</em>';
   }
   if (hiwIndex === 4) obRenderPrice();
 
@@ -1650,7 +1688,7 @@ function hiwGo(i){
   if (hiwIndex === 2){
     const c = selectedContact();
     $('obWhy').innerHTML = 'Jon Blund makes a link you send to <b>' +
-      (c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
+      esc(c ? c.name : 'them') + '</b>. One tap and the number is saved in their ' +
       'contacts. We recommend it, so the call always gets through.';
   }
 }

@@ -114,6 +114,36 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   a definite height). Step 1's copy has ~18px of slack on a 375×667 phone, so
   measure the paragraph there before lengthening it, or the last line vanishes.
 
+## Security
+
+Full review, with a verified attack path, in `jonblund-voice/SECURITY-REVIEW.local.md`
+(gitignored, and must stay so). Fixed 2026-08-26:
+
+- **`esc()` in `babycall.html` is mandatory for any name going into `innerHTML`.**
+  Names come from the user *and* from the phone's address book via Contact Picker,
+  so a poisoned vCard could reach them. Three sites were unescaped; script did
+  execute, verified with a live payload before and after. Prefer `textContent`.
+- **The Twilio SDK carries an SRI hash.** Bump it with the version, never
+  separately — a wrong hash means the SDK will not load and Jon Blund cannot
+  ring. Recompute with `openssl dgst -sha384 -binary … | openssl base64 -A`.
+- **The adapter seam is wrapped so any call lights up the screen.** The adapter
+  touches no UI state by design, the remote stream is muted and the screen dims,
+  so an injected `JONBLUND_TELEPHONY.call()` was completely invisible. The
+  wrapper is defence in depth, not a lock.
+- **`timeLimit` is 600, not 1800**, in `jonblund-voice/api/voice.js`. Cheapest cap
+  on damage per call while the key is public, and it protects a customer who
+  falls asleep with the line open.
+- CSP is a `<meta>` and therefore only `base-uri` and `object-src`.
+  `frame-ancestors` is header-only and GitHub Pages cannot set headers.
+
+Still open, all needing the auth work: the public key mints Twilio tokens for
+anyone (verified from curl, no browser), one shared `identity: 'crib'`, no rate
+limit, and **the spending ceiling exists only in the client** — so it is a
+display, not a limit. Check-in calls make that last one urgent.
+
+**Do not open Twilio geo permissions beyond Norway until auth lands.** Norway-only
+is what currently keeps toll fraud near worthless.
+
 ## Not safe for real customers yet
 
 - `JONBLUND_KEY` sits in public client code and is shared by everyone
