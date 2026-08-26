@@ -187,6 +187,17 @@ The decisions that are settled, so nobody relitigates them:
   for reading. It is *not* fine for a control: anything the user must tap or
   see (the Mum/Dad row, an error) belongs above the fold, which is why the role
   row sits before the name and phone fields.
+- **Photos are blobs made of four `border-radius` pairs**, not SVG masks — the
+  edge stays perfectly smooth, which is the point. Values near 50/50 read as a
+  circle; real asymmetry (`58% 42% 33% 67% / 63% 37% 63% 37%`) is what makes a
+  pebble. Four shapes cycle so they do not read as one stamp repeated.
+  Originals live in the repo root, web copies in `img/` at ~70 KB each — 384 KB
+  for all six, down from 17 MB.
+- **`margin:0 auto` on a grid item makes it shrink to its content.** With a
+  child at `width:100%` that is a circular dependency and everything collapses
+  to zero. The hero blob was 0×0 on mobile until `.hero-art` got an explicit
+  `width:100%`. The SVG that used to sit there had an intrinsic size from its
+  viewBox and hid the bug for months.
 - **`input[type="date"]` on iOS carries an intrinsic min-width** from the
   locale's date format, and `width:100%` will not shrink it below that, so it
   pushed out of the onboarding card. `min-width:0` plus
