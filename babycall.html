@@ -240,22 +240,34 @@ body.managing .contact .mark{display:none}
 .role-row .seg button{padding:7px 13px}
 
 /* ---------- NAP CLOCK ---------- */
-.nap-badge{
-  font-size:12.5px;font-weight:600;color:var(--accent-deep);
-  font-variant-numeric:tabular-nums;
+/* En smal stripe under ordmerket. Kula er appens midtpunkt, saa klokka skal
+   opplyse og ikke konkurrere. */
+.nap-bar{
+  width:100%;display:flex;align-items:center;gap:11px;
+  background:var(--white);border:1px solid var(--line);border-radius:100px;
+  padding:11px 18px;margin-top:18px;font-family:var(--body);
+  cursor:pointer;text-align:left;
+  box-shadow:0 6px 18px rgba(109,139,171,.06);
+  opacity:0;animation:rise .8s .3s forwards;transform:translateY(16px);
 }
-.nap-face{
-  font-family:var(--display);font-weight:300;font-size:42px;
-  letter-spacing:-.03em;line-height:1;text-align:center;
-  margin:6px 0 0;font-variant-numeric:tabular-nums;
+.nap-bar:disabled{cursor:default}
+.nap-bar svg{width:17px;height:17px;color:var(--accent-deep);flex:none}
+.nap-big{
+  font-family:var(--display);font-size:16px;font-weight:400;
+  letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:var(--ink);
 }
-.nap-line{
-  font-size:13.5px;color:var(--slate);text-align:center;
-  margin:11px auto 0;max-width:31ch;
+.nap-short{
+  flex:1;font-size:12.5px;color:var(--slate);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.nap-line b{color:var(--ink);font-weight:600}
+.nap-chev{font-size:11px;color:var(--slate-light);transition:transform .25s;flex:none}
+.nap-bar:disabled .nap-chev{opacity:0}
+.nap-bar.open .nap-chev{transform:rotate(180deg)}
 
-.nap-adjust{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.nap-drawer{
+  background:var(--white);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 22px 22px;margin:-16px 16px 0;padding:22px 18px 14px;
+}
 .nap-adj-l{display:block;font-size:13px;color:var(--slate);margin-bottom:9px}
 .nap-adj-l b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .nap-adj-ends{
@@ -582,6 +594,19 @@ body.dim .nightmark{opacity:1}
     <p class="slogan">A baby call that actually calls you</p>
   </header>
 
+  <button class="nap-bar" id="napBar" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5z"/></svg>
+    <span class="nap-big" id="napBig">&ndash;</span>
+    <span class="nap-short" id="napShort"></span>
+    <span class="nap-chev" aria-hidden="true">&#9662;</span>
+  </button>
+  <div class="nap-drawer hidden" id="napDrawer">
+    <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
+    <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
+           aria-label="Adjust when she fell asleep">
+    <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
+  </div>
+
   <main class="stage">
     <div class="orb-wrap">
       <div class="pring p1"></div>
@@ -650,22 +675,6 @@ body.dim .nightmark{opacity:1}
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-head">
-      <span class="opt-label">Nap clock</span>
-      <span class="nap-badge" id="napBadge"></span>
-    </div>
-
-    <div class="nap-face" id="napFace">&ndash;</div>
-    <p class="nap-line" id="napLine"></p>
-
-    <div class="nap-adjust hidden" id="napAdjust">
-      <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
-      <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
-             aria-label="Adjust when she fell asleep">
-      <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
-    </div>
-  </section>
 
 
   <div class="note note-info" id="screenNote">
@@ -1799,63 +1808,54 @@ $('obBirth').addEventListener('change', () => {
   renderNap();
 });
 
-/* ---------------- nap clock panel ---------------- */
+/* ---------------- nap clock ---------------- */
 function renderNap(){
-  const face = $('napFace'), line = $('napLine'), badge = $('napBadge');
-  const adj  = $('napAdjust');
-  const w    = wakeWindow();
-  const baby = (load(KEY.baby, '') || '').trim();
-  const her  = baby || 'she';
+  const bar = $('napBar'), big = $('napBig'), short = $('napShort');
+  let adjustable = false;
 
   if (!birthDate){
-    face.textContent = '\u2013';
-    line.innerHTML = 'Add the baby\u2019s date of birth in <b>How it works</b> and Jon Blund can '
-                   + 'work out when the next nap is due.';
-    adj.classList.add('hidden');
-    badge.textContent = '';
-    return;
-  }
-
-  const asleep = sleep && !sleep.wokeAt;
-  adj.classList.toggle('hidden', !asleep);
-  badge.textContent = w ? 'awake window ' + spanText(w.min * 60000) + '\u2013' + spanText(w.max * 60000) : '';
-
-  if (asleep){
+    big.textContent = '\u2013';
+    short.textContent = 'add a date of birth in How it works';
+  } else if (!sleep){
+    big.textContent = '\u2013';
+    short.textContent = 'starts when the microphone does';
+  } else if (!sleep.wokeAt){
     const start = sleepStart();
-    face.textContent = spanText(Date.now() - start);
-    line.innerHTML = 'Asleep since <b>' + clockTime(start) + '</b>. Drag below if that is not '
-                   + 'when ' + (baby || 'she') + ' actually dropped off.';
+    big.textContent   = spanText(Date.now() - start);
+    short.textContent = 'asleep since ' + clockTime(start);
     $('napStartAt').textContent = clockTime(start);
-    return;
-  }
-
-  if (sleep && sleep.wokeAt){
+    adjustable = true;                 // bare naar det finnes noe aa flytte
+  } else {
     const tired = tiredAt();
-    const slept = spanText(sleep.wokeAt - sleepStart());
-    const up    = spanText(Date.now() - sleep.wokeAt);
-    const late  = Date.now() > tired;
-
-    // Et klokkeslett som alt har vaert er verre enn ingenting, saa naar
-    // vinduet er ute sier den det i stedet for aa vise fortiden.
-    face.textContent = late ? 'Now' : clockTime(tired);
-
-    line.innerHTML = late
-      ? 'Past the usual awake window. Up <b>' + up + '</b> now, after sleeping <b>' + slept + '</b>.'
-      : 'Ready for another nap around this time. Slept <b>' + slept + '</b>, up <b>' + up + '</b> so far.';
-    return;
+    if (Date.now() > tired){
+      big.textContent   = 'Now';
+      short.textContent = 'past the usual awake window';
+    } else {
+      big.textContent   = clockTime(tired);
+      // Navnet stod her og kuttet linja paa lange navn, uten aa si noe nytt.
+      short.textContent = 'tired in ' + spanText(tired - Date.now())
+                        + ' \u00b7 slept ' + spanText(sleep.wokeAt - sleepStart());
+    }
   }
 
-  face.textContent = '\u2013';
-  line.innerHTML = 'Turn the microphone on when you put ' + her + ' down. Jon Blund times the nap '
-                 + 'from there, and works out when the next one is due.';
+  bar.disabled = !adjustable;
+  if (!adjustable) napDrawerSet(false);
 }
+
+function napDrawerSet(open){
+  $('napBar').classList.toggle('open', open);
+  $('napBar').setAttribute('aria-expanded', String(open));
+  $('napDrawer').classList.toggle('hidden', !open);
+}
+
+$('napBar').addEventListener('click', () => {
+  napDrawerSet(!$('napBar').classList.contains('open'));
+});
 
 $('napSlider').addEventListener('input', () => {
   if (!sleep) return;
-  // Hun kan ikke ha sovnet i framtiden. Uten dette kunne en lang dytt framover
-  // paa en kort lur gi negativ soevn, som viste seg som "slept 0 min".
-  // Rundet ned til samme femminutterssteg som slideren, ellers viser kontrollen
-  // ett tall og verdien et annet.
+  // Hun kan ikke ha sovnet i framtiden, og taket foelger slideren sitt eget
+  // femminutterssteg saa kontrollen og verdien er enige.
   const ceiling = Math.max(0, Math.floor((Date.now() - sleep.startedAt) / 300000) * 5);
   const want    = Number($('napSlider').value) || 0;
   sleep.adjustMin = Math.min(want, ceiling);
@@ -1864,8 +1864,7 @@ $('napSlider').addEventListener('input', () => {
   renderNap();
 });
 
-
-/* ---------------- check-in panel ---------------- */
+/* ---------------- check-in panel/* ---------------- check-in panel ---------------- */
 function renderCheck(){
   const next = $('checkNext');
   if (!checkEvery || (state !== 'listening' && state !== 'detecting')){

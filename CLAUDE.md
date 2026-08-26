@@ -87,6 +87,13 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
   - Ranges come from Cleveland Clinic, Huckleberry and Taking Cara Babies,
     which agree. We use the midpoint and write "around", never a precise
     minute. Verified bucket by bucket against the sources.
+  - **It is a slim bar under the wordmark**, chosen from three designs on
+    2026-08-26 over a hero clock and a progress rail. The orb stays the centre
+    of the app, so the clock informs and does not compete: 16px Fraunces, one
+    line, tap to drop the adjust drawer. The drawer only opens while she is
+    asleep, because there is nothing to move otherwise.
+  - The baby's name was in the bar and came out again: it truncated the line on
+    a long name and told the reader nothing they did not know.
   - The slider is clamped so she cannot have fallen asleep in the future, and
     the clamp is rounded to the slider's own five-minute step — otherwise the
     control shows one number and the value holds another.
