@@ -133,6 +133,7 @@ body.diagnostics .diag{display:block}
 .act-row{display:flex;gap:10px;justify-content:center;width:100%;max-width:300px}
 .act-row .btn-primary{flex:1;max-width:none;padding:16px 18px}
 .btn-primary{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
   background:var(--ink);color:var(--white);border:none;
   padding:16px 34px;border-radius:100px;font-family:var(--body);
   font-size:15.5px;font-weight:600;cursor:pointer;
@@ -144,6 +145,9 @@ body.diagnostics .diag{display:block}
 .btn-primary:hover{box-shadow:0 14px 34px rgba(26,29,36,.2)}
 .btn-primary.warm{background:var(--warm);box-shadow:0 8px 24px rgba(176,106,106,.26)}
 .btn-primary.quiet{background:var(--white);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.bi{display:flex;flex:none}
+.bi:empty{display:none}
+.bi svg{width:17px;height:17px;display:block}
 .btn-ghost{
   background:none;border:none;color:var(--slate);font-family:var(--body);
   font-size:14px;font-weight:600;cursor:pointer;padding:6px 4px;
@@ -640,8 +644,12 @@ body.dim .nightmark{opacity:1}
 
     <div class="actions">
       <div class="act-row">
-        <button class="btn-primary" id="powerBtn">Turn on microphone</button>
-        <button class="btn-primary quiet hidden" id="pauseBtn">Pause</button>
+        <button class="btn-primary" id="powerBtn">
+          <span class="bi" id="powerIco"></span><span id="powerTxt">Turn on microphone</span>
+        </button>
+        <button class="btn-primary quiet" id="pauseBtn">
+          <span class="bi" id="pauseIco"></span><span id="pauseTxt">Pause</span>
+        </button>
       </div>
       <button class="btn-ghost hidden" id="secondaryBtn"></button>
     </div>
@@ -1641,6 +1649,15 @@ function undim(){ clearTimeout(dimTimer); document.body.classList.remove('dim');
 );
 
 /* ---------------- render ---------------- */
+/* Knappesymboler. Fylte former, myke hjoerner: samme spraak som resten. */
+const BTN = {
+  stop:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5.4" y="5.4" width="13.2" height="13.2" rx="3.2"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7.4" y="5.4" width="3.4" height="13.2" rx="1.7"/><rect x="13.2" y="5.4" width="3.4" height="13.2" rx="1.7"/></svg>',
+  play:  '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8.5 6.4 18 12l-9.5 5.6z"/></svg>',
+  mic:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="10" rx="3"/><path d="M6.5 12a5.5 5.5 0 0 0 11 0"/><path d="M12 17.5V21"/></svg>',
+  hangup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 8.5h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 18.4V21a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 10.6 2 2 0 0 1 6.5 8.5z"/><path d="M15 3l6 6M21 3l-6 6"/></svg>'
+};
+
 const ICONS = {
   micOff: '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M30 15v-1a6 6 0 0 0-11.4-2.6"/><path d="M18 20v6a6 6 0 0 0 10.3 4.2"/><path d="M13 24a11 11 0 0 0 16.6 9.5M35 24v2a11 11 0 0 1-.4 3"/><path d="M24 35v5"/><path d="M9 9l30 30"/></svg>',
   mic:    '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="18" y="8" width="12" height="20" rx="6"/><path d="M13 24a11 11 0 0 0 22 0"/><path d="M24 35v5"/></svg>',
@@ -1749,24 +1766,37 @@ function paint(){
   secondary.classList.add('hidden');
   pause.classList.add('hidden');
 
+  /* Sett symbol og tekst sammen: teksten alene ville vasket bort ikonet. */
+  const setBtn = (btn, ico, txt, label) => {
+    btn.querySelector('.bi').innerHTML = ico;
+    btn.querySelector('span:last-child').textContent = txt;
+    btn.setAttribute('aria-label', label || txt);
+  };
+
   if (state === 'off' || state === 'error'){
-    power.textContent = 'Turn on microphone';
-    power.disabled = false;
-  } else if (state === 'paused'){
-    power.textContent = 'Resume listening';
+    setBtn(power, BTN.mic, 'Turn on microphone');
     power.disabled = false;
   } else if (state === 'starting'){
-    power.textContent = 'Waiting for permission…';
+    setBtn(power, '', 'Waiting for permission…');
     power.disabled = true;
   } else if (state === 'calling' || state === 'incall'){
-    power.textContent = 'Hang up';
+    setBtn(power, BTN.hangup, 'Hang up');
     power.classList.add('warm');
     power.disabled = false;
-  } else {
-    // Kort tekst her: to knapper deler tre hundre piksler.
-    power.textContent = 'Stop';
+  } else if (state === 'paused'){
+    // Pauset: Stop avslutter oekten, Play tar den opp igjen. Begge blir
+    // staaende, slik en spiller gjoer det, i stedet for aa bytte plass.
+    setBtn(power, BTN.stop, 'Stop');
     power.classList.add('quiet');
     power.disabled = false;
+    setBtn(pause, BTN.play, 'Play', 'Resume listening');
+    pause.classList.remove('hidden');
+  } else {
+    // Kort tekst her: to knapper deler tre hundre piksler.
+    setBtn(power, BTN.stop, 'Stop');
+    power.classList.add('quiet');
+    power.disabled = false;
+    setBtn(pause, BTN.pause, 'Pause');
     pause.classList.remove('hidden');
     if (state === 'detecting'){
       secondary.classList.remove('hidden');
@@ -1897,11 +1927,16 @@ wireSeg($('checkSeg'), checkEvery, v => {
 
 /* ---------------- wiring ---------------- */
 $('powerBtn').addEventListener('click', () => {
-  if (state === 'off' || state === 'error' || state === 'paused') startMic();
+  // 'paused' hoerer ikke hit lenger: knappen sier Stop naar den er pauset, og
+  // det er Play ved siden av som starter igjen. Sto her fra den gang denne
+  // knappen sa "Resume listening".
+  if (state === 'off' || state === 'error') startMic();
   else if (state === 'calling' || state === 'incall') endCall();
   else stopMic();
 });
-$('pauseBtn').addEventListener('click', pauseMic);
+$('pauseBtn').addEventListener('click', () => {
+  if (state === 'paused') startMic(); else pauseMic();
+});
 $('secondaryBtn').addEventListener('click', () => {
   if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
   else triggerCall('test');

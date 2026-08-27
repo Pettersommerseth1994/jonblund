@@ -175,6 +175,13 @@ discounted, and the short word must not lie about that.
   rather than quietly. The successful rebuild cannot be tested without a real
   microphone, so verify it by making a call and watching the level ring come
   back.
+- **The two buttons carry symbols, and Pause becomes Play.** While paused the
+  pair reads Stop and Play, both staying put like a player rather than swapping
+  places. `setBtn()` writes icon and label together — `textContent` alone would
+  wipe the glyph. When this changed, the power handler still sent `paused` to
+  `startMic()` from the days it said "Resume listening", so the button said Stop
+  and started. Found by exercising the handlers, not by looking at them: worth
+  re-running that check whenever a button's label changes state.
 - **Pause is not Stop.** `pauseMic()` takes the microphone down and leaves the
   sleep session running; `stopMic()` calls `napWake()` and ends it. `startMic()`
   only starts a new session when there is not one in progress, which is what
