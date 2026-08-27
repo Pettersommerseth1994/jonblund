@@ -92,6 +92,9 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
     of the app, so the clock informs and does not compete: 16px Fraunces, one
     line, tap to drop the adjust drawer. The drawer only opens while she is
     asleep, because there is nothing to move otherwise.
+  - The drawer is `position:absolute` under a positioned `.nap-top`, so it rolls
+    down *over* the orb instead of pushing the page. The shadow is load-bearing:
+    without it the panel reads as part of the flow rather than something on top.
   - The baby's name was in the bar and came out again: it truncated the line on
     a long name and told the reader nothing they did not know.
   - The slider is clamped so she cannot have fallen asleep in the future, and
@@ -148,6 +151,16 @@ The decisions that are settled, so nobody relitigates them:
   resizing to `favicon-16.png`, `favicon-32.png` and `apple-touch-icon.png`.
   Redo that crop step if the source is ever replaced; do not resize his file
   directly. No SVG: Fraunces' hairlines cannot be traced faithfully by hand.
+
+**Badges are sentence case, never caps.** The three pill badges are `.wall-tag`
+and `.price-free` on the site and `.pr-free` in the app. The uppercase
+letterspaced *eyebrows* and labels (`.sec-eyebrow`, `.opt-label`, `.status`,
+`.hiw-num`, `.field label`, `.pr-unit`, `.price-unit`, `.nm-t`, `.vc-org`) are a
+different device and stay as they are.
+
+**Pricing rows must fit one line at 375px.** Checked by measuring, not by eye.
+"Stops at" rather than "Capped at" — the service stops, the price is not
+discounted, and the short word must not lie about that.
 
 ## Gotchas that cost real time
 

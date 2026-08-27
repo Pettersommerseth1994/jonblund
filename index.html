@@ -159,8 +159,8 @@ section{position:relative}
   box-shadow:0 24px 56px rgba(109,139,171,.14);
 }
 .wall-tag{
-  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:20px;
+  display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.005em;
+  padding:5px 13px;border-radius:100px;margin-bottom:20px;
 }
 .wall-card .wall-tag{background:var(--warm-bg);color:var(--warm)}
 .wall-card.good .wall-tag{background:var(--accent-deep);color:#fff}
@@ -213,8 +213,8 @@ section{position:relative}
   box-shadow:0 30px 70px rgba(109,139,171,.13);text-align:center;
 }
 .price-free{
-  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--accent-deep);background:var(--cloud-1);
+  display:inline-block;font-size:13px;font-weight:600;letter-spacing:.005em;
+  color:var(--accent-deep);background:var(--cloud-1);
   border-radius:100px;padding:7px 17px;margin-bottom:26px;
 }
 .price-big{font-family:var(--display);font-weight:300;font-size:64px;letter-spacing:-.035em;line-height:1}
@@ -262,7 +262,11 @@ section{position:relative}
   font-family:var(--display);font-size:23px;font-weight:400;
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
-.year-line.total{border-bottom:none;padding-bottom:4px}
+/* Strek over summen, slik et regnestykke gjoeres opp. */
+.year-line.total{
+  border-bottom:none;border-top:1.5px solid var(--ink);
+  margin-top:2px;padding-top:17px;padding-bottom:4px;
+}
 .year-line.total .yl{font-weight:600}
 .year-line.total b{font-size:31px;color:var(--accent-deep)}
 .year-fine{font-size:13px;color:var(--slate-light);margin-top:12px}
@@ -694,11 +698,11 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
       <div class="price-unit">a month, for the first month</div>
 
       <div class="price-rows">
-        <div class="price-row"><span>After the first month</span><b>$2.99 a month</b></div>
-        <div class="price-row"><span>Every call, from the first one</span><b>$0.20</b></div>
-        <div class="price-row"><span>First two minutes of each call</span><b>included</b></div>
+        <div class="price-row"><span>Each month</span><b>$2.99</b></div>
+        <div class="price-row"><span>Every call</span><b>$0.20</b></div>
+        <div class="price-row"><span>First two minutes</span><b>Included</b></div>
         <div class="price-row"><span>After that</span><b>$0.39 / min</b></div>
-        <div class="price-row price-cap"><span>Spending stops at</span><b>$35 a month</b></div>
+        <div class="price-row price-cap"><span>Stops at</span><b>$35 a month</b></div>
       </div>
 
       <a class="btn btn-primary" href="https://www.jonblund.site/babycall.html">Start the free month</a>
@@ -706,9 +710,9 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
     </div>
 
     <div class="year reveal">
-      <span class="year-tag">An upper estimate</span>
+      <span class="year-tag">A price example</span>
       <h3 class="year-title">A whole year of a <em>brand new baby.</em></h3>
-      <p class="year-intro">Counted pessimistically on purpose: two cries a night, every single night, for a year, with no quiet weeks and no growing out of it. Hardly anyone will actually pay this much.</p>
+      <p class="year-intro">Two calls on the days it happens, every other day, right through the year. The quiet days cost nothing at all.</p>
 
       <div class="year-sum">
         <div class="year-line">
@@ -716,16 +720,16 @@ footer{border-top:1px solid var(--line);padding:56px 28px 42px;background:var(--
           <b id="yFee">$35.88</b>
         </div>
         <div class="year-line">
-          <div><span class="yl">The calls</span><span class="ym" id="yCallSum">365 days &times; 2 cries &times; $0.20</span></div>
-          <b id="yCalls">$146.00</b>
+          <div><span class="yl">The calls</span><span class="ym" id="yCallSum">182 days &times; 2 calls &times; $0.20</span></div>
+          <b id="yCalls">$72.80</b>
         </div>
         <div class="year-line total">
-          <div><span class="yl">A year of Jon Blund</span><span class="ym" id="yMonthly">$15.16 a month</span></div>
-          <b id="yTotal">$181.88</b>
+          <div><span class="yl">Total for the year</span><span class="ym" id="yMonthly">$9.06 a month</span></div>
+          <b id="yTotal">$108.68</b>
         </div>
       </div>
 
-      <p class="year-fine">Most families land well below it. One cry a night instead of two comes to <b id="yCalm">$108.88</b> for the year, and every night your baby sleeps through costs you nothing at all.</p>
+      <p class="year-fine">A busier year, two calls every single day, comes to <b id="yBusy">$181.88</b>. Nothing is charged on a day Jon Blund stays quiet.</p>
     </div>
   </div>
 </section>
@@ -818,31 +822,33 @@ document.querySelectorAll('.reveal').forEach((el, i) => {
 });
 
 /* ---- What a year costs -----------------------------------------------------
-   Modelled, not measured: the monthly fee plus two cries a night for a whole
-   year, which is the top of what a newborn asks for. The same figures sit in
-   the markup, so the block still reads with JavaScript switched off.
+   Modelled, not measured: the monthly fee plus two calls on the days it
+   happens, every other day. `callDays` is deliberately floor(365/2) rather
+   than 182.5, so the arithmetic printed on screen adds up to the total exactly
+   — a sum that does not add up is worse than a rounded one.
 
    Later, with enough customers to average over, replace monthlyBill() with the
    real average monthly bill and every figure here follows from it.
    -------------------------------------------------------------------------- */
-const YEAR = { monthlyBase: 2.99, perCall: 0.20, criesPerDay: 2, days: 365, months: 12 };
+const YEAR = { monthlyBase: 2.99, perCall: 0.20, callsPerDay: 2, days: 365, months: 12 };
 const usd  = n => '$' + n.toFixed(2);
 
+const callDays    = Math.floor(YEAR.days / 2);          // every other day
 const feeTotal    = YEAR.monthlyBase * YEAR.months;
-const callCount   = YEAR.days * YEAR.criesPerDay;
+const callCount   = callDays * YEAR.callsPerDay;
 const callTotal   = callCount * YEAR.perCall;
 const yearTotal   = feeTotal + callTotal;
-const calmTotal   = feeTotal + YEAR.days * YEAR.perCall;   // one cry a night, not two
+const busyTotal   = feeTotal + YEAR.days * YEAR.callsPerDay * YEAR.perCall;  // every day
 const monthlyBill = () => yearTotal / YEAR.months;
 
 const put = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 put('yFeeSum',  usd(YEAR.monthlyBase) + ' \u00d7 ' + YEAR.months + ' months');
 put('yFee',     usd(feeTotal));
-put('yCallSum', YEAR.days + ' days \u00d7 ' + YEAR.criesPerDay + ' cries \u00d7 ' + usd(YEAR.perCall));
+put('yCallSum', callDays + ' days \u00d7 ' + YEAR.callsPerDay + ' calls \u00d7 ' + usd(YEAR.perCall));
 put('yCalls',   usd(callTotal));
 put('yMonthly', usd(monthlyBill()) + ' a month');
 put('yTotal',   usd(yearTotal));
-put('yCalm',    usd(calmTotal));
+put('yBusy',    usd(busyTotal));
 </script>
 </body>
 </html>

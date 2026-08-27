@@ -242,16 +242,20 @@ body.managing .contact .mark{display:none}
 /* ---------- NAP CLOCK ---------- */
 /* En smal stripe under ordmerket. Kula er appens midtpunkt, saa klokka skal
    opplyse og ikke konkurrere. */
+/* Skuffen legger seg OVER det som staar under, den skyver ingenting ned.
+   Derfor en posisjonert forelder her, og en skygge paa skuffen saa den
+   leser som noe som ruller ned foran og ikke som en del av flyten. */
+.nap-top{position:relative;z-index:20;margin-top:18px}
 .nap-bar{
   width:100%;display:flex;align-items:center;gap:11px;
   background:var(--white);border:1px solid var(--line);border-radius:100px;
-  padding:11px 18px;margin-top:18px;font-family:var(--body);
-  cursor:pointer;text-align:left;
+  padding:11px 18px;font-family:var(--body);
+  cursor:pointer;text-align:left;position:relative;z-index:2;
   box-shadow:0 6px 18px rgba(109,139,171,.06);
   opacity:0;animation:rise .8s .3s forwards;transform:translateY(16px);
 }
 .nap-bar:disabled{cursor:default}
-.nap-bar svg{width:17px;height:17px;color:var(--accent-deep);flex:none}
+.nap-moon{width:17px;height:17px;color:var(--accent-deep);flex:none}
 .nap-big{
   font-family:var(--display);font-size:16px;font-weight:400;
   letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:var(--ink);
@@ -260,13 +264,15 @@ body.managing .contact .mark{display:none}
   flex:1;font-size:12.5px;color:var(--slate);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.nap-chev{font-size:11px;color:var(--slate-light);transition:transform .25s;flex:none}
+.nap-chev{width:19px;height:19px;color:var(--slate);flex:none;transition:transform .28s}
 .nap-bar:disabled .nap-chev{opacity:0}
 .nap-bar.open .nap-chev{transform:rotate(180deg)}
 
 .nap-drawer{
+  position:absolute;top:100%;left:16px;right:16px;margin-top:-22px;z-index:1;
   background:var(--white);border:1px solid var(--line);border-top:none;
-  border-radius:0 0 22px 22px;margin:-16px 16px 0;padding:22px 18px 14px;
+  border-radius:0 0 22px 22px;padding:34px 18px 15px;
+  box-shadow:0 22px 46px rgba(109,139,171,.18);
 }
 .nap-adj-l{display:block;font-size:13px;color:var(--slate);margin-bottom:9px}
 .nap-adj-l b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
@@ -379,9 +385,9 @@ body.dim .nightmark{opacity:1}
 #pricing .hiw-view{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .pr-body{padding:22px 26px 14px;text-align:center}
 .pr-free{
-  display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--accent-deep);
-  background:var(--cloud-1);border-radius:100px;padding:6px 15px;margin-bottom:16px;
+  display:inline-block;font-size:13px;font-weight:600;letter-spacing:.005em;
+  color:var(--accent-deep);
+  background:var(--cloud-1);border-radius:100px;padding:6px 16px;margin-bottom:16px;
 }
 .pr-amount{
   font-family:var(--display);font-weight:300;font-size:50px;
@@ -594,17 +600,19 @@ body.dim .nightmark{opacity:1}
     <p class="slogan">A baby call that actually calls you</p>
   </header>
 
-  <button class="nap-bar" id="napBar" aria-expanded="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5z"/></svg>
-    <span class="nap-big" id="napBig">&ndash;</span>
-    <span class="nap-short" id="napShort"></span>
-    <span class="nap-chev" aria-hidden="true">&#9662;</span>
-  </button>
-  <div class="nap-drawer hidden" id="napDrawer">
-    <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
-    <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
-           aria-label="Adjust when she fell asleep">
-    <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
+  <div class="nap-top">
+    <button class="nap-bar" id="napBar" aria-expanded="false">
+      <svg class="nap-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5z"/></svg>
+      <span class="nap-big" id="napBig">&ndash;</span>
+      <span class="nap-short" id="napShort"></span>
+      <svg class="nap-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+    </button>
+    <div class="nap-drawer hidden" id="napDrawer">
+      <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
+      <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
+             aria-label="Adjust when she fell asleep">
+      <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
+    </div>
   </div>
 
   <main class="stage">
