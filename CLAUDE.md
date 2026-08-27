@@ -16,7 +16,7 @@ conversation, English in the product. Never push without being asked — he says
 
 | Where | What |
 |---|---|
-| `jonblund` (this repo) | `index.html` marketing site · `babycall.html` the app. GitHub Pages → **www.jonblund.site** |
+| `jonblund` (this repo) | `index.html` marketing site · `babycall/index.html` the app, served at **/babycall/** with no `.html`. The old `babycall.html` stays as a redirect: it may be a bookmark or a home-screen icon, and a dead icon on a baby monitor is not acceptable. GitHub Pages → **www.jonblund.site** |
 | `jonblund-voice` (separate private repo) | Vercel serverless: `/api/token`, `/api/voice`, `/api/vcard`, `/api/incoming` |
 | Twilio | number **+1 240 232 6663** (US, voice only), TwiML app `AP8b24…`, geo permissions Norway only, auto-recharge OFF |
 
@@ -44,7 +44,7 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
 - **Pricing**: $2.99/month + $0.20/call, first 2 minutes of a call included
   then $0.39/min, first month free, spending *stops* at $35 — the service
   pauses, it is not a discounted cap. Lives in one `PRICE` constant in
-  `babycall.html`, and separately in the marketing copy.
+  `babycall/index.html`, and separately in the marketing copy.
 - **Check-in calls** ring on a timer even when the room is quiet, so a parent
   gets proof the line still works. Off by default, then 15/30/45/60 minutes,
   in `checkEvery` (persisted) with `maybeCheckIn()` as the decision. A saved
@@ -175,9 +175,17 @@ discounted, and the short word must not lie about that.
   rather than quietly. The successful rebuild cannot be tested without a real
   microphone, so verify it by making a call and watching the level ring come
   back.
-- **The two buttons carry symbols, and Pause becomes Play.** While paused the
-  pair reads Stop and Play, both staying put like a player rather than swapping
-  places. `setBtn()` writes icon and label together — `textContent` alone would
+- **`paint()` runs every animation frame, so nothing in it may write the DOM
+  unconditionally.** Writing `innerHTML` on the button icon each pass rebuilt
+  the SVG about sixty times a second and it visibly flickered — measured with a
+  MutationObserver at 51 rebuilds per 50 paints, now 1. `setBtn()` compares
+  before it writes. Any new per-frame DOM work needs the same guard.
+- **Resuming from pause skips the `starting` state** (`startMic(true)`).
+  Permission is already granted, so `starting` only flashed "Waiting for
+  permission" and collapsed the button row from two to one and back.
+- **The two buttons carry symbols, and Pause becomes Continue.** While paused the
+  pair reads Stop and Continue, both staying put like a player rather than
+  swapping places. `setBtn()` writes icon and label together — `textContent` alone would
   wipe the glyph. When this changed, the power handler still sent `paused` to
   `startMic()` from the days it said "Resume listening", so the button said Stop
   and started. Found by exercising the handlers, not by looking at them: worth
@@ -229,7 +237,7 @@ discounted, and the short word must not lie about that.
 Full review, with a verified attack path, in `jonblund-voice/SECURITY-REVIEW.local.md`
 (gitignored, and must stay so). Fixed 2026-08-26:
 
-- **`esc()` in `babycall.html` is mandatory for any name going into `innerHTML`.**
+- **`esc()` in `babycall/index.html` is mandatory for any name going into `innerHTML`.**
   Names come from the user *and* from the phone's address book via Contact Picker,
   so a poisoned vCard could reach them. Three sites were unescaped; script did
   execute, verified with a live payload before and after. Prefer `textContent`.

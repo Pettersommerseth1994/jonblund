@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#eef2f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>jonblund, a baby call that actually calls you</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Only what <meta> honours. frame-ancestors and sandbox are header-only and
+     GitHub Pages cannot set headers, so framing is not covered here. A real
+     script-src needs the inline <script> broken out into a file first. -->
+<meta http-equiv="Content-Security-Policy" content="base-uri 'none'; object-src 'none'">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#ffffff;
+  --paper:#fafbfc;
+  --cloud-1:#eef2f8;
+  --cloud-2:#e4eaf3;
+  --cloud-3:#dde7f0;
+  --ink:#1a1d24;
+  --slate:#6b7280;
+  --slate-light:#9aa1ac;
+  --accent:#8ba9c9;
+  --accent-deep:#6d8bab;
+  --line:#e8ecf1;
+  --warm:#b06a6a;
+  --display:'Fraunces',Georgia,serif;
+  --body:'Manrope',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  background:
+    radial-gradient(150% 110% at 50% 0%, var(--cloud-3) 0%, var(--cloud-2) 22%, var(--cloud-1) 42%, var(--paper) 66%, var(--white) 100%)
+    no-repeat fixed;
+  min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 22px calc(40px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+}
+.shell{width:100%;max-width:440px;display:flex;flex-direction:column;flex:1}
+
+/* ---------- HEAD ---------- */
+.app-head{text-align:center;padding:calc(38px + env(safe-area-inset-top)) 0 4px;opacity:0;animation:rise .8s .05s forwards;transform:translateY(18px)}
+.logo{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:-.02em;line-height:1}
+.logo span{color:var(--accent-deep)}
+.slogan{
+  font-size:13px;color:var(--slate);margin-top:11px;
+  letter-spacing:.005em;
+}
+
+/* ---------- ORB ---------- */
+.stage{display:flex;flex-direction:column;align-items:center;padding:26px 0 6px;opacity:0;animation:fade 1.1s .25s forwards}
+.orb-wrap{position:relative;width:268px;height:268px;display:grid;place-items:center}
+.pring{
+  position:absolute;border-radius:50%;border:1.5px solid var(--accent);
+  opacity:0;pointer-events:none;
+}
+body.live .pring{animation:pulse 3.4s ease-in-out infinite}
+.pring.p1{inset:24px}
+.pring.p2{inset:24px;animation-delay:1.15s}
+.pring.p3{inset:24px;animation-delay:2.3s}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.34}
+  60%{opacity:.05}
+  100%{transform:scale(1.34);opacity:0}
+}
+.meter{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.meter-track{fill:none;stroke:var(--line);stroke-width:2}
+.meter-fill{
+  fill:none;stroke:var(--accent);stroke-width:3.4;stroke-linecap:round;
+  stroke-dasharray:653.45;stroke-dashoffset:653.45;
+  transition:stroke-dashoffset .1s linear,stroke .45s;
+}
+body.detecting .meter-fill{stroke:var(--accent-deep)}
+body.alerting .meter-fill{stroke:var(--warm)}
+.orb{
+  position:relative;width:190px;height:190px;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#ffffff,var(--cloud-2) 72%,var(--cloud-3));
+  border:1px solid var(--line);
+  box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 48px rgba(109,139,171,.20);
+  display:grid;place-items:center;
+  transition:transform .14s cubic-bezier(.16,1,.3,1),box-shadow .6s;
+  cursor:pointer;
+}
+body.detecting .orb{box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 54px rgba(109,139,171,.4)}
+body.alerting .orb{box-shadow:inset 0 2px 12px rgba(255,255,255,.95),0 20px 54px rgba(176,106,106,.34)}
+.orb-face{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.readout{font-family:var(--display);font-weight:300;font-size:46px;letter-spacing:-.03em;color:var(--ink);line-height:1}
+.readout.sm{font-size:30px}
+.readout em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.orb-icon{width:52px;height:52px;color:var(--accent-deep)}
+.zzz{position:absolute;inset:0;pointer-events:none}
+.zz{font-family:var(--display);font-style:italic;fill:var(--accent);opacity:0}
+body.listening .zz{animation:zrise 4.2s ease-in-out infinite}
+.z1{font-size:23px}
+.z2{font-size:16px;animation-delay:1.4s}
+.z3{font-size:13px;animation-delay:2.8s}
+@keyframes zrise{0%{opacity:0;transform:translateY(0)}14%{opacity:.8}60%,100%{opacity:0;transform:translateY(-48px)}}
+
+/* ---------- STATUS ---------- */
+.status{
+  font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-deep);margin-top:26px;text-align:center;
+  transition:color .4s;
+}
+body.alerting .status{color:var(--warm)}
+.substatus{font-size:14px;color:var(--slate);margin-top:7px;text-align:center;min-height:22px;padding:0 10px}
+.status{cursor:pointer}
+.diag{
+  display:none;margin-top:14px;text-align:center;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px;line-height:1.8;color:var(--slate-light);letter-spacing:.01em;
+}
+body.diagnostics .diag{display:block}
+
+/* ---------- BUTTONS ---------- */
+.actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:24px;width:100%}
+/* Naar pause er skjult tar knappen hele bredden som foer. Er den framme,
+   deler de paa den. */
+.act-row{display:flex;gap:10px;justify-content:center;width:100%;max-width:300px}
+.act-row .btn-primary{flex:1;max-width:none;padding:16px 18px}
+.btn-primary{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--ink);color:var(--white);border:none;
+  padding:16px 34px;border-radius:100px;font-family:var(--body);
+  font-size:15.5px;font-weight:600;cursor:pointer;
+  transition:transform .25s,box-shadow .25s,background .3s;
+  box-shadow:0 8px 24px rgba(26,29,36,.14);
+  width:100%;max-width:300px;
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:hover{box-shadow:0 14px 34px rgba(26,29,36,.2)}
+.btn-primary.warm{background:var(--warm);box-shadow:0 8px 24px rgba(176,106,106,.26)}
+.btn-primary.quiet{background:var(--white);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.bi{display:flex;flex:none}
+.bi:empty{display:none}
+.bi svg{width:17px;height:17px;display:block}
+.btn-ghost{
+  background:none;border:none;color:var(--slate);font-family:var(--body);
+  font-size:14px;font-weight:600;cursor:pointer;padding:6px 4px;
+  transition:color .25s;
+}
+.btn-ghost:hover{color:var(--ink)}
+
+/* ---------- PANEL ---------- */
+.panel{
+  background:var(--white);border:1px solid var(--line);border-radius:24px;
+  padding:22px 20px;margin-top:34px;
+  box-shadow:0 18px 44px rgba(109,139,171,.07);
+  opacity:0;animation:rise .8s .45s forwards;transform:translateY(20px);
+}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.opt-label{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.link{background:none;border:none;font-family:var(--body);font-size:13px;font-weight:600;color:var(--accent-deep);cursor:pointer;padding:2px}
+.link:hover{color:var(--ink)}
+
+.contact-list{display:flex;flex-direction:column;gap:9px}
+.contact{
+  display:flex;align-items:center;gap:14px;
+  border:1px solid var(--line);border-radius:16px;padding:13px 15px;
+  cursor:pointer;background:var(--white);
+  transition:border-color .28s,background .28s,transform .28s;
+  text-align:left;font-family:var(--body);width:100%;
+}
+.contact:active{transform:scale(.99)}
+.contact.sel{border-color:var(--accent);background:linear-gradient(100deg,var(--white),var(--cloud-1))}
+.contact .avatar{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--cloud-2) 78%,var(--cloud-3));
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  font-family:var(--display);font-size:16px;font-weight:400;color:var(--accent-deep);
+  transition:border-color .28s;
+}
+.contact.sel .avatar{border-color:var(--accent)}
+.contact .who{flex:1;min-width:0}
+.contact .who .n{font-size:15px;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact .who .t{font-size:13px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact .mark{
+  width:21px;height:21px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--line);display:grid;place-items:center;
+  transition:border-color .28s,background .28s;
+}
+.contact.sel .mark{border-color:var(--accent-deep);background:var(--accent-deep)}
+.contact.sel .mark::after{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
+.contact .del{
+  border:none;background:none;color:var(--slate-light);cursor:pointer;
+  font-size:19px;line-height:1;padding:4px 2px 6px;display:none;
+}
+body.managing .contact .del{display:block}
+body.managing .contact .mark{display:none}
+
+.empty{
+  text-align:center;padding:20px 10px 22px;border:1px dashed var(--line);border-radius:16px;
+}
+.empty p{font-size:14px;color:var(--slate);max-width:250px;margin:0 auto}
+
+.contact-actions{display:flex;margin-top:14px}
+.btn-soft{
+  flex:1;border:1px solid var(--line);background:var(--white);border-radius:100px;
+  padding:12px 10px;font-family:var(--body);font-size:13.5px;font-weight:600;color:var(--ink);
+  cursor:pointer;transition:border-color .25s,background .25s,transform .2s;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-soft:hover{border-color:var(--accent)}
+.btn-soft:active{transform:scale(.98)}
+.btn-soft svg{width:16px;height:16px;color:var(--accent-deep);flex-shrink:0}
+
+/* ---------- SETTINGS ROW ---------- */
+.tune{margin-top:16px;opacity:0;animation:rise .8s .6s forwards;transform:translateY(20px)}
+.tune-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 4px}
+.tune-row + .tune-row{border-top:1px solid var(--line)}
+.tune-row .tl{font-size:14px;color:var(--slate)}
+.seg{display:flex;border:1px solid var(--line);border-radius:100px;padding:3px;background:var(--white)}
+.seg button{
+  border:none;background:none;cursor:pointer;font-family:var(--body);
+  font-size:12.5px;font-weight:600;color:var(--slate);
+  padding:7px 14px;border-radius:100px;transition:background .25s,color .25s;
+}
+.seg button.sel{background:var(--ink);color:var(--white)}
+.seg-wide{width:100%}
+.seg-wide button{flex:1;padding:9px 4px;font-size:13px}
+
+.check-why{font-size:13.5px;color:var(--slate);margin:0 0 15px}
+.check-unit{display:block;font-size:12.5px;color:var(--slate);margin-bottom:9px}
+.role-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin:0 0 10px;
+}
+.role-row .rl{font-size:13.5px;color:var(--slate)}
+.role-row .seg button{padding:7px 13px}
+
+/* ---------- NAP CLOCK ---------- */
+/* En smal stripe under ordmerket. Kula er appens midtpunkt, saa klokka skal
+   opplyse og ikke konkurrere. */
+/* Skuffen legger seg OVER det som staar under, den skyver ingenting ned.
+   Derfor en posisjonert forelder her, og en skygge paa skuffen saa den
+   leser som noe som ruller ned foran og ikke som en del av flyten. */
+.nap-top{position:relative;z-index:20;margin-top:18px}
+.nap-bar{
+  width:100%;display:flex;align-items:center;gap:11px;
+  background:var(--white);border:1px solid var(--line);border-radius:100px;
+  padding:11px 18px;font-family:var(--body);
+  cursor:pointer;text-align:left;position:relative;z-index:2;
+  box-shadow:0 6px 18px rgba(109,139,171,.06);
+  opacity:0;animation:rise .8s .3s forwards;transform:translateY(16px);
+}
+.nap-bar:disabled{cursor:default}
+.nap-moon{width:17px;height:17px;color:var(--accent-deep);flex:none}
+.nap-big{
+  font-family:var(--display);font-size:16px;font-weight:400;
+  letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.nap-short{
+  flex:1;font-size:12.5px;color:var(--slate);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.nap-chev{width:19px;height:19px;color:var(--slate);flex:none;transition:transform .28s}
+.nap-bar:disabled .nap-chev{opacity:0}
+.nap-bar.open .nap-chev{transform:rotate(180deg)}
+
+.nap-drawer{
+  position:absolute;top:100%;left:16px;right:16px;margin-top:-22px;z-index:1;
+  background:var(--white);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 22px 22px;padding:34px 18px 15px;
+  box-shadow:0 22px 46px rgba(109,139,171,.18);
+}
+.nap-adj-l{display:block;font-size:13px;color:var(--slate);margin-bottom:9px}
+.nap-adj-l b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.nap-adj-ends{
+  display:flex;justify-content:space-between;
+  font-size:11.5px;color:var(--slate-light);margin-top:5px;
+}
+#napSlider{
+  -webkit-appearance:none;appearance:none;width:100%;height:26px;
+  background:none;cursor:pointer;display:block;
+}
+#napSlider::-webkit-slider-runnable-track{
+  height:5px;border-radius:100px;background:var(--cloud-2);
+}
+#napSlider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:26px;height:26px;margin-top:-10.5px;
+  border-radius:50%;background:#fff;border:1px solid var(--line);
+  box-shadow:0 2px 8px rgba(26,29,36,.18);
+}
+#napSlider::-moz-range-track{height:5px;border-radius:100px;background:var(--cloud-2)}
+#napSlider::-moz-range-thumb{
+  width:24px;height:24px;border-radius:50%;background:#fff;
+  border:1px solid var(--line);box-shadow:0 2px 8px rgba(26,29,36,.18);
+}
+
+.check-next{
+  font-size:12.5px;font-weight:600;color:var(--accent-deep);
+  font-variant-numeric:tabular-nums;
+}
+
+
+/* ---------- NOTES ---------- */
+.note{
+  display:flex;flex-direction:column;gap:11px;align-items:flex-start;
+  border-radius:16px;padding:16px;margin-top:16px;
+  font-size:13.5px;line-height:1.5;
+}
+.note .ic{
+  width:21px;height:21px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:12px;font-weight:700;
+}
+.note-info{background:var(--cloud-1);color:var(--slate)}
+.note-info .ic{background:var(--white);color:var(--accent-deep)}
+.note b{color:var(--ink);font-weight:600}
+.hidden{display:none!important}
+
+footer{
+  text-align:center;margin-top:auto;padding:34px 0 44px;
+  font-size:12px;color:var(--slate-light);
+}
+footer a{color:var(--slate-light)}
+
+/* ---------- SHEET ---------- */
+.scrim{
+  position:fixed;inset:0;background:rgba(26,29,36,.34);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .35s;z-index:80;
+}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:81;
+  background:var(--white);border-radius:28px 28px 0 0;
+  padding:26px 24px calc(30px + env(safe-area-inset-bottom));
+  transform:translateY(102%);transition:transform .42s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 -20px 60px rgba(26,29,36,.16);
+  max-width:440px;margin:0 auto;
+}
+.sheet.open{transform:none}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 20px}
+.sheet h3{font-family:var(--display);font-weight:400;font-size:25px;letter-spacing:-.02em;margin-bottom:6px}
+.sheet h3 em{font-style:italic;color:var(--accent-deep)}
+.sheet .sub{font-size:14px;color:var(--slate);margin-bottom:22px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+.field input{
+  width:100%;border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;font-family:var(--body);font-size:16px;color:var(--ink);
+  background:var(--paper);transition:border-color .25s,background .25s;
+}
+.field input:focus{outline:none;border-color:var(--accent);background:var(--white)}
+.field input[type="date"]{
+  -webkit-appearance:none;appearance:none;
+  min-width:0;max-width:100%;text-align:left;
+}
+.field .hint{font-size:12.5px;color:var(--slate-light);margin-top:7px}
+.sheet .btn-primary{max-width:none;margin-top:8px}
+.sheet-err{font-size:13px;color:var(--warm);margin-top:10px;min-height:18px}
+
+/* ---------- NIGHT DIM ---------- */
+.veil{
+  position:fixed;inset:0;background:#05070b;z-index:60;
+  opacity:0;pointer-events:none;transition:opacity 1.8s ease;
+}
+body.dim .veil{opacity:.975;pointer-events:auto}
+.nightmark{
+  position:fixed;inset:0;z-index:61;display:grid;place-items:center;
+  opacity:0;pointer-events:none;transition:opacity 1.8s ease;text-align:center;
+}
+body.dim .nightmark{opacity:1}
+.nightmark .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--accent);
+  margin:0 auto 16px;animation:breathe 3.6s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:.22;transform:scale(.8)}50%{opacity:.75;transform:scale(1.25)}}
+.nightmark .nm-t{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#39424f}
+.nightmark .nm-s{font-size:11px;color:#252c36;margin-top:8px}
+
+
+/* ---------- PRICING ---------- */
+/* the carousel clips on purpose; the pricing body has to be able to scroll */
+#pricing .hiw-view{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.pr-body{padding:22px 26px 14px;text-align:center}
+.pr-free{
+  display:inline-block;font-size:13px;font-weight:600;letter-spacing:.005em;
+  color:var(--accent-deep);
+  background:var(--cloud-1);border-radius:100px;padding:6px 16px;margin-bottom:16px;
+}
+.pr-amount{
+  font-family:var(--display);font-weight:300;font-size:50px;
+  letter-spacing:-.035em;line-height:1;
+}
+.pr-amount span{font-size:26px;letter-spacing:-.02em;vertical-align:.3em;margin-right:3px}
+.pr-unit{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);margin-top:9px}
+.pr-fine{font-size:14px;color:var(--slate);max-width:290px;margin:16px auto 0}
+.pr-fine b{color:var(--ink);font-weight:600}
+.pr-table{
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  margin:20px 0 0;text-align:left;
+}
+.pr-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-top:1px solid var(--line);font-size:14px}
+.pr-row:first-child{border-top:none}
+.pr-row.cap{background:var(--cloud-1)}
+.pr-row .rl{color:var(--ink);flex:1}
+.pr-row .rc{color:var(--slate);font-variant-numeric:tabular-nums}
+.pr-row .rv{
+  font-family:var(--display);font-size:17px;color:var(--ink);
+  min-width:62px;text-align:right;font-variant-numeric:tabular-nums;
+}
+.pr-row.cap .rv{color:var(--accent-deep)}
+.pr-year{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:18px;padding:14px 16px;border-radius:14px;
+  background:var(--cloud-1);font-size:14px;text-align:left;
+}
+.pr-year .yl{display:block;color:var(--ink)}
+.pr-year .ym{
+  display:block;font-size:12px;color:var(--slate-light);
+  font-variant-numeric:tabular-nums;margin-top:2px;
+}
+.pr-year b{
+  font-family:var(--display);font-size:19px;font-weight:400;color:var(--accent-deep);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.pr-note{font-size:13px;color:var(--slate-light);margin-top:13px}
+
+/* ---------- HOW IT WORKS ---------- */
+.foot-actions{
+  display:flex;gap:10px;justify-content:center;margin-top:26px;
+  opacity:0;animation:rise .8s .75s forwards;transform:translateY(16px);
+}
+.hiw-open{flex:0 0 auto;width:auto;padding:12px 26px}
+.hiw-scrim{
+  position:fixed;inset:0;background:rgba(26,29,36,.38);backdrop-filter:blur(5px);
+  opacity:0;pointer-events:none;transition:opacity .35s;z-index:90;
+}
+.hiw-scrim.open{opacity:1;pointer-events:auto}
+.hiw{
+  position:fixed;left:50%;top:50%;z-index:91;
+  width:calc(100% - 34px);max-width:398px;max-height:90dvh;
+  transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;
+  transition:opacity .4s cubic-bezier(.16,1,.3,1),transform .4s cubic-bezier(.16,1,.3,1);
+  background:var(--white);border-radius:30px;overflow:hidden;
+  box-shadow:0 40px 90px rgba(26,29,36,.24);
+  display:flex;flex-direction:column;
+}
+.hiw.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+/* En bestemt hoyde pa selve modalen. Alt under - view, spor, steg - regner
+   prosenter mot denne, og da slutter teksten a bli klemt bort. Prisskjermen
+   deler .hiw-klassen, men skal fortsatt folge sitt eget innhold. */
+#hiw{height:min(94dvh,680px)}
+.hiw-head{
+  display:flex;align-items:center;justify-content:center;
+  padding:19px 54px 17px;border-bottom:1px solid var(--line);
+  background:var(--white);position:relative;z-index:2;flex:none;
+}
+.hiw-title{font-family:var(--display);font-weight:400;font-size:19.5px;letter-spacing:-.012em}
+.hiw-back{
+  position:absolute;top:14px;left:14px;z-index:3;
+  border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
+  width:30px;height:30px;border-radius:50%;
+  color:var(--slate);cursor:pointer;padding:0;
+  display:grid;place-items:center;transition:color .25s,background .25s,opacity .25s;
+}
+.hiw-back svg{width:16px;height:16px}
+.hiw-back:hover{color:var(--ink);background:var(--white)}
+.hiw-back[hidden]{display:none}
+.hiw-close{
+  position:absolute;top:14px;right:14px;z-index:3;
+  border:none;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
+  width:30px;height:30px;border-radius:50%;
+  font-size:19px;line-height:1;color:var(--slate);cursor:pointer;
+  display:grid;place-items:center;transition:color .25s,background .25s;
+}
+.hiw-close:hover{color:var(--ink);background:var(--white)}
+.hiw-view{overflow:hidden;flex:1 1 auto;min-height:0;position:relative}
+.hiw-track{display:flex;transition:transform .48s cubic-bezier(.16,1,.3,1);height:100%}
+.hiw-step{
+  min-width:100%;height:100%;min-height:0;
+  display:flex;flex-direction:column;
+}
+.hiw-art{
+  background:radial-gradient(130% 120% at 68% 16%,var(--cloud-2),var(--paper) 68%,var(--white));
+  border-bottom:1px solid var(--line);padding:18px 16px 12px;
+  /* Bestemt hoyde. Uten den forhandler bildet og teksten om plassen, og
+     bildet vinner - som er hvorfor teksten forsvant pa lave skjermer. */
+  flex:0 0 auto;
+  height:24dvh;min-height:104px;max-height:166px;
+}
+.hiw-art svg{width:100%;height:100%;display:block}
+.hiw-copy{
+  padding:24px 26px 10px;text-align:center;
+  flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.hiw-num{font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:11px}
+
+/* skjemastegene: overskrift og forklaring midtstilt, felt og lenke venstre */
+.hiw-copy.wide p{margin:0 auto 20px}
+.hiw-copy.wide .field{text-align:left}
+.hiw-copy.wide .field label{text-align:left}
+.ob-link{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  color:var(--accent-deep);background:var(--cloud-1);
+  border:1px solid var(--line);border-radius:12px;
+  padding:11px 13px;margin:4px 0 12px;word-break:break-all;
+  line-height:1.5;text-align:left;
+}
+.ob-row{display:flex;gap:9px}
+.vcard{
+  border:1px solid var(--line);border-radius:22px;padding:24px 18px 18px;
+  text-align:center;margin:2px 0 6px;
+  background:radial-gradient(120% 100% at 30% 0%,var(--cloud-2),var(--cloud-1) 55%,var(--white));
+  box-shadow:0 14px 34px rgba(109,139,171,.14);
+}
+.vc-avatar{
+  width:74px;height:74px;border-radius:50%;margin:0 auto 13px;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--cloud-2) 74%,var(--cloud-3));
+  border:1px solid var(--line);display:grid;place-items:center;
+  font-family:var(--display);font-size:29px;font-weight:400;color:var(--accent-deep);
+}
+.vc-org{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-light)}
+.vc-name{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-.02em;margin:3px 0 15px}
+.vc-acts{display:flex;justify-content:center;gap:11px;margin-bottom:16px}
+.vc-act{
+  width:41px;height:41px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.72);border:1px solid var(--line);color:var(--slate-light);
+}
+.vc-act.on{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
+.vc-act svg{width:17px;height:17px}
+.vc-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:14px;
+  padding:10px 14px;text-align:left;
+}
+.vc-row span{font-size:12px;color:var(--slate)}
+.vc-row b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.btn-primary:disabled{opacity:.35;pointer-events:none}
+.ob-share{margin-top:4px}
+.ob-price{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:4px 0 12px}
+.ob-price-row{display:flex;justify-content:space-between;gap:12px;padding:12px 15px;font-size:14px}
+.ob-price-row+.ob-price-row{border-top:1px solid var(--line)}
+.ob-price-row span{color:var(--slate)}
+.ob-price-row b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ob-price-row.free{background:var(--cloud-1)}
+.ob-price-row.free b{color:var(--accent-deep)}
+.ob-price-row s{color:var(--slate-light);font-weight:400;margin-right:6px;text-decoration-thickness:1.5px}
+.ob-fine{font-size:12.5px;color:var(--slate-light);margin:0}
+.hiw-copy h3{font-family:var(--display);font-weight:300;font-size:26px;line-height:1.14;letter-spacing:-.02em;margin-bottom:10px}
+.hiw-copy h3 em{font-style:italic;font-weight:400;color:var(--accent-deep)}
+.hiw-copy p{font-size:14.5px;color:var(--slate);max-width:none;margin:0 auto}
+.hiw-foot{padding:20px 26px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:13px}
+.hiw-dots{display:flex;gap:7px}
+.hiw-dot{width:7px;height:7px;border-radius:50%;background:var(--line);border:none;padding:0;cursor:pointer;transition:background .3s,width .3s}
+.hiw-dot.on{background:var(--accent-deep);width:21px;border-radius:4px}
+.hiw-foot .btn-primary{max-width:none;width:100%}
+
+/* step artwork */
+.hiw-art .tag{font-family:var(--display);font-size:13px;fill:var(--accent-deep);text-anchor:middle}
+.hiw-art .hz{font-family:var(--display);font-style:italic;fill:var(--accent);opacity:0}
+.hiw-art .wave,.hiw-art .ringpulse,.hiw-art .shake{transform-box:fill-box;transform-origin:center}
+.hiw-step.active .bob{animation:hiwBob 3.4s ease-in-out infinite}
+.hiw-step.active .zdrift{animation:zrise 4.2s ease-in-out infinite}
+.hiw-step.active .wave{animation:hiwWave 2.4s ease-out infinite}
+.hiw-step.active .pick{animation:hiwPick 3.2s ease-in-out infinite}
+.hiw-step.active .ringpulse{animation:hiwRing 3s ease-in-out infinite}
+.hiw-step.active .shake{animation:hiwShake 1.8s ease-in-out infinite}
+.hiw-step.active .dash{animation:hiwDash 1.6s linear infinite}
+.hiw-step.active .fillring{animation:hiwFill 2.8s ease-out infinite}
+@keyframes hiwBob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
+@keyframes hiwWave{0%{opacity:0;transform:scale(.55)}22%{opacity:.8}100%{opacity:0;transform:scale(1.3)}}
+@keyframes hiwPick{0%,16%{opacity:0}30%,86%{opacity:1}100%{opacity:0}}
+@keyframes hiwRing{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.14);opacity:.08}}
+@keyframes hiwShake{0%,62%,100%{transform:rotate(0)}8%{transform:rotate(-3.5deg)}18%{transform:rotate(3.5deg)}28%{transform:rotate(-2.4deg)}38%{transform:rotate(2deg)}50%{transform:rotate(-1deg)}}
+@keyframes hiwDash{to{stroke-dashoffset:-30}}
+@keyframes hiwFill{0%{stroke-dashoffset:138.2}72%,100%{stroke-dashoffset:0}}
+
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .app-head,.stage,.panel,.tune{opacity:1;transform:none}
+}
+@media(max-height:700px){
+  .app-head{padding-top:calc(22px + env(safe-area-inset-top))}
+  .orb-wrap{width:236px;height:236px}
+  .orb{width:166px;height:166px}
+  .stage{padding-top:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="app-head">
+    <div class="logo">jon<span>blund</span></div>
+    <p class="slogan">A baby call that actually calls you</p>
+  </header>
+
+  <div class="nap-top">
+    <button class="nap-bar" id="napBar" aria-expanded="false">
+      <svg class="nap-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5z"/></svg>
+      <span class="nap-big" id="napBig">&ndash;</span>
+      <span class="nap-short" id="napShort"></span>
+      <svg class="nap-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+    </button>
+    <div class="nap-drawer hidden" id="napDrawer">
+      <label class="nap-adj-l" for="napSlider">Fell asleep at <b id="napStartAt"></b></label>
+      <input id="napSlider" type="range" min="-90" max="90" step="5" value="0"
+             aria-label="Adjust when she fell asleep">
+      <div class="nap-adj-ends"><span>90 min earlier</span><span>90 min later</span></div>
+    </div>
+  </div>
+
+  <main class="stage">
+    <div class="orb-wrap">
+      <div class="pring p1"></div>
+      <div class="pring p2"></div>
+      <div class="pring p3"></div>
+      <svg class="meter" viewBox="0 0 240 240" aria-hidden="true">
+        <circle class="meter-track" cx="120" cy="120" r="104"/>
+        <circle class="meter-fill" id="meterFill" cx="120" cy="120" r="104"/>
+      </svg>
+      <div class="orb" id="orb" role="button" tabindex="0" aria-label="Listening status">
+        <div class="orb-face" id="orbFace"></div>
+        <svg class="zzz" viewBox="0 0 190 190" aria-hidden="true">
+          <text class="zz z1" x="112" y="76">z</text>
+          <text class="zz z2" x="130" y="84">z</text>
+          <text class="zz z3" x="102" y="88">z</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="status" id="status">Microphone off</div>
+    <div class="substatus" id="substatus">Tap below and Jon Blund starts listening.</div>
+    <div class="diag" id="diag"></div>
+
+    <div class="actions">
+      <div class="act-row">
+        <button class="btn-primary" id="powerBtn">
+          <span class="bi" id="powerIco"></span><span id="powerTxt">Turn on microphone</span>
+        </button>
+        <button class="btn-primary quiet" id="pauseBtn">
+          <span class="bi" id="pauseIco"></span><span id="pauseTxt">Pause</span>
+        </button>
+      </div>
+      <button class="btn-ghost hidden" id="secondaryBtn"></button>
+    </div>
+  </main>
+
+  <section class="panel">
+    <div class="panel-head">
+      <span class="opt-label">Calls</span>
+      <button class="link" id="manageBtn">Manage</button>
+    </div>
+
+    <div class="contact-list" id="contactList"></div>
+
+    <div class="empty hidden" id="emptyState">
+      <p>No one to call yet. Add a number and Jon Blund remembers it for next time.</p>
+    </div>
+
+    <div class="contact-actions">
+      <button class="btn-soft" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add number
+      </button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <span class="opt-label">Check-in calls</span>
+      <span class="check-next" id="checkNext"></span>
+    </div>
+    <p class="check-why">Jon Blund calls you on a timer even when the room is quiet. It is for parents who want to check in once in a while.</p>
+    <span class="check-unit">Minutes between calls</span>
+    <div class="seg seg-wide" id="checkSeg">
+      <button data-v="0">Off</button>
+      <button data-v="15">15</button>
+      <button data-v="30">30</button>
+      <button data-v="45">45</button>
+      <button data-v="60">60</button>
+    </div>
+  </section>
+
+
+
+  <div class="note note-info" id="screenNote">
+    <span class="ic">i</span>
+    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening, and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it. Just don't lock the device or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
+  </div>
+
+  <div class="note note-info" id="placeNote">
+    <span class="ic">!</span>
+    <span><b>Always test one call in a new place.</b> A hotel room, a cabin, the grandparents' spare room. Internet and coverage behave differently everywhere, so make Jon Blund ring you once before you trust it with a night.</span>
+  </div>
+
+  <div class="foot-actions">
+    <button class="btn-soft hiw-open" id="hiwOpen">How it works</button>
+    <button class="btn-soft hiw-open" id="prOpen">Pricing</button>
+  </div>
+
+  <footer>Jon Blund is not a medical or safety device.<br>Never use it as a substitute for supervision.</footer>
+</div>
+
+
+<div class="hiw-scrim" id="hiwScrim"></div>
+<div class="hiw" id="pricing" role="dialog" aria-modal="true" aria-label="Pricing">
+  <div class="hiw-head"><span class="hiw-title">Pricing</span></div>
+  <button class="hiw-close" id="prClose" aria-label="Close">&times;</button>
+
+  <div class="hiw-view">
+    <div class="pr-body">
+      <span class="pr-free" id="prFree"></span>
+      <div class="pr-amount" id="prAmount"></div>
+      <div class="pr-unit" id="prUnit">a month</div>
+      <p class="pr-fine" id="prFine"></p>
+      <div class="pr-year" id="prYear"></div>
+      <div class="pr-table" id="prTable"></div>
+      <p class="pr-note" id="prNote"></p>
+    </div>
+  </div>
+
+  <div class="hiw-foot">
+    <button class="btn-primary" id="prCard">Add a card</button>
+    <button class="btn-ghost" id="prLater">Not now</button>
+  </div>
+</div>
+<div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
+  <div class="hiw-head"><span class="hiw-title">Get started</span></div>
+  <button class="hiw-back" id="hiwBack" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <button class="hiw-close" id="hiwClose" aria-label="Close">&times;</button>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="hiwBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef2f8"/><stop offset="1" stop-color="#dde7f0"/>
+    </linearGradient>
+    <linearGradient id="hiwNest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf3"/>
+    </linearGradient>
+    <filter id="hiwSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#6d8bab" flood-opacity="0.15"/>
+    </filter>
+  </defs></svg>
+
+  <div class="hiw-view">
+    <div class="hiw-track" id="hiwTrack">
+
+      <!-- 1 · hva det er -->
+      <div class="hiw-step active">
+        <div class="hiw-art">
+          <svg viewBox="0 0 300 168" role="img" aria-label="One phone by the baby calls the other">
+            <text class="tag" x="40" y="44">A</text>
+            <g>
+              <rect x="16" y="54" width="48" height="84" rx="11" fill="#fff" stroke="#d5e0ec" stroke-width="1.3"/>
+              <rect x="22" y="61" width="36" height="70" rx="7" fill="url(#hiwBody)"/>
+              <circle cx="40" cy="96" r="10" fill="#fff" stroke="#e8ecf1"/>
+            </g>
+            <path class="dash" d="M70 84 C104 44 148 42 176 68" fill="none" stroke="#8ba9c9"
+                  stroke-width="2" stroke-linecap="round" stroke-dasharray="2 8"/>
+            <text class="tag" x="214" y="24">B</text>
+            <g class="shake" filter="url(#hiwSoft)">
+              <rect x="182" y="32" width="64" height="116" rx="14" fill="#fff" stroke="#d5e0ec" stroke-width="1.4"/>
+              <rect x="189" y="41" width="50" height="98" rx="9" fill="url(#hiwBody)"/>
+              <rect x="196" y="58" width="36" height="6" rx="3" fill="#c6d3e2"/>
+              <rect x="202" y="70" width="24" height="5" rx="2.5" fill="#dde7f0"/>
+              <circle cx="214" cy="106" r="13" fill="#6d8bab"/>
+              <path d="M209 101h2.4l1.3 3.2-1.7 1.3a11 11 0 0 0 5.2 5.2l1.3-1.7 3.2 1.3v2.4a1.9 1.9 0 0 1-2 1.9 14.6 14.6 0 0 1-11.9-11.9 1.9 1.9 0 0 1 1.9-2z" fill="#fff"/>
+            </g>
+            <g fill="none" stroke="#8ba9c9" stroke-width="2.2" stroke-linecap="round">
+              <path class="wave" d="M256 76 a18 18 0 0 1 0 30"/>
+              <path class="wave" d="M268 68 a26 26 0 0 1 0 46" style="animation-delay:.4s"/>
+              <path class="wave" d="M280 60 a34 34 0 0 1 0 62" style="animation-delay:.8s"/>
+            </g>
+          </svg>
+        </div>
+        <div class="hiw-copy">
+          <div class="hiw-num">Step 1</div>
+          <h3>A baby call that <em>really calls.</em></h3>
+          <p><b>You need two devices.</b> This one listens by your baby, so it needs only internet and a microphone, an old phone or an iPad. The other must be a phone with a signal, the one it rings. Nothing to install or buy.</p>
+        </div>
+      </div>
+
+      <!-- 2 · hvem den skal ringe -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 2</div>
+          <h3>Which phone should it <em>ring?</em></h3>
+          <p>The one you keep with you, saved for next time.</p>
+          <div id="obPick"></div>
+          <div class="role-row">
+            <span class="rl">Who is this?</span>
+            <div class="seg" id="obRoleSeg">
+              <button data-v="mum">Mum</button>
+              <button data-v="dad">Dad</button>
+              <button data-v="other">Other</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="obName">Name</label>
+            <input id="obName" type="text" autocomplete="name" placeholder="Lone" enterkeyhint="next">
+          </div>
+          <div class="field">
+            <label for="obTel">Phone number</label>
+            <input id="obTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+47 123 45 678" enterkeyhint="done">
+          </div>
+          <div class="sheet-err" id="obErr"></div>
+        </div>
+      </div>
+
+      <!-- 3 · barnets navn og kontaktkortet -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 3</div>
+          <h3>What is the <em>baby&rsquo;s name?</em></h3>
+          <p id="obWhy">Jon Blund makes a link you send on. One tap and the number is saved, so the call always gets through.</p>
+          <div class="field">
+            <label for="obBaby">Baby&rsquo;s name</label>
+            <input id="obBaby" type="text" placeholder="Emma" enterkeyhint="done">
+          </div>
+          <div class="field">
+            <label for="obBirth">Date of birth</label>
+            <input id="obBirth" type="date" enterkeyhint="done">
+            <div class="hint">Used to guess when she will be tired again.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · kortet, slik det lander hos mottakeren -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 4</div>
+          <h3 id="obSendTitle">Send the contact card.</h3>
+          <p>This is what lands in their phone.</p>
+          <div class="vcard">
+            <div class="vc-avatar" id="vcInitial">S</div>
+            <div class="vc-org">JON BLUND</div>
+            <div class="vc-name" id="vcName">Sonja</div>
+            <div class="vc-acts">
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3.1-6.3L20 5v5h-5"/></svg></span>
+              <span class="vc-act on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 4h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 14v2.6a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 6.2 2 2 0 0 1 6.5 4z"/></svg></span>
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="14" height="12" rx="3"/><path d="M17 10l4-2v8l-4-2"/></svg></span>
+              <span class="vc-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/></svg></span>
+            </div>
+            <div class="vc-row"><span>mobile</span><b>+1 (240) 232-6663</b></div>
+          </div>
+          <div class="ob-link hidden" id="obLink"></div>
+        </div>
+      </div>
+
+      <!-- 5 · gratisuken -->
+      <div class="hiw-step">
+        <div class="hiw-copy wide">
+          <div class="hiw-num">Step 5</div>
+          <h3>The first month is <em>on us.</em></h3>
+          <p>The monthly fee is waived, and you can stop before it ends. Calls are charged as normal from the first one.</p>
+          <div class="ob-price" id="obPrice"></div>
+          <p class="ob-fine">Spending stops at the monthly limit, so Jon Blund pauses rather than quietly running up a bill. That holds during the free month too.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hiw-foot">
+    <div class="hiw-dots" id="hiwDots"></div>
+    <button class="btn-primary" id="hiwNext">Here&rsquo;s how to start</button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <h3>Who should it <em>call?</em></h3>
+  <p class="sub" id="sheetSub">Jon Blund saves this on the phone so it is one tap next time.</p>
+  <div class="field">
+    <label for="nameInput">Name</label>
+    <input id="nameInput" type="text" autocomplete="name" placeholder="Mamma" enterkeyhint="next">
+  </div>
+  <div class="field">
+    <label for="telInput">Phone number</label>
+    <input id="telInput" type="tel" autocomplete="tel" inputmode="tel" placeholder="+47 123 45 678" enterkeyhint="done">
+    <div class="hint">Norwegian 8-digit numbers get +47 automatically.</div>
+  </div>
+  <div class="role-row">
+    <span class="rl">Who is this?</span>
+    <div class="seg" id="sheetRoleSeg">
+      <button data-v="mum">Mum</button>
+      <button data-v="dad">Dad</button>
+      <button data-v="other">Other</button>
+    </div>
+  </div>
+  <div class="sheet-err" id="sheetErr"></div>
+  <button class="btn-primary" id="saveBtn">Save</button>
+  <button class="btn-ghost" id="cancelBtn" style="width:100%;margin-top:6px">Cancel</button>
+</div>
+
+<div class="veil"></div>
+<div class="nightmark" id="nightmark">
+  <div>
+    <div class="dot"></div>
+    <div class="nm-t" id="nmText">Listening</div>
+    <div class="nm-s">Tap to wake the screen</div>
+  </div>
+</div>
+
+<!-- Hash verified against three separate fetches of the immutable @2.18.3 path.
+     Bump it together with the version, never separately: a wrong hash means the
+     SDK refuses to load and Jon Blund cannot ring at all. -->
+<script src="https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@2.18.3/dist/twilio.min.js"
+        integrity="sha384-11P5HWF8oWyRF2MfktRrB2yWoVU12FUbjAVUwpwXhB7ziNEkkm/M/YcLs0boQLgS"
+        crossorigin="anonymous"></script>
+<script>
+/* ==========================================================================
+   Twilio — fyller telefoni-festet.
+
+   Nøkkelen under ligger i offentlig kode og er derfor en fartsdump, ikke en
+   lås. Det som faktisk stopper misbruk er nummerlisten på serveren: Jon Blund
+   kan bare ringe numrene som står i JONBLUND_ALLOWED_NUMBERS. Nøkkelen byttes
+   ut med ekte innlogging når betaling kobles på.
+   ========================================================================== */
+(() => {
+  const API = 'https://jonblund-voice.vercel.app';
+  const KEY = '6eb77552b3056e8d06194b40cb17d87f8b8400821f09a3c4';
+
+  let device = null, refresh = null;
+
+  async function getToken(){
+    const r = await fetch(API + '/api/token', { headers: { 'X-Jonblund-Key': KEY } });
+    if (!r.ok) throw new Error('Token ' + r.status);
+    return (await r.json()).token;
+  }
+
+  window.JONBLUND_TELEPHONY = {
+
+    // Kjører når mikrofonen skrus på. Det trykket er den siste
+    // brukerhandlingen vi får, og iOS åpner bare en lydvei fra en slik.
+    async prepare(){
+      if (device) return;
+      if (!window.Twilio || !Twilio.Device.isSupported){
+        throw new Error('Denne nettleseren kan ikke ringe');
+      }
+      device = new Twilio.Device(await getToken(), { codecPreferences: ['opus', 'pcmu'] });
+
+      // Telefon A ligger ved senga. SDK-en spiller ringetone ut av
+      // høyttaleren når den ringer, og en tone når samtalen brytes — begge
+      // rett i øret på den som sover. Alle tre er på som standard.
+      try {
+        device.audio.outgoing(false);
+        device.audio.incoming(false);
+        device.audio.disconnect(false);
+      } catch (e) { console.warn('[jonblund] kunne ikke dempe SDK-lyder', e); }
+
+      device.on('error', e => {
+        console.warn('[jonblund]', e.code, e.message);
+        if (window.jonblundNotice) window.jonblundNotice('Twilio ' + e.code + ': ' + e.message, 12000);
+      });
+
+      clearInterval(refresh);
+      refresh = setInterval(async () => {
+        try { device && device.updateToken(await getToken()); } catch (e) {}
+      }, 45 * 60 * 1000);
+    },
+
+    release(){
+      clearInterval(refresh); refresh = null;
+      if (device){ try { device.destroy(); } catch (e) {} device = null; }
+    },
+
+    async call(contact, { onEnded, onConnected }){
+      if (!device) await this.prepare();
+
+      const call = await device.connect({ params: { To: contact.tel } });
+      let weHungUp = false, done = false;
+
+      const finish = () => { if (!done && !weHungUp){ done = true; onEnded(); } };
+
+      // Telefon A ligger ved senga og skal aldri spille lyd. answerOnBridge
+      // sender ekte ringetone inn i nettleser-leggen, og den ville kommet
+      // rett ut av hoyttaleren ved barnet. Demp alt vi mottar - A trenger
+      // aldri a hore noe.
+      const muteRemote = () => {
+        try {
+          const rs = call.getRemoteStream && call.getRemoteStream();
+          if (rs){ rs.getAudioTracks().forEach(t => { t.enabled = false; }); return true; }
+        } catch (e) {}
+        return false;
+      };
+      if (!muteRemote()){
+        let tries = 0;
+        const t = setInterval(() => { if (muteRemote() || ++tries > 40) clearInterval(t); }, 100);
+      }
+
+      call.once('accept', () => { muteRemote(); if (!weHungUp) onConnected(); });
+      call.once('disconnect', finish);
+      call.once('error', finish);
+
+      // Handtaket returneres med en gang. Ventet vi pa 'accept' her, ville
+      // "Hang up" vaere koblet til ingenting hele tiden den ringer.
+      return {
+        hangUp(){ weHungUp = true; try { call.disconnect(); } catch (e) {} }
+      };
+    }
+  };
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   jonblund — babycall
+   --------------------------------------------------------------------------
+   Everything that can run in the browser runs for real here:
+     · microphone capture + calibration
+     · cry detection (loudness over adaptive noise floor + 250–700 Hz tonality)
+     · contact storage in localStorage (Contact Picker API where supported)
+     · the full state machine, including "B hung up -> go back to listening"
+
+   The one thing a browser cannot do is dial the mobile network. That single
+   step is isolated behind the adapter below. Drop in a Twilio/Telnyx client
+   and the app is real:
+
+     window.JONBLUND_TELEPHONY = {
+       // start a call to `contact.tel`, bridging this page's mic into it.
+       // must resolve once the call is connected.
+       call: async (contact, { onEnded }) => { ...; return { hangUp(){} } }
+     }
+
+   `onEnded()` is what the provider's status webhook triggers when B hangs up.
+   ========================================================================== */
+
+const $ = (id) => document.getElementById(id);
+
+/* Navn er ikke våre. De skrives av brukeren, og de kan komme rett fra
+   telefonens adressebok gjennom Contact Picker — altså fra et vCard noen
+   andre har sendt. Alt som skal inn i innerHTML må gjennom denne.
+   Foretrekk textContent der du kan; bruk denne når du må ha markup rundt. */
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+/* ---------------- storage ---------------- */
+const KEY = {
+  contacts:   'jonblund.contacts.v1',
+  selected:   'jonblund.selected.v1',
+  baby:       'jonblund.baby.v1',
+  checkEvery: 'jonblund.checkEvery.v1',
+  birth:      'jonblund.birth.v1',       // ISO-dato, sa alderen holder seg riktig
+  sleep:      'jonblund.sleep.v1'
+};
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+let contacts   = load(KEY.contacts, []);
+let selectedId = load(KEY.selected, null);
+
+/* ---------------- check-in calls ----------------
+   Et anrop på klokka, ikke på lyd. Poenget er at forelderen skal få bevis
+   for at linja lever selv når rommet er stille: telefonen ringer, og svarer
+   man hører man stillheten selv.
+
+   Av som standard, og det er et bevisst valg: hver innsjekk er et anrop.
+   Selv en time mellom hvert tømmer månedstaket på tjue netter, og et kvarter
+   gjør det på fem. Tallene stod en stund under velgeren, men ble tatt bort
+   etter ønske — de hører hjemme i prisarket, ikke som rød skrift her. */
+const CHECK_MINUTES = [0, 15, 30, 45, 60];   // 0 = av
+
+let checkEvery  = load(KEY.checkEvery, 0);
+let nextCheckAt = Infinity;
+let callReason  = 'cry';                     // cry · check · test
+
+if (!CHECK_MINUTES.includes(checkEvery)) checkEvery = 0;
+
+/* Alltid målt fra nå. Kalles når mikrofonen begynner å lytte, når en samtale
+   er over, og når intervallet endres, slik at man aldri får en innsjekk rett
+   etter at man nettopp snakket med barnet. */
+function armCheckIn(){
+  nextCheckAt = checkEvery ? performance.now() + checkEvery * 60000 : Infinity;
+}
+
+/* Kjøres fra hjerteslaget på 500 ms, ikke fra rAF-løkka. rAF står stille så
+   snart siden ikke er synlig, og en trygghetsfunksjon skal ikke være det
+   første som slutter å virke. Denne trenger ingen lydramme, bare klokka.
+
+   burstStart er satt i det mikrofonen hører noe som kan bli gråt, så en
+   innsjekk kapper aldri en gråt på vei inn: den venter til rommet er stille. */
+function maybeCheckIn(){
+  if (!checkEvery) return;
+  if (state !== 'listening') return;
+  if (burstStart) return;
+  if (performance.now() < nextCheckAt) return;
+  armCheckIn();                 // re-arm før vi ringer: en feil skal ikke løkke
+  triggerCall('check');
+}
+
+/* One place to change what Jon Blund costs. Amounts are NOK. */
+const PRICE = {
+  monthlyBase:    2.99,
+  perCall:        0.20,
+  includedMin:    2,
+  perExtraMin:    0.39,
+  monthlyLimit:   35,      // hard grense: tjenesten stopper, prisen fortsetter ikke
+  trialFree:      'the first month'
+};
+
+const usd      = n => '$' + (n % 1 === 0 ? n : n.toFixed(2));
+const usdWhole = n => '$' + Math.round(n);
+
+/* ---------------- tuning ---------------- */
+/* Én fast innstilling. Jon Blund ringer så snart lyden har holdt seg
+   over terskelen lenge nok til å være gråt og ikke et smell. */
+/* Malt mot syntetiske signaler i nettleser:
+     grat naer 0.92 · grat gjennom rom 0.77 · grat langt unna 0.42
+     tale 0.36 · vifte 0.26 · lav brumming 0.00
+   0.38 fanger den fjerne graten og ligger fortsatt over tale og vifte.
+   Bommer heller mot et anrop for mye enn en grat for lite. */
+const GATE = { margin: 9, ratio: 0.42 };
+
+const BURST_GAP_MS = 600;   // et pust midt i skriket skal ikke nullstille
+const CRY_MS       = 2000;  // to sekunder faktisk lyd. Den sterkeste barrieren.
+const COOLDOWN_MS = 20000;   // tid til a komme inn til barnet for den kan ringe igjen
+const CALIBRATE_MS = 5000;
+/* En ekte mikrofon leser aldri saa lavt. En doed lydvei leser rundt -180, saa
+   dette er et maalbart skille og ikke en gjetning. Samtalen tar mikrofonen paa
+   iOS, og noen ganger gir den den ikke tilbake av seg selv. */
+const DEAD_DB      = -150;
+const DEAD_AFTER_MS = 3000;
+const DIM_AFTER_MS = 30000;
+
+/* ---------------- state ---------------- */
+let state = 'off';           // off · starting · calibrating · listening · detecting · calling · incall · cooldown · paused · error
+let stream = null, actx = null, analyser = null, srcNode = null;
+let timeBuf = null, freqBuf = null;
+let floorDb = -70, acc = 0, lastFrame = 0, rafId = null;
+let burstStart = 0, lastHit = 0, cryHeard = 0, lastDb = -99, lastRatio = 0;
+let peakDb = -99, peakRatio = 0, peakAt = 0;   // hoyeste sett siste 30 s
+let gateWhy = '', gateWhyAt = 0;                // hvorfor den ikke armerer
+let level = 0, smoothLevel = 0;
+let wakeLock = null, activeCall = null;
+let cooldownUntil = 0, callStartedAt = 0, calibrateStartedAt = 0;
+let dimTimer = null;
+let silentSince = 0, reviving = false;
+
+const CIRC = 653.45;
+
+/* ---------------- nap clock ----------------
+   Vaakenvinduer etter alder, i minutter. Spennene er brede med vilje: dette
+   er populasjonsgjennomsnitt, ikke ditt barn. Cleveland Clinic, Huckleberry
+   og Taking Cara Babies ligger alle innenfor de samme tallene. Vi regner med
+   midtpunktet og skriver "around" i teksten, aldri et presist klokkeslett.
+
+   Kjonn staar med vilje ikke i tabellen. Vaakenvinduer hos spedbarn foelger
+   alder, ikke kjonn, og et kjonnsfelt ville lovet en presisjon som ikke finnes. */
+const WAKE_WINDOWS = [
+  { toMonths:   1, min:  30, max:  60 },
+  { toMonths:   3, min:  60, max:  90 },
+  { toMonths:   4, min:  75, max: 120 },
+  { toMonths:   6, min:  90, max: 150 },
+  { toMonths:   9, min: 120, max: 210 },
+  { toMonths:  12, min: 150, max: 240 },
+  { toMonths:  15, min: 150, max: 270 },
+  { toMonths:  18, min: 270, max: 330 },
+  { toMonths: 999, min: 240, max: 360 }
+];
+
+let birthDate = load(KEY.birth, '') || '';
+/* { startedAt, adjustMin, wokeAt } — epoch ms, saa den taaler at siden lastes
+   paa nytt midt i en natt. */
+let sleep     = load(KEY.sleep, null);
+
+/* Til visning i kontaktlista. Naar meldingen kommer tilbake trenger hilsenen
+   sin egen tabell: "Hi Mum," og "Hi Dad," men "Hi there," for other. */
+const roleWord = (r) => r === 'dad' ? 'Dad' : r === 'other' ? 'Other' : 'Mum';
+
+function ageMonths(){
+  if (!birthDate) return null;
+  const b = new Date(birthDate + 'T00:00:00');
+  if (isNaN(b.getTime())) return null;
+  const now = new Date();
+  let m = (now.getFullYear() - b.getFullYear()) * 12 + (now.getMonth() - b.getMonth());
+  if (now.getDate() < b.getDate()) m--;
+  return Math.max(0, m);
+}
+
+function wakeWindow(){
+  const m = ageMonths();
+  if (m === null) return null;
+  const w = WAKE_WINDOWS.find(x => m < x.toMonths) || WAKE_WINDOWS[WAKE_WINDOWS.length - 1];
+  return { min: w.min, max: w.max, mid: Math.round((w.min + w.max) / 2) };
+}
+
+const clockTime = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const spanText  = (ms) => {
+  const t = Math.max(0, Math.round(ms / 60000));
+  return t < 60 ? t + ' min' : Math.floor(t / 60) + 'h ' + String(t % 60).padStart(2, '0') + 'm';
+};
+
+/* Naar hun sovnet. Antatt fra da mikrofonen ble slaatt paa, og flyttbar,
+   fordi antagelsen ofte er noen minutter feil. */
+const sleepStart = () => sleep ? sleep.startedAt + (sleep.adjustMin || 0) * 60000 : null;
+
+/* Vaakenvinduet loper fra da mikrofonen ble slaatt av. */
+const tiredAt = () => {
+  const w = wakeWindow();
+  return (sleep && sleep.wokeAt && w) ? sleep.wokeAt + w.mid * 60000 : null;
+};
+function napStart(){
+  sleep = { startedAt: Date.now(), adjustMin: 0, wokeAt: null };
+  save(KEY.sleep, sleep);
+  const sl = $('napSlider'); if (sl) sl.value = '0';
+  renderNap();
+}
+
+function napWake(){
+  if (!sleep || sleep.wokeAt) return;
+  sleep.wokeAt = Date.now();
+  save(KEY.sleep, sleep);
+  renderNap();
+}
+
+
+/* ---------------- contacts ---------------- */
+function normalise(raw){
+  let s = String(raw||'').replace(/[^\d+]/g,'');
+  if (s.indexOf('+') > 0) s = s.replace(/\+/g,'');
+  if (s.startsWith('00')) s = '+' + s.slice(2);
+  if (!s.startsWith('+')) {
+    const d = s.replace(/\D/g,'');
+    if (d.length === 8) s = '+47' + d;            // Norwegian mobile/landline
+    else if (d.length === 10 && d.startsWith('0')) s = '+47' + d.slice(2);
+    else s = '+' + d;
+  }
+  return s;
+}
+function pretty(tel){
+  const m = /^\+47(\d{8})$/.exec(tel);
+  if (m) return '+47 ' + m[1].replace(/(\d{2})(?=\d)/g,'$1 ').trim();
+  const m2 = /^(\+\d{1,3})(\d+)$/.exec(tel);
+  if (m2) return m2[1] + ' ' + m2[2].replace(/(\d{3})(?=\d)/g,'$1 ').trim();
+  return tel;
+}
+function initials(name){
+  const p = String(name||'?').trim().split(/\s+/);
+  return ((p[0]||'?')[0] + (p.length>1 ? p[p.length-1][0] : '')).toUpperCase();
+}
+const selectedContact = () => contacts.find(c => c.id === selectedId) || null;
+
+function persistContacts(){
+  save(KEY.contacts, contacts);
+  save(KEY.selected, selectedId);
+}
+function addContact(name, tel, role){
+  const t = normalise(tel);
+  const existing = contacts.find(c => c.tel === t);
+  if (existing){
+    if (role) { existing.role = role; }
+    selectedId = existing.id; persistContacts(); return existing;
+  }
+  const c = { id: 'c' + Math.random().toString(36).slice(2,9), name: (name||'').trim() || pretty(t), tel: t,
+              role: role || 'mum' };
+  contacts.push(c);
+  selectedId = c.id;
+  persistContacts();
+  return c;
+}
+function removeContact(id){
+  contacts = contacts.filter(c => c.id !== id);
+  if (selectedId === id) selectedId = contacts.length ? contacts[0].id : null;
+  persistContacts();
+  renderContacts();
+}
+
+function renderContacts(){
+  const list = $('contactList');
+  list.innerHTML = '';
+  $('emptyState').classList.toggle('hidden', contacts.length > 0);
+
+  if (contacts.length && !selectedContact()) { selectedId = contacts[0].id; persistContacts(); }
+
+  contacts.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'contact' + (c.id === selectedId ? ' sel' : '');
+    row.innerHTML =
+      '<div class="avatar">' + esc(initials(c.name)) + '</div>' +
+      '<div class="who"><div class="n"></div><div class="t"></div></div>' +
+      '<div class="mark"></div>' +
+      '<button class="del" aria-label="Remove">&times;</button>';
+    row.querySelector('.n').textContent = c.name;
+    row.querySelector('.t').textContent = pretty(c.tel) + (c.role ? ' \u00b7 ' + roleWord(c.role) : '');
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.del')) { removeContact(c.id); return; }
+      selectedId = c.id; persistContacts(); renderContacts(); paint();
+    });
+    list.appendChild(row);
+  });
+  paint();
+}
+
+/* ---------------- sheet ---------------- */
+let sheetOpen = false;
+function openSheet(){
+  sheetOpen = true;
+  $('sheetErr').textContent = '';
+  sheetRole = 'mum';
+  segSet($('sheetRoleSeg'), sheetRole);
+  $('scrim').classList.add('open');
+  $('sheet').classList.add('open');
+  setTimeout(() => $('nameInput').focus(), 380);
+}
+function closeSheet(){
+  sheetOpen = false;
+  $('scrim').classList.remove('open');
+  $('sheet').classList.remove('open');
+  $('nameInput').value = ''; $('telInput').value = '';
+}
+
+/* ---------------- audio ---------------- */
+/* quiet: vi fortsetter etter pause. Tillatelsen er alt gitt, saa 'starting'
+   ville bare blinket "Waiting for permission" og kollapset knapperaden fra to
+   til en og tilbake igjen. */
+async function startMic(quiet){
+  if (!quiet) setState('starting');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,   // all three off: we need absolute, unmassaged levels
+        noiseSuppression: false,
+        autoGainControl:  false,
+        channelCount: 1
+      }
+    });
+  } catch(e){
+    setState('error');
+    notice((e && e.name === 'NotAllowedError')
+      ? 'Microphone blocked. Allow it in the address bar, then try again.'
+      : 'Could not reach the microphone on this device.', Infinity);
+    return;
+  }
+
+  await wireAudio();
+
+  await requestWakeLock();
+
+  // iOS only opens an audio path from a user gesture, and turning the
+  // microphone on is the last one we get before the phone is put down.
+  // Warm the line up here so the cry only has to dial.
+  const tel = window.JONBLUND_TELEPHONY;
+  if (tel && typeof tel.prepare === 'function'){
+    Promise.resolve(tel.prepare()).catch(() =>
+      notice('Could not reach the phone line. Detection still works.', 6000));
+  }
+
+  // Bare en ny oekt hvis det ikke alt loeper en. Ellers ville det aa fortsette
+  // etter pause, eller aa laste siden paa nytt, nullstilt soevnen.
+  if (!sleep || sleep.wokeAt) napStart();
+
+  floorDb = -70;
+  calSamples = [];
+  calibrateStartedAt = performance.now();
+  setState('calibrating');
+  lastFrame = performance.now();
+  loop();
+
+}
+
+/* Bygger analysekjeden fra stream-en. Kalles ved oppstart og naar lydveien
+   maa reddes etter en samtale. */
+async function wireAudio(){
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') await actx.resume();
+  srcNode  = actx.createMediaStreamSource(stream);
+  analyser = actx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.55;
+  srcNode.connect(analyser);
+  timeBuf = new Float32Array(analyser.fftSize);
+  freqBuf = new Float32Array(analyser.frequencyBinCount);
+  stream.getAudioTracks()[0].addEventListener('ended', onTrackEnded);
+}
+
+function onTrackEnded(){
+  if (state !== 'off' && !reviving){
+    stopMic(); setState('error');
+    notice('The microphone was cut off. Tap to start listening again.', Infinity);
+  }
+}
+
+/* Etter en samtale kan iOS ha lagt lydkonteksten i dvale, eller gitt oss
+   tilbake et spor som lever men er stumt. Ingen av dem fyrer noen hendelse,
+   saa ingenting kommer av seg selv. Vi vekker det som kan vekkes, og bygger
+   resten paa nytt. Mikrofontillatelsen er alt gitt, saa det trengs ingen ny
+   handling fra den som sover ved sengen. */
+async function reviveMic(){
+  if (reviving || state === 'off' || state === 'error' || state === 'paused') return;
+  reviving = true;
+  try {
+    if (actx && actx.state === 'suspended'){ try { await actx.resume(); } catch(e){} }
+
+    const track = stream && stream.getAudioTracks()[0];
+    const alive = track && track.readyState === 'live' && !track.muted;
+
+    if (!alive || !actx || actx.state !== 'running'){
+      try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch(e){}
+      try { if (actx) await actx.close(); } catch(e){}
+      stream = null; actx = null; analyser = srcNode = null;
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation:false, noiseSuppression:false,
+                 autoGainControl:false, channelCount:1 }
+      });
+      await wireAudio();
+      floorDb = -70;                 // nytt rom for gulvet, det gamle er ikke lenger sant
+      notice('Microphone picked back up after the call.', 4000);
+    }
+  } catch(e){
+    setState('error');
+    notice('The microphone did not come back after the call. Tap to start listening again.', Infinity);
+  } finally {
+    silentSince = 0;
+    reviving = false;
+  }
+}
+
+/* Pause tar ned mikrofonen, men lar soevnoekten staa. Den som trykker denne
+   er inne i rommet et oeyeblikk, ikke ferdig for natta. Telefonilinja
+   beholdes varm, saa det aa fortsette ikke trenger en ny brukerhandling. */
+function pauseMic(){
+  if (rafId) cancelAnimationFrame(rafId), rafId = null;
+  if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
+  if (actx) { try { actx.close(); } catch(e){} actx = null; }
+  analyser = srcNode = null;
+  acc = 0; level = 0; smoothLevel = 0; silentSince = 0;
+  nextCheckAt = Infinity;
+  releaseWakeLock();
+  setState('paused');
+  notice('Paused. The nap clock is still running.', 4000);
+}
+
+function stopMic(){
+  if (rafId) cancelAnimationFrame(rafId), rafId = null;
+  if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
+  if (actx) { try { actx.close(); } catch(e){} actx = null; }
+  analyser = srcNode = null;
+  acc = 0; level = 0; smoothLevel = 0;
+  nextCheckAt = Infinity;
+  napWake();           // mikrofonen av betyr at hun er vaaken
+  releaseWakeLock();
+  const tel = window.JONBLUND_TELEPHONY;
+  if (tel && typeof tel.release === 'function'){ try { tel.release(); } catch(e){} }
+  undim();
+  setState('off');
+}
+
+let calSamples = [];
+
+function analyse(){
+  analyser.getFloatTimeDomainData(timeBuf);
+  let sum = 0;
+  for (let i = 0; i < timeBuf.length; i++) sum += timeBuf[i] * timeBuf[i];
+  const rms = Math.sqrt(sum / timeBuf.length);
+  const db  = 20 * Math.log10(rms + 1e-9);
+
+  analyser.getFloatFrequencyData(freqBuf);
+  const binHz = actx.sampleRate / analyser.fftSize;
+  let cryBand = 0, wideBand = 0;
+  for (let i = 0; i < freqBuf.length; i++){
+    const hz = i * binHz;
+    if (hz < 80 || hz > 8000) continue;
+    const p = Math.pow(10, freqBuf[i] / 10);
+    wideBand += p;
+    if (hz >= 250 && hz <= 2500) cryBand += p;   // grunntone OG overtoner
+  }
+  const ratio = wideBand > 0 ? cryBand / wideBand : 0;
+  return { db, ratio };
+}
+
+function loop(){
+  rafId = requestAnimationFrame(loop);
+  if (!analyser) return;
+
+  const now = performance.now();
+  const dt = Math.min((now - lastFrame) / 1000, 0.1);
+  lastFrame = now;
+
+  const { db, ratio } = analyse();
+
+  // live level for the ring: map floor..floor+40 dB onto 0..1
+  const raw = Math.max(0, Math.min(1, (db - (floorDb - 3)) / 42));
+  smoothLevel += (raw - smoothLevel) * (raw > smoothLevel ? 0.45 : 0.09);
+  level = smoothLevel;
+
+  if (state === 'calibrating'){
+    calSamples.push(db);
+    if (now - calibrateStartedAt >= CALIBRATE_MS){
+      calSamples.sort((a,b) => a - b);
+      floorDb = calSamples[Math.floor(calSamples.length * 0.25)] || -70;
+      armCheckIn();
+      setState('listening');
+    }
+    paint();
+    return;
+  }
+
+  if (state === 'cooldown'){
+    trackFloor(db, false);
+    if (now >= cooldownUntil){
+      // Etter en samtale kan konteksten ligge i dvale. Billig aa vekke, dyrt
+      // aa ikke gjoere: uten dette lytter den videre til stillhet for alltid.
+      if (actx && actx.state === 'suspended'){ try { actx.resume(); } catch(e){} }
+      silentSince = 0;
+      setState('listening');
+    }
+    paint();
+    return;
+  }
+
+  if (state !== 'listening' && state !== 'detecting'){ paint(); return; }
+
+  const loud  = db > floorDb + GATE.margin;
+  const tonal = ratio > GATE.ratio;
+  const hit   = loud && tonal;
+
+  lastDb = db; lastRatio = ratio;
+
+  // Doed lydvei: bygg den opp igjen. Dette fanger ogsaa aarsaker jeg ikke
+  // har tenkt paa, fordi det maaler resultatet og ikke en mistanke.
+  if (db < DEAD_DB){
+    if (!silentSince) silentSince = now;
+    else if (now - silentSince > DEAD_AFTER_MS) reviveMic();
+  } else silentSince = 0;
+  if (now - peakAt > 30000){ peakDb = -99; peakRatio = 0; peakAt = now; }
+  if (db > peakDb) peakDb = db;
+  if (ratio > peakRatio) peakRatio = ratio;
+  trackFloor(db, loud);
+
+  // Tell lyd, ikke veggur. Ellers utløser et enkelt rop fordi
+  // pausetoleransen etterpå teller med i varigheten.
+  if (hit){
+    if (!burstStart){ burstStart = now; cryHeard = 0; }
+    cryHeard += dt * 1000;
+    lastHit = now;
+  } else if (burstStart && now - lastHit > BURST_GAP_MS){
+    burstStart = 0; cryHeard = 0;
+  }
+
+  // Si fra hvorfor den ikke armerer. En forelder som tester skal slippe
+  // a lure pa om mikrofonen er i stykker.
+  const why = hit ? ''
+            : loud ? 'Hearing sound, but it does not sound like crying.'
+            : db > floorDb + 3 ? 'Hearing something, but too faint.'
+            : '';
+  // hold en melding i minst to og et halvt sekund, ellers flakker den
+  // for fort til at noen rekker a lese den
+  if (why !== gateWhy && now - gateWhyAt > 2500){ gateWhy = why; gateWhyAt = now; }
+
+  if (cryHeard >= CRY_MS){ triggerCall('cry'); return; }
+
+  acc = cryHeard / CRY_MS;
+  setState(cryHeard > 250 ? 'detecting' : 'listening');
+  paint();
+}
+
+function trackFloor(db, loud){
+  // classic min-tracker: drop quickly toward quiet, creep up very slowly,
+  // and never let a screaming baby drag the floor up with it.
+  if (db < floorDb) floorDb += (db - floorDb) * 0.06;
+  else if (!loud)   floorDb += 0.010;   // ~0,6 dB/s: rommet får bli travlere
+}
+
+/* ---------------- call flow ---------------- */
+async function triggerCall(reason){
+  const c = selectedContact();
+  callReason = reason || 'cry';
+  acc = 0; burstStart = 0; cryHeard = 0;
+  if (!c){
+    setState('listening');
+    notice(callReason === 'cry'
+      ? 'Heard crying, but nobody is picked to call.'
+      : 'Nobody is picked to call.', 6000);
+    return;
+  }
+  setState('calling');
+  paint();
+  undim();
+
+  const adapter = window.JONBLUND_TELEPHONY;
+  try {
+    if (adapter && typeof adapter.call === 'function'){
+      activeCall = await adapter.call(c, {
+        onEnded: endCall,
+        onConnected(){ callStartedAt = performance.now(); setState('incall'); }
+      });
+    } else {
+      activeCall = { hangUp(){} };                      // demo: pretend it rings
+      setTimeout(() => {
+        if (state === 'calling'){ callStartedAt = performance.now(); setState('incall'); }
+      }, 2600);
+    }
+  } catch(e){
+    setState('listening');
+    const why = (e && (e.message || e.code)) ? String(e.message || e.code) : 'unknown';
+    notice('Call failed: ' + why, 12000);
+    console.error('[jonblund] call failed', e);
+  }
+}
+
+function endCall(){
+  const c = activeCall; activeCall = null;   // clear first: hangUp() can re-enter via onEnded
+  if (c){ try { c.hangUp(); } catch(e){} }
+  acc = 0; burstStart = 0; cryHeard = 0;
+  cooldownUntil = performance.now() + COOLDOWN_MS;
+  armCheckIn();          // du har nettopp hatt et anrop, så klokka går fra nå
+  setState('cooldown');
+}
+
+/* ---------------- wake lock ---------------- */
+async function requestWakeLock(){
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch(e){}
+}
+function releaseWakeLock(){ if (wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; } }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible'){
+    if (state !== 'off' && state !== 'error') requestWakeLock();
+    if (actx && actx.state === 'suspended') actx.resume();
+  }
+});
+
+/* ---------------- screen dim ---------------- */
+function scheduleDim(){
+  clearTimeout(dimTimer);
+  if (state === 'listening' || state === 'cooldown' || state === 'paused'){
+    dimTimer = setTimeout(() => {
+      if (state === 'listening' || state === 'cooldown' || state === 'paused') document.body.classList.add('dim');
+    }, DIM_AFTER_MS);
+  }
+}
+function undim(){ clearTimeout(dimTimer); document.body.classList.remove('dim'); scheduleDim(); }
+['pointerdown','keydown','touchstart'].forEach(ev =>
+  window.addEventListener(ev, () => { if (document.body.classList.contains('dim')) undim(); else scheduleDim(); }, { passive:true })
+);
+
+/* ---------------- render ---------------- */
+/* Knappesymboler. Fylte former, myke hjoerner: samme spraak som resten. */
+const BTN = {
+  stop:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5.4" y="5.4" width="13.2" height="13.2" rx="3.2"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7.4" y="5.4" width="3.4" height="13.2" rx="1.7"/><rect x="13.2" y="5.4" width="3.4" height="13.2" rx="1.7"/></svg>',
+  play:  '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8.5 6.4 18 12l-9.5 5.6z"/></svg>',
+  mic:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="10" rx="3"/><path d="M6.5 12a5.5 5.5 0 0 0 11 0"/><path d="M12 17.5V21"/></svg>',
+  hangup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 8.5h2.6l1.4 3.4-1.8 1.4a12 12 0 0 0 5.5 5.5l1.4-1.8L19 18.4V21a2 2 0 0 1-2.2 2A15.4 15.4 0 0 1 4.4 10.6 2 2 0 0 1 6.5 8.5z"/><path d="M15 3l6 6M21 3l-6 6"/></svg>'
+};
+
+const ICONS = {
+  micOff: '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M30 15v-1a6 6 0 0 0-11.4-2.6"/><path d="M18 20v6a6 6 0 0 0 10.3 4.2"/><path d="M13 24a11 11 0 0 0 16.6 9.5M35 24v2a11 11 0 0 1-.4 3"/><path d="M24 35v5"/><path d="M9 9l30 30"/></svg>',
+  mic:    '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="18" y="8" width="12" height="20" rx="6"/><path d="M13 24a11 11 0 0 0 22 0"/><path d="M24 35v5"/></svg>',
+  phone:  '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8h5.2l2.8 6.8-3.6 2.8a24 24 0 0 0 11 11l2.8-3.6L38 27.8V33a4 4 0 0 1-4.4 4A30.8 30.8 0 0 1 11 12.4 4 4 0 0 1 13 8z"/></svg>',
+  alert:  '<svg class="orb-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M24 6a12 12 0 0 1 12 12v9l3 6H9l3-6v-9A12 12 0 0 1 24 6z"/><path d="M20 33a4 4 0 0 0 8 0"/></svg>'
+};
+
+const COPY = {
+  off:         ['Microphone off',    'Tap below and Jon Blund starts listening.'],
+  starting:    ['Waking up',         'Allow the microphone when your browser asks.'],
+  calibrating: ['Learning the room', 'Hold still, measuring how quiet it is in here.'],
+  listening:   ['Listening',         ''],
+  detecting:   ['Crying',            'Getting ready to call.'],
+  calling:     ['Calling',           ''],
+  incall:      ['On the call',       'You are hearing the room live.'],
+  cooldown:    ['Just called',       'Not listening right now.'],
+  paused:      ['Paused',            'Microphone off. The nap clock is still running.'],
+  error:       ['Microphone off',    'Something interrupted the microphone.']
+};
+
+let noticeText = '', noticeUntil = 0;
+function notice(msg, ms){
+  noticeText = msg;
+  noticeUntil = performance.now() + (ms === undefined ? 2600 : ms);
+  paint();
+}
+function clearNotice(){ noticeText = ''; noticeUntil = 0; }
+
+function setState(next){
+  if (state === next) return;
+  state = next;
+  clearNotice();
+  document.body.classList.toggle('live',      ['calibrating','listening','detecting'].includes(state));
+  document.body.classList.toggle('listening', state === 'listening');
+  document.body.classList.toggle('detecting', state === 'detecting');
+  document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
+  if (state !== 'listening' && state !== 'cooldown' && state !== 'paused') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
+  else scheduleDim();
+  paint();
+}
+
+function paint(){
+  const c = selectedContact();
+  const [title, sub] = COPY[state] || COPY.off;
+
+  $('status').textContent =
+    (callReason === 'check' && (state === 'calling' || state === 'incall'))
+      ? 'Check-in call' : title;
+
+  let subtitle = sub;
+  if (state === 'listening')      subtitle = !c ? 'Pick who to call, below.'
+                                    : (gateWhy || 'Will call ' + c.name + ' the moment it hears crying.');
+  else if (state === 'calling')   subtitle = callReason === 'check'
+                                    ? (c ? 'Ringing ' + c.name + '. Nothing is wrong, this is the timer.' : 'Ringing on the timer…')
+                                    : (c ? 'Ringing ' + c.name + ' now…' : 'Ringing…');
+  else if (state === 'incall')    subtitle = callReason === 'check'
+                                    ? (c ? c.name + ' can hear the room. Quiet means everything works.' : 'Hang up to resume.')
+                                    : (c ? c.name + ' can hear the room. Hang up to resume.' : 'Hang up to resume.');
+  else if (state === 'cooldown')  subtitle = 'Not listening. Back on in ' + Math.max(0, Math.ceil((cooldownUntil - performance.now())/1000)) + ' seconds.';
+  else if (state === 'paused')    subtitle = (sleep && !sleep.wokeAt)
+                                    ? 'Microphone off. The nap clock is still running.'
+                                    : 'Microphone off. Tap resume when you are ready.';
+  if (noticeText){
+    if (performance.now() < noticeUntil) subtitle = noticeText;
+    else clearNotice();
+  }
+  $('substatus').textContent = subtitle;
+
+  // meter ring
+  let fillLevel = level;
+  if (state === 'detecting') fillLevel = Math.max(level, acc);
+  if (state === 'calling' || state === 'incall') fillLevel = 1;
+  if (state === 'off' || state === 'error') fillLevel = 0;
+  if (state === 'calibrating') fillLevel = Math.min(1, (performance.now() - calibrateStartedAt) / CALIBRATE_MS);
+  $('meterFill').style.strokeDashoffset = String(CIRC * (1 - fillLevel));
+
+  // orb scale reacts to loudness
+  const s = (state === 'listening' || state === 'detecting') ? 1 + level * 0.055 : 1;
+  $('orb').style.transform = 'scale(' + s.toFixed(3) + ')';
+
+  // orb face
+  const face = $('orbFace');
+  if (state === 'off' || state === 'error' || state === 'paused') face.innerHTML = ICONS.micOff;
+  else if (state === 'starting') face.innerHTML = ICONS.mic;
+  else if (state === 'calibrating'){
+    const left = Math.max(1, Math.ceil((CALIBRATE_MS - (performance.now() - calibrateStartedAt))/1000));
+    face.innerHTML = '<div class="readout">' + left + '</div>';
+  }
+  else if (state === 'listening') face.innerHTML = '';
+  else if (state === 'detecting'){
+    face.innerHTML = '';
+  }
+  else if (state === 'calling') face.innerHTML = ICONS.phone;
+  else if (state === 'incall'){
+    const t = Math.floor((performance.now() - callStartedAt)/1000);
+    face.innerHTML = '<div class="readout sm">' + String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0') + '</div>';
+  }
+  else if (state === 'cooldown'){
+    const left = Math.max(0, Math.ceil((cooldownUntil - performance.now()) / 1000));
+    face.innerHTML = '<div class="readout">' + left + '</div>';
+  }
+
+  // buttons
+  const power = $('powerBtn'), secondary = $('secondaryBtn'), pause = $('pauseBtn');
+  power.classList.remove('warm','quiet');
+  secondary.classList.add('hidden');
+  pause.classList.add('hidden');
+
+  /* Symbol og tekst settes sammen: teksten alene ville vasket bort ikonet.
+     Og bare naar noe faktisk er endret. paint() kjoerer hver animasjonsramme,
+     saa aa skrive innerHTML hver gang rev SVG-en ned og bygget den opp seksti
+     ganger i sekundet — det var blinkingen. */
+  const setBtn = (btn, key, txt, label) => {
+    const slot = btn.querySelector('.bi');
+    if (slot.dataset.ico !== key){
+      slot.innerHTML = key ? BTN[key] : '';
+      slot.dataset.ico = key;
+    }
+    const t = btn.querySelector('span:last-child');
+    if (t.textContent !== txt) t.textContent = txt;
+    const l = label || txt;
+    if (btn.getAttribute('aria-label') !== l) btn.setAttribute('aria-label', l);
+  };
+
+  if (state === 'off' || state === 'error'){
+    setBtn(power, 'mic', 'Turn on microphone');
+    power.disabled = false;
+  } else if (state === 'starting'){
+    setBtn(power, '', 'Waiting for permission…');
+    power.disabled = true;
+  } else if (state === 'calling' || state === 'incall'){
+    setBtn(power, 'hangup', 'Hang up');
+    power.classList.add('warm');
+    power.disabled = false;
+  } else if (state === 'paused'){
+    // Pauset: Stop avslutter oekten, Play tar den opp igjen. Begge blir
+    // staaende, slik en spiller gjoer det, i stedet for aa bytte plass.
+    setBtn(power, 'stop', 'Stop');
+    power.classList.add('quiet');
+    power.disabled = false;
+    setBtn(pause, 'play', 'Continue', 'Continue listening');
+    pause.classList.remove('hidden');
+  } else {
+    // Kort tekst her: to knapper deler tre hundre piksler.
+    setBtn(power, 'stop', 'Stop');
+    power.classList.add('quiet');
+    power.disabled = false;
+    setBtn(pause, 'pause', 'Pause');
+    pause.classList.remove('hidden');
+    if (state === 'detecting'){
+      secondary.classList.remove('hidden');
+      secondary.textContent = 'Not a cry, hold on';
+    } else if (c){
+      secondary.classList.remove('hidden');
+      secondary.textContent = 'Test the call now';
+    }
+  }
+
+  $('nmText').textContent = state === 'paused'   ? 'Paused'
+                          : state === 'cooldown' ? 'Just called'
+                          : 'Listening';
+
+  renderCheck();
+
+  if (document.body.classList.contains('diagnostics')){
+    const live = analyser !== null;
+    const wail = (cryHeard / 1000).toFixed(1);
+    $('diag').innerHTML = live
+      ? 'level ' + lastDb.toFixed(0) + ' &nbsp;floor ' + floorDb.toFixed(0) +
+        ' &nbsp;needs ' + (floorDb + GATE.margin).toFixed(0) + ' ' +
+        (lastDb > floorDb + GATE.margin ? '&check;' : '&times;') + '<br>' +
+        'tone ' + lastRatio.toFixed(2) + ' &nbsp;needs ' + GATE.ratio.toFixed(2) + ' ' +
+        (lastRatio > GATE.ratio ? '&check;' : '&times;') + '<br>' +
+        'peak 30s: ' + peakDb.toFixed(0) + ' dB &nbsp;tone ' + peakRatio.toFixed(2) + '<br>' +
+        'cry ' + wail + 's / ' + (CRY_MS/1000) + 's'
+      : 'microphone off';
+  }
+}
+
+/* ---------------- who is on the other end ---------------- */
+/* Mum og Dad er de to valgene som ble bedt om. Trenger en familie et tredje
+   ord — to moedre, en bestemor, en barnevakt — er det en knapp og ett ord i
+   roleWord() unna. */
+let sheetRole = 'mum', obRole = 'mum';
+const segSet = (el, v) => el.querySelectorAll('button')
+  .forEach(b => b.classList.toggle('sel', b.dataset.v === String(v)));
+
+wireSeg($('sheetRoleSeg'), sheetRole, v => { sheetRole = v; });
+wireSeg($('obRoleSeg'),    obRole,    v => { obRole = v; });
+
+$('obBirth').value = birthDate;
+$('obBirth').addEventListener('change', () => {
+  birthDate = $('obBirth').value || '';
+  save(KEY.birth, birthDate);
+  renderNap();
+});
+
+/* ---------------- nap clock ---------------- */
+function renderNap(){
+  const bar = $('napBar'), big = $('napBig'), short = $('napShort');
+  let adjustable = false;
+
+  if (!birthDate){
+    big.textContent = '\u2013';
+    short.textContent = 'add a date of birth in How it works';
+  } else if (!sleep){
+    big.textContent = '\u2013';
+    short.textContent = 'starts when the microphone does';
+  } else if (!sleep.wokeAt){
+    const start = sleepStart();
+    big.textContent   = spanText(Date.now() - start);
+    short.textContent = 'asleep since ' + clockTime(start);
+    $('napStartAt').textContent = clockTime(start);
+    adjustable = true;                 // bare naar det finnes noe aa flytte
+  } else {
+    const tired = tiredAt();
+    if (Date.now() > tired){
+      big.textContent   = 'Now';
+      short.textContent = 'past the usual awake window';
+    } else {
+      big.textContent   = clockTime(tired);
+      // Navnet stod her og kuttet linja paa lange navn, uten aa si noe nytt.
+      short.textContent = 'tired in ' + spanText(tired - Date.now())
+                        + ' \u00b7 slept ' + spanText(sleep.wokeAt - sleepStart());
+    }
+  }
+
+  bar.disabled = !adjustable;
+  if (!adjustable) napDrawerSet(false);
+}
+
+function napDrawerSet(open){
+  $('napBar').classList.toggle('open', open);
+  $('napBar').setAttribute('aria-expanded', String(open));
+  $('napDrawer').classList.toggle('hidden', !open);
+}
+
+$('napBar').addEventListener('click', () => {
+  napDrawerSet(!$('napBar').classList.contains('open'));
+});
+
+$('napSlider').addEventListener('input', () => {
+  if (!sleep) return;
+  // Hun kan ikke ha sovnet i framtiden, og taket foelger slideren sitt eget
+  // femminutterssteg saa kontrollen og verdien er enige.
+  const ceiling = Math.max(0, Math.floor((Date.now() - sleep.startedAt) / 300000) * 5);
+  const want    = Number($('napSlider').value) || 0;
+  sleep.adjustMin = Math.min(want, ceiling);
+  if (sleep.adjustMin !== want) $('napSlider').value = String(sleep.adjustMin);
+  save(KEY.sleep, sleep);
+  renderNap();
+});
+
+/* ---------------- check-in panel/* ---------------- check-in panel ---------------- */
+function renderCheck(){
+  const next = $('checkNext');
+  if (!checkEvery || (state !== 'listening' && state !== 'detecting')){
+    next.textContent = '';
+    return;
+  }
+  const left = Math.max(0, nextCheckAt - performance.now());
+  next.textContent = left >= 60000
+    ? 'next in ' + Math.ceil(left / 60000) + ' min'
+    : 'next in ' + Math.ceil(left / 1000) + ' s';
+}
+
+wireSeg($('checkSeg'), checkEvery, v => {
+  checkEvery = Number(v);
+  save(KEY.checkEvery, checkEvery);
+  armCheckIn();
+  renderCheck();
+  notice(checkEvery
+    ? 'Check-in calls every ' + checkEvery + ' minutes.'
+    : 'Check-in calls off.', 3500);
+});
+
+/* ---------------- wiring ---------------- */
+$('powerBtn').addEventListener('click', () => {
+  // 'paused' hoerer ikke hit lenger: knappen sier Stop naar den er pauset, og
+  // det er Play ved siden av som starter igjen. Sto her fra den gang denne
+  // knappen sa "Resume listening".
+  if (state === 'off' || state === 'error') startMic();
+  else if (state === 'calling' || state === 'incall') endCall();
+  else stopMic();
+});
+$('pauseBtn').addEventListener('click', () => {
+  if (state === 'paused') startMic(true); else pauseMic();
+});
+$('secondaryBtn').addEventListener('click', () => {
+  if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
+  else triggerCall('test');
+});
+$('orb').addEventListener('click', () => {
+  if (state === 'paused') startMic(true);
+  else if (state === 'off' || state === 'error') startMic();
+});
+$('status').addEventListener('click', () => { document.body.classList.toggle('diagnostics'); paint(); });
+$('addBtn').addEventListener('click', openSheet);
+/* ---------------- import from the phone's own contacts ---------------- */
+/* The Contact Picker API only exists in Chrome on Android. Rather than show
+   a button that does nothing on an iPhone, the button is only created where
+   the API is actually there. */
+const pickerSupported = ('contacts' in navigator)
+                     && ('ContactsManager' in window)
+                     && window.isSecureContext;
+
+async function openPicker(){
+  try {
+    const picked = await navigator.contacts.select(['name', 'tel'], { multiple: true });
+    let n = 0;
+    picked.forEach(person => {
+      const name = (person.name && person.name[0]) || '';
+      (person.tel || []).slice(0, 2).forEach((t, i) => {
+        addContact(i === 0 ? name : name + ' (' + (i + 1) + ')', t);
+        n++;
+      });
+    });
+    renderContacts();
+    if (n) notice(n + (n === 1 ? ' number added.' : ' numbers added.'));
+  } catch (e) {
+    if (e && e.name !== 'AbortError') notice('Could not open your contacts.', 5000);
+  }
+}
+
+if (pickerSupported){
+  const row = document.querySelector('.contact-actions');
+  const b = document.createElement('button');
+  b.className = 'btn-soft';
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+              + 'stroke-linecap="round"><path d="M16 19v-1.5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3V19"/>'
+              + '<circle cx="10" cy="7.5" r="3"/><path d="M18.5 8v5M21 10.5h-5"/></svg> Contacts';
+  b.addEventListener('click', openPicker);
+  row.insertBefore(b, $('addBtn'));
+  row.style.gap = '9px';
+}
+$('manageBtn').addEventListener('click', () => {
+  const on = document.body.classList.toggle('managing');
+  $('manageBtn').textContent = on ? 'Done' : 'Manage';
+});
+$('scrim').addEventListener('click', closeSheet);
+$('cancelBtn').addEventListener('click', closeSheet);
+$('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('telInput').focus(); });
+$('telInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('saveBtn').click(); });
+$('saveBtn').addEventListener('click', () => {
+  const tel = $('telInput').value.trim();
+  if (tel.replace(/\D/g,'').length < 5){ $('sheetErr').textContent = 'That does not look like a phone number.'; return; }
+  addContact($('nameInput').value, tel, sheetRole);
+  closeSheet();
+  renderContacts();
+  notice('Saved. Jon Blund will remember.');
+});
+
+function wireSeg(el, value, onPick){
+  el.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('sel', b.dataset.v === String(value));
+    b.addEventListener('click', () => {
+      el.querySelectorAll('button').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      onPick(b.dataset.v);
+    });
+  });
+}
+
+/* the telephony adapter reports through this, so failures land on screen
+   instead of only in a console nobody opens on a phone */
+window.jonblundNotice = notice;
+
+/* Adapteren er en rein telefoni-søm og rører ingen tilstand med vilje. Det
+   betyr at noe som kaller call() direkte ville plassert et ekte anrop mens
+   skjermen fortsatt sa «Listening» — dempet, fordi A ligger ved en sovende
+   baby, og nedtonet etter tretti sekunder. Tre riktige valg som til sammen
+   skjuler et innbrudd perfekt.
+   Denne pakker sømmen slik at ethvert anrop tenner skjermen. Den erstatter
+   ikke esc() over; en angriper med kjørende script kan pakke den ut igjen.
+   Den gjør bare at et misbruk ikke er usynlig. */
+(() => {
+  const tel = window.JONBLUND_TELEPHONY;
+  if (!tel || typeof tel.call !== 'function') return;
+  const dial = tel.call.bind(tel);
+  tel.call = (contact, hooks) => {
+    if (state !== 'calling' && state !== 'incall'){
+      setState('calling');
+      undim();
+    }
+    return dial(contact, hooks);
+  };
+})();
+
+/* idle timers keep the countdowns honest even between audio frames */
+setInterval(() => {
+  maybeCheckIn();
+  renderNap();
+  if (state === 'cooldown' || state === 'incall' || state === 'off') paint();
+  else if (checkEvery) renderCheck();      // hold nedtellingen i gang
+}, 500);
+
+renderContacts();
+renderCheck();
+renderNap();
+setState('off');
+paint();
+
+/* ---------------- onboarding ---------------- */
+const HIW_KEY  = 'jonblund.seenIntro.v1';
+const BABY_KEY = 'jonblund.baby.v1';
+const VCARD_BASE = 'https://jonblund-voice.vercel.app/api/vcard';
+
+const hiwSteps = [...document.querySelectorAll('.hiw-step')];
+let hiwIndex = 0, obSent = false, obLocked = false;
+
+$('hiwDots').innerHTML = hiwSteps.map((_, i) =>
+  '<button class="hiw-dot" data-i="' + i + '" aria-label="Step ' + (i+1) + '"></button>').join('');
+
+function obNextLabel(){
+  if (hiwIndex === 0) return 'Here\u2019s how to start';
+  if (hiwIndex === 1) return 'Save and continue';
+  if (hiwIndex === 2) return 'Next';
+  if (hiwIndex === 3) return obSent ? 'Next' : 'Send contact card';
+  return 'Start free month';
+}
+
+/* Steg 3 slipper ingen videre for barnet har et navn - kortet er
+   meningslost uten. */
+function obSyncNext(){
+  $('hiwNext').textContent = obNextLabel();
+  $('hiwNext').disabled = (hiwIndex === 2 && !$('obBaby').value.trim());
+  // tilbake finnes overalt unntatt pa forste steg, ogsa nar flyten er last:
+  // a ga tilbake er navigasjon, ikke en vei ut
+  $('hiwBack').hidden = hiwIndex === 0;
+}
+
+function hiwGo(i){
+  hiwIndex = Math.max(0, Math.min(hiwSteps.length - 1, i));
+  $('hiwTrack').style.transform = 'translateX(' + (-100 * hiwIndex) + '%)';
+  hiwSteps.forEach((s, n) => s.classList.toggle('active', n === hiwIndex));
+  [...$('hiwDots').children].forEach((d, n) => d.classList.toggle('on', n === hiwIndex));
+  obSyncNext();
+
+  if (hiwIndex === 3){
+    const c = selectedContact();
+    $('obSendTitle').innerHTML = 'Send the contact card to <em>' +
+      esc(c ? c.name : 'them') + '.</em>';
+  }
+  if (hiwIndex === 4) obRenderPrice();
+
+  // steg 3 vet hvem lenken skal til, sa den kan si det
+  if (hiwIndex === 2){
+    const c = selectedContact();
+    $('obWhy').innerHTML = 'Jon Blund makes a link you send to <b>' +
+      esc(c ? c.name : 'them') + '</b>. One tap and the number is saved, ' +
+      'so the call always gets through.';
+  }
+}
+
+function obRenderPrice(){
+  $('obPrice').innerHTML =
+    '<div class="ob-price-row free"><span>Monthly fee, first month</span>' +
+      '<b><s>' + usd(PRICE.monthlyBase) + '</s> free</b></div>' +
+    '<div class="ob-price-row"><span>Then, each month</span><b>' + usd(PRICE.monthlyBase) + '</b></div>' +
+    '<div class="ob-price-row"><span>Each call, from day one</span><b>' + usd(PRICE.perCall) + '</b></div>' +
+    '<div class="ob-price-row"><span>Never more than</span><b>' + usd(PRICE.monthlyLimit) + ' a month</b></div>';
+}
+
+/* Forstegangsflyten er last: man skal gjennom alle stegene. Apner man den
+   igjen senere fra "How it works", er krysset tilbake - da er man en som
+   sjekker noe, ikke en som setter opp. */
+function hiwShow(locked){
+  obLocked = !!locked;
+  $('hiwClose').style.display = obLocked ? 'none' : '';
+  $('hiwScrim').classList.add('open');
+  $('hiw').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const c = selectedContact();
+  if (c){ $('obName').value = c.name; $('obTel').value = pretty(c.tel); }
+  $('obBaby').value  = load(BABY_KEY, '') || '';
+  $('obBirth').value = birthDate;
+  obRole = (c && c.role) || 'mum';
+  segSet($('obRoleSeg'), obRole);
+  hiwGo(0);
+}
+function hiwHide(force){
+  if (obLocked && !force) return;
+  $('hiwScrim').classList.remove('open');
+  $('hiw').classList.remove('open');
+  document.body.style.overflow = '';
+  save(HIW_KEY, true);
+}
+
+/* steg 2: lagre mottakeren for vi slipper videre */
+function obSaveRecipient(){
+  const tel = $('obTel').value.trim();
+  if (tel.replace(/\D/g, '').length < 5){
+    $('obErr').textContent = 'That does not look like a phone number.';
+    $('obTel').focus();
+    $('obErr').scrollIntoView({ block: 'nearest' });
+    return false;
+  }
+  $('obErr').textContent = '';
+  addContact($('obName').value, tel, obRole);
+  renderContacts();
+  return true;
+}
+
+/* steg 3: lag kontaktkort-lenken */
+/* Bygger kortet slik det vil se ut hos mottakeren. */
+function obBuildCard(){
+  const baby = $('obBaby').value.trim();
+  if (!baby) return false;
+  save(BABY_KEY, baby);
+  $('obLink').textContent = VCARD_BASE + '?name=' + encodeURIComponent(baby);
+  $('vcInitial').textContent = baby.charAt(0).toUpperCase();
+  $('vcName').textContent = baby + ' \u2665\uFE0F';
+  obSent = false;
+  return true;
+}
+
+$('hiwOpen').addEventListener('click', () => hiwShow(false));
+$('hiwClose').addEventListener('click', () => hiwHide());
+$('hiwBack').addEventListener('click', () => hiwGo(hiwIndex - 1));
+$('hiwScrim').addEventListener('click', () => hiwHide());
+
+$('hiwNext').addEventListener('click', async () => {
+  if (hiwIndex === 0) return hiwGo(1);
+  if (hiwIndex === 1) { if (obSaveRecipient()) hiwGo(2); return; }
+  if (hiwIndex === 2) { if (obBuildCard()) hiwGo(3); return; }
+
+  if (hiwIndex === 3){
+    if (obSent) return hiwGo(4);
+    await obShareCard();
+    obSent = true;               // tilbake fra delearket
+    obSyncNext();
+    return;
+  }
+
+  // siste steg: start gratisuken
+  const billing = window.JONBLUND_BILLING;
+  if (billing && typeof billing.startTrial === 'function'){
+    try { await billing.startTrial(); }
+    catch(e){ notice('Could not start the free month. Nothing was charged.', 7000); }
+    return;
+  }
+  hiwHide(true);
+  notice('Payments are not switched on yet \u2014 everything is free for now.', 7000);
+});
+
+/* Contact Picker finnes bare i Chrome pa Android. Der den finnes,
+   fyller den feltene under i stedet for a be deg taste. */
+if (pickerSupported){
+  const b = document.createElement('button');
+  b.className = 'btn-soft';
+  b.style.cssText = 'width:100%;margin-bottom:16px';
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+              + 'stroke-linecap="round"><path d="M16 19v-1.5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3V19"/>'
+              + '<circle cx="10" cy="7.5" r="3"/><path d="M18.5 8v5M21 10.5h-5"/></svg> Choose from contacts';
+  b.addEventListener('click', async () => {
+    try {
+      const picked = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+      const person = picked && picked[0];
+      if (!person) return;
+      $('obName').value = (person.name && person.name[0]) || '';
+      $('obTel').value  = (person.tel && person.tel[0]) || '';
+      $('obErr').textContent = '';
+    } catch (e) {
+      if (e && e.name !== 'AbortError') notice('Could not open your contacts.', 5000);
+    }
+  });
+  $('obPick').appendChild(b);
+}
+
+$('obName').addEventListener('keydown', e => { if (e.key === 'Enter') $('obTel').focus(); });
+$('obTel').addEventListener('keydown',  e => { if (e.key === 'Enter') $('hiwNext').click(); });
+$('obBaby').addEventListener('keydown', e => { if (e.key === 'Enter') $('hiwNext').click(); });
+$('obBaby').addEventListener('input', obSyncNext);
+
+async function obShareCard(){
+  const baby = $('obBaby').value.trim() || 'the baby';
+  const url  = $('obLink').textContent;
+  const text = 'Hi!\n\nSave this so Jon Blund can reach you when ' + baby +
+               ' cries\uD83D\uDC76\uD83C\uDFFC';
+
+  // Del selve kortet som fil. Da viser Meldinger det som et kontaktkort,
+  // slik iOS gjor det selv - i stedet for en lenke med et domenenavn under.
+  try {
+    const r = await fetch(url);
+    if (r.ok && navigator.canShare){
+      const file = new File([await r.blob()], baby + '.vcf', { type: 'text/vcard' });
+      if (navigator.canShare({ files: [file] })){
+        try { await navigator.share({ files: [file], text }); } catch(e){}
+        return;
+      }
+    }
+  } catch(e){ /* faller til lenke under */ }
+
+  if (navigator.share){
+    try { await navigator.share({ text, url }); } catch(e){}
+    return;
+  }
+
+  try { await navigator.clipboard.writeText(url); notice('Link copied.'); }
+  catch(e){ notice('Could not share on this device.', 6000); }
+}
+
+
+addEventListener('keydown', e => {
+  if (!$('hiw').classList.contains('open')) return;
+  if (e.key === 'Escape') hiwHide();     // hiwHide nekter selv nar den er last
+});
+
+// first visit only
+if (!load(HIW_KEY, false)) setTimeout(() => hiwShow(true), 650);
+/* ---------------- pricing ---------------- */
+/* PRICE, usd and usdWhole live at the top of the script: the check-in panel
+   prices itself while the app is starting, before this point is reached. */
+const monthCost = calls => Math.min(PRICE.monthlyLimit, PRICE.monthlyBase + calls * PRICE.perCall);
+
+/* Et år med to gråt per natt, hver natt: det øvre hjørnet av hva en nyfødt
+   ber om. Når det er nok kunder å snitte over, bytt monthlyBill() med det
+   faktiske gjennomsnittet per måned, og resten følger av seg selv. */
+const YEAR = { criesPerDay: 2, days: 365, months: 12 };
+const yearCost = () => Math.min(
+  PRICE.monthlyLimit * YEAR.months,
+  PRICE.monthlyBase * YEAR.months + YEAR.days * YEAR.criesPerDay * PRICE.perCall
+);
+const monthlyBill = () => yearCost() / YEAR.months;
+
+function renderPricing(){
+  $('prFree').textContent = 'First month free';
+  $('prAmount').innerHTML = '<span>$</span>' + PRICE.monthlyBase.toFixed(2);
+  $('prUnit').textContent = 'a month';
+  $('prFine').innerHTML =
+    'Plus ' + usd(PRICE.perCall) + ' a call from the very first one, the first ' +
+    PRICE.includedMin + ' minutes included. <b>Spending stops at ' + usd(PRICE.monthlyLimit) +
+    ' a month</b>, so Jon Blund pauses rather than quietly running up a bill.';
+
+  const months = [
+    ['A quiet month',    15],
+    ['A newborn month',  60],
+    ['A rough month',   120],
+    ['Worse than that', 220]
+  ];
+  $('prTable').innerHTML = months.map(([label, calls]) => {
+    const cost = monthCost(calls);
+    const capped = cost >= PRICE.monthlyLimit;
+    return '<div class="pr-row' + (capped ? ' cap' : '') + '">' +
+             '<span class="rl">' + label + '</span>' +
+             '<span class="rc">' + calls + ' calls</span>' +
+             '<span class="rv">' + usdWhole(cost) + '</span>' +
+           '</div>';
+  }).join('');
+
+  $('prYear').innerHTML =
+    '<div><span class="yl">A newborn year, at most</span><span class="ym">' +
+      YEAR.days + ' nights \u00d7 ' + YEAR.criesPerDay + ' cries, plus the fee' +
+    '</span></div><b>' + usd(yearCost()) + '</b>';
+
+  $('prNote').textContent =
+    'Calls running past ' + PRICE.includedMin + ' minutes add ' + usd(PRICE.perExtraMin) +
+    ' a minute. One card, one charge a month, and you can lift the limit any time.';
+}
+renderPricing();
+
+function prShow(){
+  renderPricing();
+  $('hiwScrim').classList.add('open');
+  $('pricing').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function prHide(){
+  $('hiwScrim').classList.remove('open');
+  $('pricing').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('prOpen').addEventListener('click', prShow);
+$('prClose').addEventListener('click', prHide);
+$('prLater').addEventListener('click', prHide);
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('pricing').classList.contains('open')) prHide();
+});
+
+/* Same shape as the telephony seam: a billing provider drops in here.
+   window.JONBLUND_BILLING = { addCard: async () => {...} } */
+$('prCard').addEventListener('click', async () => {
+  const billing = window.JONBLUND_BILLING;
+  if (billing && typeof billing.addCard === 'function'){
+    try { await billing.addCard(); prHide(); notice('Card saved.'); }
+    catch(e){ notice('That card could not be saved. Nothing was charged.', 6000); }
+  } else {
+    prHide();
+    notice('Card payments are not switched on yet, so calls are free for now.', 6000);
+  }
+});
+
+</script>
+</body>
+</html>
