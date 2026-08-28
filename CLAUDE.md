@@ -190,6 +190,21 @@ discounted, and the short word must not lie about that.
   `startMic()` from the days it said "Resume listening", so the button said Stop
   and started. Found by exercising the handlers, not by looking at them: worth
   re-running that check whenever a button's label changes state.
+- **A phone call to device A used to end the whole session.** iOS ends the
+  microphone track when a call takes the audio, and `onTrackEnded` called
+  `stopMic()` — which calls `napWake()`. So answering a call stopped the
+  monitor, ended the nap and left an error nobody was looking at. Teardown is
+  now `dropAudio()`, which says nothing about the nap; `stopMic()` is that plus
+  `napWake()`. An interruption rebuilds and stays in the same listening state.
+- **Three signals, because iOS gives no single one.** The track's `ended` and
+  `mute`/`unmute` events, and `visibilitychange`. rAF is frozen while the page
+  is hidden, so the dead-silence detector cannot notice an interruption on its
+  own — coming back has to check the audio path actively, not just resume the
+  context.
+- **A gap in monitoring is never silent.** Anything over five seconds is
+  reported on return: "Not listening for 2 min". Under five is an app switch
+  and not worth a word. For a monitor, an unannounced gap is the failure that
+  matters.
 - **Pause is not Stop.** `pauseMic()` takes the microphone down and leaves the
   sleep session running; `stopMic()` calls `napWake()` and ends it. `startMic()`
   only starts a new session when there is not one in progress, which is what

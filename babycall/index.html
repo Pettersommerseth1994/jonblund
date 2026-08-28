@@ -704,7 +704,7 @@ body.dim .nightmark{opacity:1}
   </div>
 
   <div class="foot-actions">
-    <button class="btn-soft hiw-open" id="hiwOpen">How it works</button>
+    <button class="btn-soft hiw-open" id="hiwOpen">Settings</button>
     <button class="btn-soft hiw-open" id="prOpen">Pricing</button>
   </div>
 
@@ -735,7 +735,7 @@ body.dim .nightmark{opacity:1}
   </div>
 </div>
 <div class="hiw" id="hiw" role="dialog" aria-modal="true" aria-label="Get started with Jon Blund">
-  <div class="hiw-head"><span class="hiw-title">Get started</span></div>
+  <div class="hiw-head"><span class="hiw-title" id="hiwTitle">Get started</span></div>
   <button class="hiw-back" id="hiwBack" aria-label="Back">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
   </button>
@@ -1383,14 +1383,39 @@ async function wireAudio(){
   srcNode.connect(analyser);
   timeBuf = new Float32Array(analyser.fftSize);
   freqBuf = new Float32Array(analyser.frequencyBinCount);
-  stream.getAudioTracks()[0].addEventListener('ended', onTrackEnded);
+  const track = stream.getAudioTracks()[0];
+  track.addEventListener('ended', onTrackEnded);
+  /* Et innkommende anrop demper ofte sporet i stedet for aa avslutte det.
+     Ingen av delene sier fra av seg selv, saa vi lytter paa begge. */
+  track.addEventListener('mute', () => {
+    if (state === 'listening' || state === 'detecting') gapFrom(Date.now());
+  });
+  track.addEventListener('unmute', () => { reviveMic(); reportGap(); });
 }
 
+/* iOS avslutter mikrofonsporet naar en telefonsamtale tar over lyden paa
+   enheten. Det skal ikke bety at Jon Blund gir opp: luren staar, og vi bygger
+   mikrofonen opp igjen. Foerst hvis ogsaa det feiler sier vi fra. */
 function onTrackEnded(){
-  if (state !== 'off' && !reviving){
-    stopMic(); setState('error');
-    notice('The microphone was cut off. Tap to start listening again.', Infinity);
-  }
+  if (state === 'off' || state === 'error' || state === 'paused' || reviving) return;
+  gapFrom(Date.now());
+  // Rapporten kommer etter gjenoppbyggingen, saa den blir den siste meldingen
+  // paa skjermen. At overvaakningen var nede betyr mer enn at den er oppe nå.
+  Promise.resolve(reviveMic()).then(reportGap);
+}
+
+/* Et hull i overvaakningen skal aldri vaere stille. Under fem sekunder er en
+   app-veksling og ikke verdt aa nevne; alt over sier vi fra om. */
+let gapStart = 0;
+const gapFrom = (t) => { if (!gapStart) gapStart = t; };
+function reportGap(){
+  if (!gapStart) return;
+  const gap = Date.now() - gapStart;
+  gapStart = 0;
+  if (gap < 5000) return;
+  const secs = Math.round(gap / 1000);
+  notice('Not listening for ' + (secs < 60 ? secs + ' seconds' : spanText(gap))
+       + ', while the device was busy. Listening again now.', 9000);
 }
 
 /* Etter en samtale kan iOS ha lagt lydkonteksten i dvale, eller gitt oss
@@ -1433,23 +1458,26 @@ async function reviveMic(){
    er inne i rommet et oeyeblikk, ikke ferdig for natta. Telefonilinja
    beholdes varm, saa det aa fortsette ikke trenger en ny brukerhandling. */
 function pauseMic(){
-  if (rafId) cancelAnimationFrame(rafId), rafId = null;
-  if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
-  if (actx) { try { actx.close(); } catch(e){} actx = null; }
-  analyser = srcNode = null;
-  acc = 0; level = 0; smoothLevel = 0; silentSince = 0;
+  dropAudio();
   nextCheckAt = Infinity;
   releaseWakeLock();
   setState('paused');
   notice('Paused. The nap clock is still running.', 4000);
 }
 
-function stopMic(){
+/* River ned lydkjeden og sier ingenting om soevnoekten. Skilt ut fordi et
+   avbrudd — en telefon som ringer enheten — maa kunne rydde opp uten aa
+   avslutte luren. */
+function dropAudio(){
   if (rafId) cancelAnimationFrame(rafId), rafId = null;
   if (stream) stream.getTracks().forEach(t => t.stop()), stream = null;
   if (actx) { try { actx.close(); } catch(e){} actx = null; }
   analyser = srcNode = null;
-  acc = 0; level = 0; smoothLevel = 0;
+  acc = 0; level = 0; smoothLevel = 0; silentSince = 0;
+}
+
+function stopMic(){
+  dropAudio();
   nextCheckAt = Infinity;
   napWake();           // mikrofonen av betyr at hun er vaaken
   releaseWakeLock();
@@ -1631,9 +1659,20 @@ async function requestWakeLock(){
 }
 function releaseWakeLock(){ if (wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; } }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible'){
-    if (state !== 'off' && state !== 'error') requestWakeLock();
-    if (actx && actx.state === 'suspended') actx.resume();
+  const listening = state === 'listening' || state === 'detecting' || state === 'cooldown';
+
+  if (document.visibilityState === 'hidden'){
+    // Et anrop paa denne enheten legger siden i bakgrunnen og tar mikrofonen.
+    if (listening) gapFrom(Date.now());
+    return;
+  }
+
+  if (state !== 'off' && state !== 'error') requestWakeLock();
+  /* rAF staar stille mens siden er skjult, saa stillhets-detektoren kan ikke
+     ha oppdaget noe selv. Vi maa sjekke lydveien aktivt naar vi kommer
+     tilbake, ikke bare vekke konteksten. */
+  if (listening){
+    Promise.resolve(reviveMic()).then(reportGap);
   }
 });
 
@@ -1865,7 +1904,7 @@ function renderNap(){
 
   if (!birthDate){
     big.textContent = '\u2013';
-    short.textContent = 'add a date of birth in How it works';
+    short.textContent = 'add a date of birth in Settings';
   } else if (!sleep){
     big.textContent = '\u2013';
     short.textContent = 'starts when the microphone does';
@@ -2125,10 +2164,12 @@ function obRenderPrice(){
 }
 
 /* Forstegangsflyten er last: man skal gjennom alle stegene. Apner man den
-   igjen senere fra "How it works", er krysset tilbake - da er man en som
+   igjen senere fra "Settings", er krysset tilbake - da er man en som
    sjekker noe, ikke en som setter opp. */
 function hiwShow(locked){
   obLocked = !!locked;
+  // Foerste gang er det en oppsettsflyt. Senere er det innstillinger.
+  $('hiwTitle').textContent = obLocked ? 'Get started' : 'Settings';
   $('hiwClose').style.display = obLocked ? 'none' : '';
   $('hiwScrim').classList.add('open');
   $('hiw').classList.add('open');
