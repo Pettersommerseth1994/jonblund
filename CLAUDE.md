@@ -205,11 +205,47 @@ discounted, and the short word must not lie about that.
   reported on return: "Not listening for 2 min". Under five is an app switch
   and not worth a word. For a monitor, an unannounced gap is the failure that
   matters.
+- **Stop and Pause ask first.** They are the only two actions that take the
+  microphone down, so both go through a confirm dialog — and the microphone
+  keeps listening the whole time it is open. Nothing is torn down before the
+  answer, which is what makes a question left standing harmless: it closes
+  itself after 20 s and carries on listening. The confirm button is dead for
+  `CONFIRM_ARM_MS` (450 ms) so a double-tap on Stop cannot go straight through
+  a question nobody read, and entering `calling`/`incall`/`off`/`error` closes
+  it so Hang up is never behind a dialog. Turning on, continuing and hanging up
+  go straight through: none of them can do harm, and a barrier in front of Hang
+  up would be one.
+- **A pause stays paused, and nothing rings when the microphone is off.**
+  Both were offered as further barriers on 2026-08-28 and both were turned
+  down. Auto-resuming a pause would mean the app switches the microphone on
+  without being asked, and a call saying "nothing is wrong with the baby" is
+  easy to misread at three in the morning. Making the pause *visible* was
+  judged to be enough. Do not re-propose either without a night where the
+  visible pause demonstrably failed.
+- **A paused app must not look like a listening one.** `paused` came out of the
+  dim states, and `pauseMic()` no longer releases the screen wake lock. The
+  failure being guarded is walking into the room to find the microphone off
+  without knowing — and a dark screen reading "Paused" in 11px on black, or a
+  device that let its own screen sleep, is not a warning. Battery is the cheaper
+  thing to spend here.
 - **Pause is not Stop.** `pauseMic()` takes the microphone down and leaves the
   sleep session running; `stopMic()` calls `napWake()` and ends it. `startMic()`
   only starts a new session when there is not one in progress, which is what
   makes resume continue rather than reset — and also stops a page reload from
   wiping the nap.
+- **A tap on the dark screen used to press the button underneath.** The screen
+  woke on `pointerdown`, the veil stopped taking pointer events in the same
+  instant, and the synthesised click that follows landed on whatever was under
+  the finger — the classic iOS ghost click. With Stop there, the microphone
+  stopped, which is the worst bug this app can have. Verified both ways in the
+  browser rather than reasoned about: replaying the old sequence, the ghost
+  lands on `powerTxt` and `powerBtn` fires; with the fix it lands on `.veil` and
+  no button sees it. Two independent layers, either of which alone would have
+  held: the whole press is swallowed in the capture phase, and `.waking` keeps
+  the veil click-tight for `WAKE_GUARD_MS` afterwards. The veil also moved to
+  `z-index:200`, above every sheet and overlay, so nothing behind the dark
+  screen is reachable at all — not even a form that was open when it dimmed.
+  Anything new that dismisses a full-screen layer needs the same guard.
 - **Measure before tuning thresholds.** Three rounds were burned guessing at
   detection numbers. Use `OfflineAudioContext` to score synthetic signals, or
   read the on-screen diagnostics (tap the status label).

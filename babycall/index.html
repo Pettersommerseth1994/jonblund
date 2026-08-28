@@ -364,17 +364,67 @@ footer a{color:var(--slate-light)}
 .sheet .btn-primary{max-width:none;margin-top:8px}
 .sheet-err{font-size:13px;color:var(--warm);margin-top:10px;min-height:18px}
 
-/* ---------- NIGHT DIM ---------- */
+/* ---------- NIGHT DIM ----------
+   Sloeret ligger over alt annet med vilje. Naar skjermen er nede er det det
+   eneste som tar imot et trykk, saa ingenting bak det kan treffes ved et uhell
+   — heller ikke et skjema som stod aapent da den dimmet ned. .waking holder
+   det klikk-tett mens det toner bort: uten den ventetiden faar knappen under
+   fingeren den syntetiske click-en i det sloeret slipper.
+
+   Ned langsomt, opp raskt. En overgang leser varigheten fra tilstanden den
+   gaar TIL, saa den lange staar paa .dim og den korte paa grunntilstanden:
+   nedtoningen skal snike seg paa ved senga, oppvaakningen skal vaere der med
+   en gang — enten fingeren ba om den eller et anrop gjorde det. */
 .veil{
-  position:fixed;inset:0;background:#05070b;z-index:60;
-  opacity:0;pointer-events:none;transition:opacity 1.8s ease;
+  position:fixed;inset:0;background:#05070b;z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .35s ease;
 }
-body.dim .veil{opacity:.975;pointer-events:auto}
+body.dim .veil{opacity:.975;pointer-events:auto;transition-duration:1.8s}
+body.waking .veil{pointer-events:auto}
 .nightmark{
-  position:fixed;inset:0;z-index:61;display:grid;place-items:center;
-  opacity:0;pointer-events:none;transition:opacity 1.8s ease;text-align:center;
+  position:fixed;inset:0;z-index:201;display:grid;place-items:center;
+  opacity:0;pointer-events:none;transition:opacity .35s ease;text-align:center;
 }
-body.dim .nightmark{opacity:1}
+body.dim .nightmark{opacity:1;transition-duration:1.8s}
+
+/* ---------- CONFIRM ----------
+   Stopp og pause er de eneste to handlingene som tar mikrofonen ned. De faar
+   et sporsmaal foran seg, og mikrofonen lytter uavbrutt sa lenge det staar
+   aapent: ingenting skrus av for noen har svart. */
+.confirm-scrim{
+  position:fixed;inset:0;background:rgba(26,29,36,.42);backdrop-filter:blur(5px);
+  opacity:0;pointer-events:none;transition:opacity .3s;z-index:120;
+}
+.confirm-scrim.open{opacity:1;pointer-events:auto}
+.confirm{
+  position:fixed;z-index:121;left:50%;top:50%;
+  width:min(340px,calc(100vw - 40px));
+  transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s cubic-bezier(.16,1,.3,1);
+  background:var(--white);border-radius:26px;
+  padding:28px 26px 20px;text-align:center;
+  box-shadow:0 30px 80px rgba(26,29,36,.28);
+}
+.confirm.open{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.confirm h3{
+  font-family:var(--display);font-weight:400;font-size:24px;
+  letter-spacing:-.02em;margin-bottom:8px;
+}
+.confirm h3 em{font-style:italic;color:var(--accent-deep)}
+.confirm p{font-size:14px;color:var(--slate);line-height:1.55;margin-bottom:22px}
+.confirm .btn-primary{max-width:none;width:100%}
+.confirm-go{
+  background:none;border:none;color:var(--warm);font-family:var(--body);
+  font-size:14px;font-weight:600;cursor:pointer;
+  padding:15px 4px 5px;width:100%;transition:opacity .25s;
+}
+.confirm-go:disabled{opacity:.28;pointer-events:none}
+/* Sporsmaalet tar imot fokus, saa ringen maa vaere vaar egen og ikke
+   nettleserens gule. */
+.confirm .btn-primary:focus-visible,
+.confirm-go:focus-visible{
+  outline:2px solid var(--accent-deep);outline-offset:3px;border-radius:100px;
+}
 .nightmark .dot{
   width:9px;height:9px;border-radius:50%;background:var(--accent);
   margin:0 auto 16px;animation:breathe 3.6s ease-in-out infinite;
@@ -695,7 +745,7 @@ body.dim .nightmark{opacity:1}
 
   <div class="note note-info" id="screenNote">
     <span class="ic">i</span>
-    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening, and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it. Just don't lock the device or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
+    <span><b>Jon Blund keeps the screen awake by itself.</b> As long as the orb is moving, it is listening, and it dims to almost nothing after a while so the screen is not glaring by the crib. Tap to wake it, and that tap only wakes it — nothing behind the dark screen can be pressed by accident. Just don't lock the device or leave this window: the microphone stops the moment you do. Keep it plugged in.</span>
   </div>
 
   <div class="note note-info" id="placeNote">
@@ -902,6 +952,17 @@ body.dim .nightmark{opacity:1}
   <div class="sheet-err" id="sheetErr"></div>
   <button class="btn-primary" id="saveBtn">Save</button>
   <button class="btn-ghost" id="cancelBtn" style="width:100%;margin-top:6px">Cancel</button>
+</div>
+
+<!-- Sporsmaalet foran Stop og Pause. Mikrofonen lytter hele tiden mens dette
+     staar aapent: den tas ikke ned for noen har trykket bekreft. -->
+<div class="confirm-scrim" id="confirmScrim"></div>
+<div class="confirm" id="confirmBox" role="alertdialog" aria-modal="true"
+     aria-labelledby="confirmTitle" aria-describedby="confirmBody">
+  <h3 id="confirmTitle">Stop listening?</h3>
+  <p id="confirmBody"></p>
+  <button class="btn-primary" id="confirmKeep">Keep listening</button>
+  <button class="confirm-go" id="confirmGo">Yes, stop listening</button>
 </div>
 
 <div class="veil"></div>
@@ -1460,7 +1521,9 @@ async function reviveMic(){
 function pauseMic(){
   dropAudio();
   nextCheckAt = Infinity;
-  releaseWakeLock();
+  /* Skjermlaasen beholdes med vilje. En pause skal vaere synlig fra doera:
+     slapp vi den, sovnet skjermen paa en avslaatt mikrofon, og det er
+     akkurat den situasjonen som ikke skal kunne oppstaa. */
   setState('paused');
   notice('Paused. The nap clock is still running.', 4000);
 }
@@ -1676,19 +1739,122 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* ---------------- screen dim ---------------- */
+/* ---------------- screen dim ----------------
+   Et trykk paa svart skjerm skal vekke skjermen og gjoere ingenting annet.
+   Det gjorde det ikke: skjermen vaaknet paa pointerdown, sloeret slapp
+   museklikk gjennom i samme oeyeblikk, og den syntetiske click-en rett
+   etterpaa traff det som laa under fingeren. Laa Stop der, stoppet
+   mikrofonen. Klassisk gjenferdsklikk paa iOS, og for en babycall er det
+   den verste feilen appen kan ha.
+
+   To laag mot det, og de er uavhengige av hverandre:
+     1. Hele trykket svelges i fangstfasen — det naar aldri noen knapp.
+     2. Sloeret blir staaende klikk-tett i WAKE_GUARD_MS etterpaa, saa et
+        gjenferdsklikk som kommer forsinket ogsaa treffer sloeret. */
+const WAKE_GUARD_MS = 700;
+let wakingTimer = null;
+
 function scheduleDim(){
   clearTimeout(dimTimer);
-  if (state === 'listening' || state === 'cooldown' || state === 'paused'){
+  if (confirmFor) return;                 // ikke legg et slor over et sporsmaal
+  /* 'paused' er med vilje ute herfra. Er mikrofonen av, skal appen ikke faa
+     se ut som en app som lytter — det er nettopp den forvekslingen som gjor
+     at en pause kan bli staaende uten at noen oppdager den. */
+  if (state === 'listening' || state === 'cooldown'){
     dimTimer = setTimeout(() => {
-      if (state === 'listening' || state === 'cooldown' || state === 'paused') document.body.classList.add('dim');
+      if (state === 'listening' || state === 'cooldown') document.body.classList.add('dim');
     }, DIM_AFTER_MS);
   }
 }
-function undim(){ clearTimeout(dimTimer); document.body.classList.remove('dim'); scheduleDim(); }
-['pointerdown','keydown','touchstart'].forEach(ev =>
-  window.addEventListener(ev, () => { if (document.body.classList.contains('dim')) undim(); else scheduleDim(); }, { passive:true })
+
+function undim(){
+  clearTimeout(dimTimer); clearTimeout(wakingTimer);
+  document.body.classList.remove('dim', 'waking');
+  scheduleDim();
+}
+
+function wakeScreen(){
+  if (!document.body.classList.contains('dim')) return;
+  document.body.classList.remove('dim');
+  document.body.classList.add('waking');
+  clearTimeout(wakingTimer);
+  wakingTimer = setTimeout(() => document.body.classList.remove('waking'), WAKE_GUARD_MS);
+  scheduleDim();
+}
+/* Sant sa lenge sloeret fortsatt tetter. Knappene som tar mikrofonen ned
+   sporr om dette selv, som et andre laag under svelgingen over. */
+function justWoke(){ return document.body.classList.contains('waking'); }
+
+const swallowWhileDim = (e) => {
+  const dim = document.body.classList.contains('dim');
+  if (!dim && !document.body.classList.contains('waking')) return;
+  e.stopImmediatePropagation();
+  if (e.cancelable) e.preventDefault();
+  if (dim) wakeScreen();
+};
+['pointerdown','pointerup','mousedown','mouseup','click',
+ 'touchstart','touchend','touchcancel','keydown'].forEach(ev =>
+  window.addEventListener(ev, swallowWhileDim, { capture:true, passive:false })
 );
+
+/* Aktivitet mens skjermen er oppe utsetter bare dimmingen. Naar den er nede
+   naar dette aldri hit: svelgeren over stopper hendelsen for den kommer saa
+   langt. */
+['pointerdown','keydown','touchstart'].forEach(ev =>
+  window.addEventListener(ev, () => scheduleDim(), { passive:true })
+);
+
+/* ---------------- confirm ----------------
+   Stop og Pause er de eneste handlingene som tar mikrofonen ned, saa de er
+   de eneste som spor forst. Mikrofonen lytter uavbrutt mens sporsmaalet
+   staar: ingenting rives ned for svaret er gitt, og et sporsmaal som blir
+   staaende er derfor ufarlig — den lukker seg selv og fortsetter aa lytte.
+
+   Bekreftelsen er dod de forste hundredelene. Et dobbelttrykk paa Stop skal
+   ikke kunne gaa rett gjennom sporsmaalet uten at noen har lest det. */
+const CONFIRM_ARM_MS  = 450;
+const CONFIRM_IDLE_MS = 20000;
+let confirmFor = null, confirmTimer = null, confirmArmTimer = null;
+
+const CONFIRM_COPY = {
+  stop: {
+    title: 'Stop listening?',
+    body:  'Jon Blund stops listening and will not call anyone. The nap ends here, so this is the one to use when she is up for the day.',
+    go:    'Yes, stop listening'
+  },
+  pause: {
+    title: 'Pause listening?',
+    body:  'The microphone goes off. Jon Blund will not hear crying and will not call anyone until you tap Continue. The nap clock keeps running.',
+    go:    'Yes, pause'
+  }
+};
+
+function askConfirm(kind){
+  const copy = CONFIRM_COPY[kind];
+  if (!copy || confirmFor) return;
+  confirmFor = kind;
+  undim();                                  // et sporsmaal skal ikke stilles bak et slor
+  $('confirmTitle').textContent = copy.title;
+  $('confirmBody').textContent  = copy.body;
+  $('confirmGo').textContent    = copy.go;
+  $('confirmGo').disabled = true;
+  clearTimeout(confirmArmTimer);
+  confirmArmTimer = setTimeout(() => { $('confirmGo').disabled = false; }, CONFIRM_ARM_MS);
+  $('confirmScrim').classList.add('open');
+  $('confirmBox').classList.add('open');
+  try { $('confirmKeep').focus({ preventScroll:true }); } catch(e){}
+  clearTimeout(confirmTimer);
+  confirmTimer = setTimeout(closeConfirm, CONFIRM_IDLE_MS);
+}
+
+function closeConfirm(){
+  if (!confirmFor) return;
+  confirmFor = null;
+  clearTimeout(confirmTimer); clearTimeout(confirmArmTimer);
+  $('confirmScrim').classList.remove('open');
+  $('confirmBox').classList.remove('open');
+  scheduleDim();
+}
 
 /* ---------------- render ---------------- */
 /* Knappesymboler. Fylte former, myke hjoerner: samme spraak som resten. */
@@ -1736,7 +1902,11 @@ function setState(next){
   document.body.classList.toggle('listening', state === 'listening');
   document.body.classList.toggle('detecting', state === 'detecting');
   document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
-  if (state !== 'listening' && state !== 'cooldown' && state !== 'paused') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
+  /* Et sporsmaal om aa stoppe gir ingen mening lenger naar linja ringer eller
+     mikrofonen allerede er nede. Da lukker det seg av seg selv, sa Hang up
+     ligger fritt. */
+  if (['calling','incall','off','error','starting'].includes(state)) closeConfirm();
+  if (state !== 'listening' && state !== 'cooldown') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
   else scheduleDim();
   paint();
 }
@@ -1858,9 +2028,8 @@ function paint(){
     }
   }
 
-  $('nmText').textContent = state === 'paused'   ? 'Paused'
-                          : state === 'cooldown' ? 'Just called'
-                          : 'Listening';
+  // Bare de to lyttende tilstandene dimmer, saa dette er alt merket kan si.
+  $('nmText').textContent = state === 'cooldown' ? 'Just called' : 'Listening';
 
   renderCheck();
 
@@ -1977,16 +2146,30 @@ wireSeg($('checkSeg'), checkEvery, v => {
 });
 
 /* ---------------- wiring ---------------- */
+/* Aa slaa paa, aa fortsette og aa legge paa gaar rett gjennom: ingen av dem
+   kan gjore skade. Aa stoppe og aa pause tar mikrofonen ned, og de gaar via
+   et sporsmaal — og aldri i det oyeblikket skjermen nettopp vaaknet. */
 $('powerBtn').addEventListener('click', () => {
   // 'paused' hoerer ikke hit lenger: knappen sier Stop naar den er pauset, og
   // det er Play ved siden av som starter igjen. Sto her fra den gang denne
   // knappen sa "Resume listening".
   if (state === 'off' || state === 'error') startMic();
   else if (state === 'calling' || state === 'incall') endCall();
-  else stopMic();
+  else if (!justWoke()) askConfirm('stop');
 });
 $('pauseBtn').addEventListener('click', () => {
-  if (state === 'paused') startMic(true); else pauseMic();
+  if (state === 'paused') startMic(true);
+  else if (!justWoke()) askConfirm('pause');
+});
+
+addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
+$('confirmKeep').addEventListener('click', closeConfirm);
+$('confirmScrim').addEventListener('click', closeConfirm);
+$('confirmGo').addEventListener('click', () => {
+  const kind = confirmFor;
+  closeConfirm();
+  if (kind === 'stop')  stopMic();
+  else if (kind === 'pause') pauseMic();
 });
 $('secondaryBtn').addEventListener('click', () => {
   if (state === 'detecting'){ acc = 0; setState('listening'); notice('Ignored. Still listening.'); }
