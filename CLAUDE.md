@@ -222,12 +222,16 @@ discounted, and the short word must not lie about that.
   easy to misread at three in the morning. Making the pause *visible* was
   judged to be enough. Do not re-propose either without a night where the
   visible pause demonstrably failed.
-- **A paused app must not look like a listening one.** `paused` came out of the
-  dim states, and `pauseMic()` no longer releases the screen wake lock. The
-  failure being guarded is walking into the room to find the microphone off
-  without knowing — and a dark screen reading "Paused" in 11px on black, or a
-  device that let its own screen sleep, is not a warning. Battery is the cheaper
-  thing to spend here.
+- **A paused app must not look like a listening one — but it still has to go
+  dark.** The first attempt at this took `paused` out of the dim states and had
+  `pauseMic()` hold the screen wake lock, so a paused iPad stayed lit for ever.
+  That was wrong for the same reason the app makes no sound: it sits beside a
+  sleeping baby, and a bright screen is a problem in its own right. Reverted on
+  2026-08-29. A pause dims and releases the lock exactly as before; what changed
+  instead is what the dark screen *says*. `body.micoff` turns the nightmark into
+  "Microphone off / Paused" in `--warm` and hides the breathing dot, because a
+  dot that pulses reads as alive. The fix for an illegible state is to make it
+  legible, not to stop it from happening.
 - **Pause is not Stop.** `pauseMic()` takes the microphone down and leaves the
   sleep session running; `stopMic()` calls `napWake()` and ends it. `startMic()`
   only starts a new session when there is not one in progress, which is what
@@ -246,6 +250,17 @@ discounted, and the short word must not lie about that.
   `z-index:200`, above every sheet and overlay, so nothing behind the dark
   screen is reachable at all — not even a form that was open when it dimmed.
   Anything new that dismisses a full-screen layer needs the same guard.
+- **There is a flight recorder, and it is the answer to "the microphone just
+  stopped".** `rec()` writes timestamped events to `KEY.log` in localStorage —
+  state changes, track ended/mute/unmute, revive attempts and their outcome,
+  visibility changes, wake-lock refusals, dead-audio readings, gaps, calls,
+  and what the user confirmed. Repeats are counted rather than appended, so a
+  rare event is not buried by a frequent one, and the last nine are rendered
+  under the diagnostics readout (tap the status label) so a parent can screenshot
+  it from the device with no computer involved. It exists because the microphone
+  dying is a night-time failure nobody watches happen: without it the only
+  evidence is the morning's result, and this repo has already burned rounds on
+  guessing. Read the log before forming a theory.
 - **Measure before tuning thresholds.** Three rounds were burned guessing at
   detection numbers. Use `OfflineAudioContext` to score synthetic signals, or
   read the on-screen diagnostics (tap the status label).

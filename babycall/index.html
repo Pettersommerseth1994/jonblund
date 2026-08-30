@@ -125,6 +125,15 @@ body.alerting .status{color:var(--warm)}
   font-size:11px;line-height:1.8;color:var(--slate-light);letter-spacing:.01em;
 }
 body.diagnostics .diag{display:block}
+/* Ferdskriveren. Venstrestilt fordi den leses linje for linje, ikke
+   skummes — og innrammet saa den ikke forveksles med maalingene over. */
+.lg{
+  margin-top:12px;padding-top:10px;border-top:1px solid var(--line);
+  text-align:left;display:inline-block;max-width:100%;
+  font-size:10.5px;line-height:1.9;color:var(--slate-light);
+}
+.lg-t{color:var(--accent-deep)}
+.lg-x{color:var(--slate)}
 
 /* ---------- BUTTONS ---------- */
 .actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:24px;width:100%}
@@ -386,6 +395,12 @@ body.waking .veil{pointer-events:auto}
   opacity:0;pointer-events:none;transition:opacity .35s ease;text-align:center;
 }
 body.dim .nightmark{opacity:1;transition-duration:1.8s}
+/* Er mikrofonen av, maa merket si det og ikke se ut som et som puster. Den
+   pustende prikken leses som liv, saa den gaar bort, og teksten faar den
+   varme fargen — lesbar i moerket uten aa lyse opp rommet. */
+body.micoff .nightmark .dot{display:none}
+body.micoff .nightmark .nm-t{color:var(--warm);font-size:13px;letter-spacing:.16em}
+body.micoff .nightmark .nm-s{color:#7a5f5f}
 
 /* ---------- CONFIRM ----------
    Stopp og pause er de eneste to handlingene som tar mikrofonen ned. De faar
@@ -970,7 +985,7 @@ body.dim .nightmark{opacity:1;transition-duration:1.8s}
   <div>
     <div class="dot"></div>
     <div class="nm-t" id="nmText">Listening</div>
-    <div class="nm-s">Tap to wake the screen</div>
+    <div class="nm-s" id="nmSub">Tap to wake the screen</div>
   </div>
 </div>
 
@@ -1115,10 +1130,37 @@ const KEY = {
   baby:       'jonblund.baby.v1',
   checkEvery: 'jonblund.checkEvery.v1',
   birth:      'jonblund.birth.v1',       // ISO-dato, sa alderen holder seg riktig
-  sleep:      'jonblund.sleep.v1'
+  sleep:      'jonblund.sleep.v1',
+  log:        'jonblund.log.v1'
 };
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch(e){ return fb; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+/* ---------------- ferdskriver ----------------
+   Naar mikrofonen doer klokka tre om natta er det ingen som ser det skje, og
+   om morgenen er det bare et resultat aa gjette ut fra. Her staar det hva som
+   faktisk hendte, i rekkefoelge: avbrudd, redningsforsoek, tilstandsskifter.
+   Den ligger i localStorage saa den overlever at siden lastes paa nytt, og
+   leses av ved aa trykke paa statusteksten.
+
+   Gjentakelser telles i stedet for aa fylle listen — ellers druknes en
+   sjelden hendelse av en hyppig. */
+const LOG_MAX = 120;
+let flight = load(KEY.log, []);
+function rec(what, extra){
+  try {
+    const x = extra === undefined ? '' : String(extra);
+    const last = flight[flight.length - 1];
+    if (last && last.w === what && last.x === x){
+      last.n = (last.n || 1) + 1;
+      last.t = Date.now();
+    } else {
+      flight.push({ t: Date.now(), w: what, x });
+      if (flight.length > LOG_MAX) flight = flight.slice(-LOG_MAX);
+    }
+    save(KEY.log, flight);
+  } catch(e){}
+}
 
 let contacts   = load(KEY.contacts, []);
 let selectedId = load(KEY.selected, null);
@@ -1259,6 +1301,9 @@ function wakeWindow(){
 }
 
 const clockTime = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+/* Loggen trenger sekunder: uten dem faller en byge av hendelser sammen til
+   ett klokkeslett, og rekkefoelgen er halve svaret. */
+const logTime = (ms) => new Date(ms).toLocaleTimeString([], { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
 const spanText  = (ms) => {
   const t = Math.max(0, Math.round(ms / 60000));
   return t < 60 ? t + ' min' : Math.floor(t / 60) + 'h ' + String(t % 60).padStart(2, '0') + 'm';
@@ -1445,19 +1490,22 @@ async function wireAudio(){
   timeBuf = new Float32Array(analyser.fftSize);
   freqBuf = new Float32Array(analyser.frequencyBinCount);
   const track = stream.getAudioTracks()[0];
+  rec('audio wired');
   track.addEventListener('ended', onTrackEnded);
   /* Et innkommende anrop demper ofte sporet i stedet for aa avslutte det.
      Ingen av delene sier fra av seg selv, saa vi lytter paa begge. */
   track.addEventListener('mute', () => {
+    rec('track muted');
     if (state === 'listening' || state === 'detecting') gapFrom(Date.now());
   });
-  track.addEventListener('unmute', () => { reviveMic(); reportGap(); });
+  track.addEventListener('unmute', () => { rec('track unmuted'); reviveMic(); reportGap(); });
 }
 
 /* iOS avslutter mikrofonsporet naar en telefonsamtale tar over lyden paa
    enheten. Det skal ikke bety at Jon Blund gir opp: luren staar, og vi bygger
    mikrofonen opp igjen. Foerst hvis ogsaa det feiler sier vi fra. */
 function onTrackEnded(){
+  rec('track ended', state);
   if (state === 'off' || state === 'error' || state === 'paused' || reviving) return;
   gapFrom(Date.now());
   // Rapporten kommer etter gjenoppbyggingen, saa den blir den siste meldingen
@@ -1474,6 +1522,7 @@ function reportGap(){
   const gap = Date.now() - gapStart;
   gapStart = 0;
   if (gap < 5000) return;
+  rec('gap', Math.round(gap/1000) + 's');
   const secs = Math.round(gap / 1000);
   notice('Not listening for ' + (secs < 60 ? secs + ' seconds' : spanText(gap))
        + ', while the device was busy. Listening again now.', 9000);
@@ -1487,6 +1536,9 @@ function reportGap(){
 async function reviveMic(){
   if (reviving || state === 'off' || state === 'error' || state === 'paused') return;
   reviving = true;
+  rec('revive', 'actx=' + (actx ? actx.state : 'none')
+      + ' track=' + (() => { const t = stream && stream.getAudioTracks()[0];
+          return t ? t.readyState + (t.muted ? '/muted' : '') : 'none'; })());
   try {
     if (actx && actx.state === 'suspended'){ try { await actx.resume(); } catch(e){} }
 
@@ -1504,9 +1556,11 @@ async function reviveMic(){
       });
       await wireAudio();
       floorDb = -70;                 // nytt rom for gulvet, det gamle er ikke lenger sant
-      notice('Microphone picked back up after the call.', 4000);
+      rec('revive ok', 'rebuilt');
+    notice('Microphone picked back up after the call.', 4000);
     }
   } catch(e){
+    rec('revive failed', (e && (e.message || e.name)) || 'unknown');
     setState('error');
     notice('The microphone did not come back after the call. Tap to start listening again.', Infinity);
   } finally {
@@ -1521,9 +1575,7 @@ async function reviveMic(){
 function pauseMic(){
   dropAudio();
   nextCheckAt = Infinity;
-  /* Skjermlaasen beholdes med vilje. En pause skal vaere synlig fra doera:
-     slapp vi den, sovnet skjermen paa en avslaatt mikrofon, og det er
-     akkurat den situasjonen som ikke skal kunne oppstaa. */
+  releaseWakeLock();
   setState('paused');
   notice('Paused. The nap clock is still running.', 4000);
 }
@@ -1625,7 +1677,7 @@ function loop(){
   // har tenkt paa, fordi det maaler resultatet og ikke en mistanke.
   if (db < DEAD_DB){
     if (!silentSince) silentSince = now;
-    else if (now - silentSince > DEAD_AFTER_MS) reviveMic();
+    else if (now - silentSince > DEAD_AFTER_MS){ rec('dead audio', db.toFixed(0) + ' dB'); reviveMic(); }
   } else silentSince = 0;
   if (now - peakAt > 30000){ peakDb = -99; peakRatio = 0; peakAt = now; }
   if (db > peakDb) peakDb = db;
@@ -1678,6 +1730,7 @@ async function triggerCall(reason){
       : 'Nobody is picked to call.', 6000);
     return;
   }
+  rec('calling', callReason);
   setState('calling');
   paint();
   undim();
@@ -1717,13 +1770,14 @@ async function requestWakeLock(){
   if (!('wakeLock' in navigator)) return;
   try {
     wakeLock = await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release', () => { wakeLock = null; });
-  } catch(e){}
+    wakeLock.addEventListener('release', () => { rec('wakelock released'); wakeLock = null; });
+  } catch(e){ rec('wakelock refused', (e && e.name) || 'unknown'); }
 }
 function releaseWakeLock(){ if (wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; } }
 document.addEventListener('visibilitychange', () => {
   const listening = state === 'listening' || state === 'detecting' || state === 'cooldown';
 
+  rec('page ' + document.visibilityState);
   if (document.visibilityState === 'hidden'){
     // Et anrop paa denne enheten legger siden i bakgrunnen og tar mikrofonen.
     if (listening) gapFrom(Date.now());
@@ -1757,12 +1811,13 @@ let wakingTimer = null;
 function scheduleDim(){
   clearTimeout(dimTimer);
   if (confirmFor) return;                 // ikke legg et slor over et sporsmaal
-  /* 'paused' er med vilje ute herfra. Er mikrofonen av, skal appen ikke faa
-     se ut som en app som lytter — det er nettopp den forvekslingen som gjor
-     at en pause kan bli staaende uten at noen oppdager den. */
-  if (state === 'listening' || state === 'cooldown'){
+  /* Ogsaa pauset. Enheten staar ved siden av et sovende barn, saa en skjerm
+     som blir staaende lysende er et problem i seg selv — den maa faa toen
+     ned. Det pausen trenger er ikke lys, men at merket bak sloeret sier hva
+     som faktisk er av. Det gjoer det naa. */
+  if (state === 'listening' || state === 'cooldown' || state === 'paused'){
     dimTimer = setTimeout(() => {
-      if (state === 'listening' || state === 'cooldown') document.body.classList.add('dim');
+      if (state === 'listening' || state === 'cooldown' || state === 'paused') document.body.classList.add('dim');
     }, DIM_AFTER_MS);
   }
 }
@@ -1833,6 +1888,7 @@ function askConfirm(kind){
   const copy = CONFIRM_COPY[kind];
   if (!copy || confirmFor) return;
   confirmFor = kind;
+  rec('asked', kind);
   undim();                                  // et sporsmaal skal ikke stilles bak et slor
   $('confirmTitle').textContent = copy.title;
   $('confirmBody').textContent  = copy.body;
@@ -1886,6 +1942,7 @@ const COPY = {
   error:       ['Microphone off',    'Something interrupted the microphone.']
 };
 
+let logHtml = '', logLen = -1, logTail;
 let noticeText = '', noticeUntil = 0;
 function notice(msg, ms){
   noticeText = msg;
@@ -1896,17 +1953,21 @@ function clearNotice(){ noticeText = ''; noticeUntil = 0; }
 
 function setState(next){
   if (state === next) return;
+  if (next !== 'detecting') rec('state', next);
   state = next;
   clearNotice();
   document.body.classList.toggle('live',      ['calibrating','listening','detecting'].includes(state));
   document.body.classList.toggle('listening', state === 'listening');
   document.body.classList.toggle('detecting', state === 'detecting');
   document.body.classList.toggle('alerting',  state === 'calling' || state === 'incall');
+  document.body.classList.toggle('micoff',    state === 'paused');
   /* Et sporsmaal om aa stoppe gir ingen mening lenger naar linja ringer eller
      mikrofonen allerede er nede. Da lukker det seg av seg selv, sa Hang up
      ligger fritt. */
   if (['calling','incall','off','error','starting'].includes(state)) closeConfirm();
-  if (state !== 'listening' && state !== 'cooldown') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
+  /* 'error' dimmer bevisst ikke: en mikrofon som ikke kom tilbake skal staa
+     og lyse til noen ser den. */
+  if (state !== 'listening' && state !== 'cooldown' && state !== 'paused') { clearTimeout(dimTimer); document.body.classList.remove('dim'); }
   else scheduleDim();
   paint();
 }
@@ -2028,14 +2089,33 @@ function paint(){
     }
   }
 
-  // Bare de to lyttende tilstandene dimmer, saa dette er alt merket kan si.
-  $('nmText').textContent = state === 'cooldown' ? 'Just called' : 'Listening';
+  /* Bak sloeret er dette alt som er igjen aa lese, saa det maa vaere sant.
+     En pause som ser ut som lytting er nettopp feilen dette skal fange. */
+  const nmT = state === 'paused'   ? 'Microphone off'
+            : state === 'cooldown' ? 'Just called'
+            : 'Listening';
+  const nmS = state === 'paused' ? 'Paused. Tap to wake the screen.'
+                                 : 'Tap to wake the screen';
+  if ($('nmText').textContent !== nmT) $('nmText').textContent = nmT;
+  if ($('nmSub').textContent  !== nmS) $('nmSub').textContent  = nmS;
 
   renderCheck();
 
   if (document.body.classList.contains('diagnostics')){
     const live = analyser !== null;
     const wail = (cryHeard / 1000).toFixed(1);
+    /* Loggen bygges bare naar den faktisk har endret seg. paint() gaar hver
+       animasjonsramme, og aa sette den sammen seksti ganger i sekundet er den
+       samme feilen som fikk knappene til aa blinke. */
+    if (flight.length !== logLen || (flight.length && flight[flight.length-1].n !== logTail)){
+      logLen = flight.length;
+      logTail = flight.length ? flight[flight.length-1].n : undefined;
+      logHtml = flight.slice(-9).map(e =>
+        '<span class="lg-t">' + logTime(e.t) + '</span> ' + esc(e.w)
+        + (e.x ? ' <span class="lg-x">' + esc(e.x) + '</span>' : '')
+        + (e.n > 1 ? ' <span class="lg-x">&times;' + e.n + '</span>' : '')
+      ).join('<br>');
+    }
     $('diag').innerHTML = live
       ? 'level ' + lastDb.toFixed(0) + ' &nbsp;floor ' + floorDb.toFixed(0) +
         ' &nbsp;needs ' + (floorDb + GATE.margin).toFixed(0) + ' ' +
@@ -2045,6 +2125,7 @@ function paint(){
         'peak 30s: ' + peakDb.toFixed(0) + ' dB &nbsp;tone ' + peakRatio.toFixed(2) + '<br>' +
         'cry ' + wail + 's / ' + (CRY_MS/1000) + 's'
       : 'microphone off';
+    $('diag').innerHTML += (logHtml ? '<div class="lg">' + logHtml + '</div>' : '');
   }
 }
 
@@ -2168,6 +2249,7 @@ $('confirmScrim').addEventListener('click', closeConfirm);
 $('confirmGo').addEventListener('click', () => {
   const kind = confirmFor;
   closeConfirm();
+  rec('confirmed', kind);
   if (kind === 'stop')  stopMic();
   else if (kind === 'pause') pauseMic();
 });
