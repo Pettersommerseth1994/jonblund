@@ -30,6 +30,10 @@ Local: `/Users/petter/Desktop/Babycall/{jonblund,jonblund-voice}`.
 3. TwiML app → `/api/voice`, which returns `<Dial callerId=…>` for the number
 4. Twilio bridges the two legs. B hangs up → `disconnect` → 20s cooldown → listening
 
+The microphone is **handed over** at step 1 and **taken back** at step 4. That
+is not an optimisation, it is the difference between a call with audio and a
+call without. See the gotcha below.
+
 ## Decisions worth not relitigating
 
 - **Detection**: loudness over an adaptive noise floor AND tonality in 250–2500 Hz,
@@ -297,6 +301,30 @@ discounted, and the short word must not lie about that.
   pushed out of the onboarding card. `min-width:0` plus
   `-webkit-appearance:none` holds it in. A desktop browser does not reproduce
   this, so check date fields on a real iPhone.
+- **iOS Safari lets one consumer capture audio at a time, and the newest wins.**
+  Our analysis stream and Twilio's call leg are two consumers. When Twilio takes
+  the microphone, iOS mutes our analysis track — which the interruption handling
+  reads as a fault and answers with `reviveMic()`, making *us* newest again and
+  starving the outbound leg. Symptom: the phone rings, someone answers, and
+  there is no sound from the room. Nothing in the console, nothing in Twilio's
+  logs, because the call is genuinely up. The rule now: `onTrackEnded` and
+  `reviveMic` stand down while `state` is `calling` or `incall`, and
+  `triggerCall` calls `dropAudio()` before connecting so Twilio has the
+  microphone alone. Never re-acquire audio during a call.
+- **Leaving cooldown cannot live only in `loop()`.** Handing the microphone to
+  Twilio stops the rAF loop, and rAF is frozen anyway when the screen is off, so
+  the app would sit in cooldown forever and never hear the next cry.
+  `leaveCooldownIfDue()` runs from the 500 ms interval as well. Any timer that
+  matters for safety belongs on the interval, not on animation frames.
+- **`loop()` reschedules itself, so it must be started exactly once.** Two
+  chains read the audio twice. `startLoop()` guards on `rafId === null` and
+  `wireAudio()` calls it, so whoever rebuilds the analyser also restarts the
+  reading. Do not call `loop()` directly.
+- **Do not reset `floorDb` when rebuilding the audio chain.** `trackFloor` falls
+  6% per frame but creeps up only 0.010 dB/frame, so a reset to −70 in a room
+  with a fan at −55 takes **21.7 s** to correct, and the app is over-sensitive
+  the whole way — right after a call, when the baby may still be making noise.
+  Keeping a floor that turns out too high costs 0.23 s. Measured, both numbers.
 
 ## Security
 

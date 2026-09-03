@@ -1473,8 +1473,16 @@ async function startMic(quiet){
   calibrateStartedAt = performance.now();
   setState('calibrating');
   lastFrame = performance.now();
-  loop();
+  startLoop();
 
+}
+
+/* loop() forlenger seg selv, saa den maa startes en gang og bare en gang: to
+   kjeder ville lest lyden dobbelt. dropAudio() stopper den, og etter en samtale
+   er det ingen andre som starter den igjen. Derfor gjoer wireAudio() det - den
+   som bygger analysatoren, skal ogsaa sette den i gang. */
+function startLoop(){
+  if (rafId === null){ lastFrame = performance.now(); loop(); }
 }
 
 /* Bygger analysekjeden fra stream-en. Kalles ved oppstart og naar lydveien
@@ -1499,6 +1507,7 @@ async function wireAudio(){
     if (state === 'listening' || state === 'detecting') gapFrom(Date.now());
   });
   track.addEventListener('unmute', () => { rec('track unmuted'); reviveMic(); reportGap(); });
+  startLoop();
 }
 
 /* iOS avslutter mikrofonsporet naar en telefonsamtale tar over lyden paa
@@ -1507,6 +1516,10 @@ async function wireAudio(){
 function onTrackEnded(){
   rec('track ended', state);
   if (state === 'off' || state === 'error' || state === 'paused' || reviving) return;
+  // Under en samtale eier Twilio mikrofonen, og iOS demper analysesporet vaart
+  // nettopp da. Aa hente den tilbake her var grunnen til at telefonen ringte
+  // uten lyd: den utgaaende leggen hadde ingenting aa sende. Vi venter.
+  if (state === 'calling' || state === 'incall') return;
   gapFrom(Date.now());
   // Rapporten kommer etter gjenoppbyggingen, saa den blir den siste meldingen
   // paa skjermen. At overvaakningen var nede betyr mer enn at den er oppe nå.
@@ -1533,8 +1546,10 @@ function reportGap(){
    saa ingenting kommer av seg selv. Vi vekker det som kan vekkes, og bygger
    resten paa nytt. Mikrofontillatelsen er alt gitt, saa det trengs ingen ny
    handling fra den som sover ved sengen. */
-async function reviveMic(){
+async function reviveMic(expected){
   if (reviving || state === 'off' || state === 'error' || state === 'paused') return;
+  // Samme grunn som i onTrackEnded: mikrofonen er Twilios saa lenge det ringer.
+  if (state === 'calling' || state === 'incall'){ rec('revive utsatt', state); return; }
   reviving = true;
   rec('revive', 'actx=' + (actx ? actx.state : 'none')
       + ' track=' + (() => { const t = stream && stream.getAudioTracks()[0];
@@ -1555,9 +1570,16 @@ async function reviveMic(){
                  autoGainControl:false, channelCount:1 }
       });
       await wireAudio();
-      floorDb = -70;                 // nytt rom for gulvet, det gamle er ikke lenger sant
+      /* Gulvet beholdes. Maalt mot trackFloor: nullstilt til -70 i et rom med
+         vifte paa -55 tar det 21,7 s aa krype opp igjen, og hele veien er
+         appen for foelsom - rett etter en samtale, naar barnet fortsatt kan
+         lage lyd. Aa beholde et gulv som viser seg for hoeyt koster 0,23 s,
+         fordi nedoever gaar tracker'n 6 % per frame. Rommet er samme rom. */
       rec('revive ok', 'rebuilt');
-    notice('Microphone picked back up after the call.', 4000);
+      /* Etter en samtale henter vi alltid mikrofonen tilbake, saa der er dette
+         normalt og skal ikke sies. Kommer den tilbake etter noe vi ikke ba om,
+         er det verdt aa vite at overvaakningen var nede et oeyeblikk. */
+      if (!expected) notice('Microphone picked back up after the call.', 4000);
     }
   } catch(e){
     rec('revive failed', (e && (e.message || e.name)) || 'unknown');
@@ -1625,6 +1647,18 @@ function analyse(){
   return { db, ratio };
 }
 
+/* Aa komme tilbake til lytting etter en samtale er det viktigste tidsskiftet i
+   appen: blir den staaende i nedkjoeling, hoerer den ikke neste graat. Derfor
+   ligger den her og ikke bare i loop(). Loekka staar naar mikrofonen er levert
+   til Twilio, og animasjonsrammer fryser naar skjermen er av, saa den kan ikke
+   vaere eneste vei ut. */
+function leaveCooldownIfDue(){
+  if (state !== 'cooldown' || performance.now() < cooldownUntil) return;
+  silentSince = 0;
+  setState('listening');
+  reviveMic(true);           // samtalen tok mikrofonen, naa er den vaar igjen
+}
+
 function loop(){
   rafId = requestAnimationFrame(loop);
   if (!analyser) return;
@@ -1654,13 +1688,7 @@ function loop(){
 
   if (state === 'cooldown'){
     trackFloor(db, false);
-    if (now >= cooldownUntil){
-      // Etter en samtale kan konteksten ligge i dvale. Billig aa vekke, dyrt
-      // aa ikke gjoere: uten dette lytter den videre til stillhet for alltid.
-      if (actx && actx.state === 'suspended'){ try { actx.resume(); } catch(e){} }
-      silentSince = 0;
-      setState('listening');
-    }
+    leaveCooldownIfDue();
     paint();
     return;
   }
@@ -1735,6 +1763,13 @@ async function triggerCall(reason){
   paint();
   undim();
 
+  /* iOS Safari lar bare en forbruker fange lyd av gangen, og den nyeste vinner.
+     Sto analysen vaar aapen under samtalen, kjempet de to om mikrofonen, og den
+     som tapte fikk stillhet. Vi gir den til Twilio mens det ringer og henter den
+     tilbake naar samtalen er over. Aa lytte etter graat mens vi allerede ringer
+     er uansett ingenting verdt. */
+  dropAudio();
+
   const adapter = window.JONBLUND_TELEPHONY;
   try {
     if (adapter && typeof adapter.call === 'function'){
@@ -1750,6 +1785,7 @@ async function triggerCall(reason){
     }
   } catch(e){
     setState('listening');
+    reviveMic(true);             // samtalen ble aldri noe av, saa ta mikrofonen tilbake
     const why = (e && (e.message || e.code)) ? String(e.message || e.code) : 'unknown';
     notice('Call failed: ' + why, 12000);
     console.error('[jonblund] call failed', e);
@@ -2355,6 +2391,7 @@ window.jonblundNotice = notice;
 
 /* idle timers keep the countdowns honest even between audio frames */
 setInterval(() => {
+  leaveCooldownIfDue();
   maybeCheckIn();
   renderNap();
   if (state === 'cooldown' || state === 'incall' || state === 'off') paint();
